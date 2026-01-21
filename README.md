@@ -50,6 +50,10 @@ GetReady is a modern, comprehensive web application designed for the circular fa
 *   **Social**: `ProductReview`, `ProductQuestion`, `Reply`, `Rating`
 *   **System**: `Notification`, `FrontendSetting`, `AvailabilityBlock`, `Payment`
 
+## 📚 Developer Documentation
+For a deep dive into the database schema, system architecture, and detailed workflows, please refer to the [Workflows & System Architecture](WORKFLOW.md) guide.
+
+
 ## ⚙️ Installation & Setup
 
 Follow these steps to get the project running locally:

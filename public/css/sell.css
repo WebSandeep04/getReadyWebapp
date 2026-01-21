@@ -1,0 +1,241 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background: #fafafa;
+  color: #333;
+}
+
+/* .container {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 30px 20px;
+  border-radius: 8px;
+} */
+
+/* Sell page specific logo - different from header logo */
+.sell-logo {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.sell-logo img {
+  width: 200px;
+  max-width: 80%;
+}
+
+.sell-logo h1 {
+  margin: 5px 0;
+  font-size: 2rem;
+  color: #000;
+  font-weight: normal;
+}
+
+.sell-logo h1 span {
+  color: #f78c1c;
+}
+
+.steps {
+  display: flex;
+  justify-content: space-between;
+  margin: 20px 0;
+  font-size: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.steps .step {
+  position: relative;
+  flex: 1;
+  text-align: center;
+  color: #aaa;
+  padding: 5px;
+}
+
+.steps .step.active {
+  color: #f78c1c;
+}
+
+.steps .step::before {
+  content: "";
+  display: block;
+  margin: 0 auto 5px;
+  width: 12px;
+  height: 12px;
+  background: #ccc;
+  border-radius: 50%;
+}
+
+.steps .step.active::before {
+  background: #f78c1c;
+}
+
+form {
+  display: block;
+  position: relative;
+}
+
+.step-content {
+  display: none;
+  flex-direction: column;
+  gap: 15px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.step-content.active {
+  display: flex;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+input,
+select,
+textarea {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  width: 100%;
+  font-size: 1rem;
+}
+
+input[type="radio"],
+input[type="checkbox"] {
+  width: auto;
+  margin-right: 5px;
+}
+
+.gender,
+.sizes {
+  display: flex;
+  justify-content: space-around;
+  font-size: 0.95rem;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+textarea {
+  resize: none;
+  height: 100px;
+}
+
+.next-btn {
+  background: #f78c1c;
+  color: white;
+  border: none;
+  padding: 12px;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  font-size: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  text-align: center;
+  transition: background 0.3s ease;
+}
+
+.next-btn:hover {
+  background: #e87b11;
+}
+
+.step-navigation {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin: 20px auto 0;
+}
+
+.submit-btn {
+  background: #f78c1c;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 1rem;
+  margin: 20px auto 0 auto;
+  display: block;
+  transition: background 0.3s ease;
+}
+
+.submit-btn:hover {
+  background: #e87b11;
+}
+
+.decorative {
+  position: relative;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.decorative img {
+  width: 300px;
+  max-width: 100%;
+  opacity: 0.3;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .container {
+    margin: 10px auto;
+    padding: 20px;
+  }
+
+  .sell-logo img {
+    width: 120px;
+  }
+
+  .sell-logo h1 {
+    font-size: 1.6rem;
+  }
+
+  .next-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
+  }
+
+  .decorative img {
+    width: 180px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sell-logo img {
+    width: 100px;
+  }
+
+  .sell-logo h1 {
+    font-size: 1.4rem;
+  }
+
+  .steps {
+    font-size: 0.8rem;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .steps .step {
+    flex: none;
+  }
+
+  .steps .step::before {
+    width: 10px;
+    height: 10px;
+  }
+
+  .next-btn {
+    width: 45px;
+    height: 45px;
+    font-size: 1rem;
+  }
+
+  .decorative img {
+    width: 100px;
+  }
+}

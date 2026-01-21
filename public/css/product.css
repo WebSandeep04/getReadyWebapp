@@ -1,0 +1,312 @@
+body {
+    background: #f5f7fb;
+    color: #0f172a;
+    line-height: 1.6;
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.product-hero {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+.product-gallery {
+    border: none;
+    border-radius: 24px;
+    overflow: hidden;
+}
+
+.product-gallery__main {
+    position: relative;
+    background: #eef2ff;
+}
+
+.product-gallery__main img {
+    width: 100%;
+    height: 520px;
+    object-fit: cover;
+    border-radius: 24px;
+    transition: opacity .18s ease;
+}
+
+#activeProductImage.fade-out {
+    opacity: 0;
+}
+
+.product-gallery__thumbs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 0.75rem;
+    padding: 1.25rem;
+}
+
+.product-gallery__thumbs .thumb {
+    border: 2px solid transparent;
+    border-radius: 14px;
+    padding: 0;
+    background: transparent;
+}
+
+.product-gallery__thumbs .thumb img {
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 12px;
+    transition: transform .2s ease, border-color .2s ease;
+}
+
+.product-gallery__thumbs .thumb-active img {
+    border: 2px solid #4338ca;
+    transform: scale(0.95);
+}
+
+.product-gallery__thumbs .thumb:hover img,
+.product-gallery__thumbs .thumb:focus-visible img {
+    transform: scale(0.98);
+    border: 2px solid #4f46e5;
+}
+
+.floating-badge {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: rgba(15, 23, 42, 0.85);
+    color: #fff;
+    padding: 0.45rem 1rem;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.chip {
+    background: #f1f5f9;
+    color: #0f172a;
+    border-radius: 999px;
+    padding: 0.35rem 0.9rem;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.product-title {
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    font-weight: 700;
+    color: #111827;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.25rem;
+    margin: 1.5rem 0;
+}
+
+.info-grid label {
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: #64748b;
+}
+
+.info-grid p {
+    margin: 0;
+    font-weight: 600;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.detail-grid h6 {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    color: #475569;
+}
+
+.availability-card .timeline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.timeline__item {
+    background: #eef2ff;
+    border-radius: 999px;
+    padding: 0.45rem 0.9rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+}
+
+.timeline--blocked .timeline__item {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.summary {
+    border-radius: 24px;
+    padding: 1.75rem;
+    background: linear-gradient(135deg, #ffffff, #f8fafc);
+}
+
+.rent-button,
+.buy-button {
+    border: none;
+    border-radius: 16px;
+    padding: 0.85rem 1.2rem;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+}
+
+.rent-button {
+    background: #f8c200;
+    color: #1f2937;
+}
+
+.rent-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 20px rgba(249, 200, 6, 0.25);
+}
+
+.buy-button {
+    background: #16a34a;
+    color: #fff;
+}
+
+.buy-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 20px rgba(22, 163, 74, 0.25);
+}
+
+.rent-button:disabled,
+.buy-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.assurance-list {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 0;
+}
+
+.assurance-list li {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    margin-bottom: 0.4rem;
+    font-size: 0.95rem;
+    color: #475569;
+}
+
+.support-card {
+    border-radius: 20px;
+}
+
+.support-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    background: #eef2ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #4338ca;
+    font-size: 1.2rem;
+}
+
+.rental-summary .total-price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.related {
+    background: #fff;
+    padding: 3rem 0;
+    margin-top: 2rem;
+}
+
+.carousel {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.carousel-items {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+}
+
+.placeholder-card {
+    min-width: 200px;
+    padding: 1rem;
+    border-radius: 18px;
+    background: #f8fafc;
+    text-align: center;
+    border: 1px dashed #cbd5f5;
+}
+
+.placeholder-image {
+    width: 100%;
+    height: 150px;
+    border-radius: 12px;
+    background: linear-gradient(120deg, #e0e7ff, #f5f3ff);
+    margin-bottom: 0.75rem;
+}
+
+button.prev,
+button.next {
+    border: none;
+    background: #0f172a;
+    color: #fff;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+#alert-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1050;
+}
+
+@media (max-width: 992px) {
+    .product-gallery__main img {
+        height: 420px;
+    }
+
+    .summary {
+        position: static;
+        margin-top: 1.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .product-gallery__main img {
+        height: 340px;
+    }
+
+    .chip {
+        font-size: 0.8rem;
+    }
+
+    .assurance-list li {
+        font-size: 0.85rem;
+    }
+}

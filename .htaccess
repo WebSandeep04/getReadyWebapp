@@ -1,0 +1,24 @@
+# This .htaccess is for shared hosting setup
+# 
+# IMPORTANT: On Hostinger shared hosting, you have two options:
+#
+# Option 1 (Recommended): Point your domain's document root to the 'public' folder
+#   - In Hostinger hPanel, set document root to: /home/username/getReady/public
+#   - This .htaccess file is not needed in this case
+#
+# Option 2: If you cannot change document root, move all contents from 'public' 
+#   folder to 'public_html' and update public_html/index.php paths accordingly
+#
+# For Option 1, you can delete this file.
+# For Option 2, this file helps redirect requests to public folder (if needed)
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Only redirect if not already in public folder
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+

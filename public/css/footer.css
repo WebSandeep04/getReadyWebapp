@@ -1,0 +1,70 @@
+/* Footer Component Styles */
+
+/* Footer Container */
+footer {
+  background-color: #f8f9fa;
+  padding: 1rem 0;
+  text-align: center;
+  border-top: 1px solid #dee2e6;
+  flex-shrink: 0; /* Prevents footer from shrinking */
+  margin-top: auto; /* Pushes footer to bottom */
+  width: 100%; /* Ensures footer spans full width */
+}
+
+/* Ensure html and body have full height for flexbox to work */
+html, body {
+  height: 100%;
+}
+
+/* Footer Content */
+.footer-content {
+  margin-bottom: 0.5rem;
+}
+
+footer .logo {
+  font-size: 1.5rem;
+  color: #ffc107;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+/* Contact Information */
+footer .contact {
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+footer .contact p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Footer Links */
+.footer-links {
+  margin-top: 0.5rem;
+}
+
+.footer-links a {
+  color: #6c757d;
+  text-decoration: none;
+  margin: 0 0.5rem;
+  font-size: 0.875rem;
+  transition: color 0.15s ease-in-out;
+}
+
+.footer-links a:hover {
+  color: #495057;
+  text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 576px) {
+  footer .contact,
+  footer .footer-links {
+    font-size: 0.8rem;
+  }
+
+  .footer-links a {
+    margin: 0 0.25rem;
+  }
+} 

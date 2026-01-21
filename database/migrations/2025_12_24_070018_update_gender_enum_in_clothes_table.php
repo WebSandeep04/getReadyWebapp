@@ -13,7 +13,9 @@ return new class extends Migration
     public function up(): void
     {
         // MySQL doesn't support direct ENUM modification, so we use raw SQL
-        DB::statement("ALTER TABLE clothes MODIFY COLUMN gender ENUM('Boy', 'Girl', 'Men', 'Women') NOT NULL");
+        if (DB::getDriverName() !== 'sqlite') {
+             DB::statement("ALTER TABLE clothes MODIFY COLUMN gender ENUM('Boy', 'Girl', 'Men', 'Women') NOT NULL");
+        }
     }
 
     /**

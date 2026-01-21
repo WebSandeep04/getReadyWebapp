@@ -1,20 +1,20 @@
-$(document).ready(function() {
+$(document).ready(function () {
     const registerUrl = (window.AuthConfig && window.AuthConfig.routes && window.AuthConfig.routes.register) || '/register';
-    
+
     // Send OTP for mobile signup
-    $('#sendSignupOtpBtn').on('click', function() {
+    $('#sendSignupOtpBtn').on('click', function () {
         const phone = $('#signupPhone').val().trim();
-        
+
         hideAllErrors();
-        
+
         if (!phone || !/^[0-9]{10,15}$/.test(phone)) {
             showError('signupPhoneError', 'Please enter a valid mobile number (10-15 digits)');
             return;
         }
-        
+
         // Disable button
         $(this).prop('disabled', true).text('Sending...');
-        
+
         $.ajax({
             url: registerUrl,
             method: 'POST',
@@ -24,7 +24,7 @@ $(document).ready(function() {
                 phone: phone,
                 send_otp: true
             },
-            success: function(response) {
+            success: function (response) {
                 if (response.success) {
                     if (response.otp) {
                         alert(`Your signup OTP is ${response.otp}`);
@@ -32,18 +32,18 @@ $(document).ready(function() {
                     // Show OTP section
                     $('#mobileSignupStep1').hide();
                     $('#mobileSignupStep2').addClass('show');
-                    
+
                     // Start timer
-                    startOtpTimer('signupOtpTimer', 'resendSignupOtpBtn', function() {
+                    startOtpTimer('signupOtpTimer', 'resendSignupOtpBtn', function () {
                         $('#sendSignupOtpBtn').prop('disabled', false).text('Send OTP');
                     });
-                    
+
                 } else {
                     showError('signupPhoneError', response.message || 'Failed to send OTP');
                     $('#sendSignupOtpBtn').prop('disabled', false).text('Send OTP');
                 }
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 const error = xhr.responseJSON;
                 if (error && error.errors) {
                     // Show first error
@@ -59,27 +59,27 @@ $(document).ready(function() {
     });
 
     // Resend OTP
-    $('#resendSignupOtpBtn').on('click', function() {
+    $('#resendSignupOtpBtn').on('click', function () {
         $('#sendSignupOtpBtn').trigger('click');
     });
 
     // Step 2: Verify OTP button click
-    $('#verifyOtpBtn').on('click', function() {
+    $('#verifyOtpBtn').on('click', function () {
         const phone = $('#signupPhone').val().trim();
         const otp = $('#signupOtp').val().trim();
-        
+
         // Clear previous errors
         hideError('signupOtpError');
-        
+
         if (!otp || !/^[0-9]{6}$/.test(otp)) {
             showError('signupOtpError', 'Please enter a valid 6-digit OTP');
             return;
         }
-        
+
         // Disable button
         const verifyBtn = $(this);
         verifyBtn.prop('disabled', true).text('Verifying...');
-        
+
         $.ajax({
             url: registerUrl,
             method: 'POST',
@@ -90,11 +90,11 @@ $(document).ready(function() {
                 otp: otp,
                 verify_otp: true
             },
-            success: function(response) {
+            success: function (response) {
                 if (response.success && response.verification_token) {
                     // Store verification token
                     $('#verificationToken').val(response.verification_token);
-                    
+
                     // Hide Step 2, show Step 3
                     $('#mobileSignupStep2').removeClass('show');
                     $('#mobileSignupStep3').addClass('show');
@@ -103,13 +103,13 @@ $(document).ready(function() {
                     verifyBtn.prop('disabled', false).text('Verify OTP');
                 }
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 const error = xhr.responseJSON;
                 if (error && error.errors) {
                     const firstErrorKey = Object.keys(error.errors)[0];
                     let errorElementId = firstErrorKey === 'phone' ? 'signupPhoneError' : 'signupOtpError';
-                    const firstErrorMsg = Array.isArray(error.errors[firstErrorKey]) 
-                        ? error.errors[firstErrorKey][0] 
+                    const firstErrorMsg = Array.isArray(error.errors[firstErrorKey])
+                        ? error.errors[firstErrorKey][0]
                         : error.errors[firstErrorKey];
                     showError(errorElementId, firstErrorMsg);
                 } else {
@@ -121,50 +121,64 @@ $(document).ready(function() {
     });
 
     // Mobile signup form submission (Step 3: Create account)
-    $('#mobileSignupForm').on('submit', function(e) {
+    $('#mobileSignupForm').on('submit', function (e) {
         e.preventDefault();
-        
+
         // Only handle if we're on Step 3
         if (!$('#mobileSignupStep3').hasClass('show')) {
             return;
         }
-        
+
         const phone = $('#signupPhone').val().trim();
         const verificationToken = $('#verificationToken').val();
         const city = $('#signupCity').val().trim();
         const age = $('#signupAge').val().trim();
         const gender = $('#signupGender').val();
-        
+        const is_gst = $('#signupIsGst').val();
+        const gstin = $('#signupGstin').val().trim();
+
         // Clear previous errors
         hideError('signupCityError');
         hideError('signupAgeError');
         hideError('signupGenderError');
-        
+        hideError('signupIsGstError');
+        hideError('signupGstinError');
+
         let hasError = false;
-        
+
         if (!city) {
             showError('signupCityError', 'Please enter your city');
             hasError = true;
         }
-        
+
         if (!age || isNaN(age) || parseInt(age) < 1 || parseInt(age) > 120) {
             showError('signupAgeError', 'Please enter a valid age (1-120)');
             hasError = true;
         }
-        
+
         if (!gender) {
             showError('signupGenderError', 'Please select your gender');
             hasError = true;
         }
-        
+
+        if (!is_gst) {
+            showError('signupIsGstError', 'Please select a business type');
+            hasError = true;
+        } else if (is_gst === '1') {
+            if (!gstin || !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(gstin)) {
+                showError('signupGstinError', 'Please enter a valid 15-digit GSTIN');
+                hasError = true;
+            }
+        }
+
         if (hasError) {
             return;
         }
-        
+
         // Disable submit button
         const submitBtn = $(this).find('button[type="submit"]');
         submitBtn.prop('disabled', true).text('Creating Account...');
-        
+
         $.ajax({
             url: registerUrl,
             method: 'POST',
@@ -175,9 +189,11 @@ $(document).ready(function() {
                 verification_token: verificationToken,
                 city: city,
                 age: age,
-                gender: gender
+                gender: gender,
+                is_gst: is_gst,
+                gstin: gstin
             },
-            success: function(response) {
+            success: function (response) {
                 if (response.success) {
                     // Redirect to home
                     window.location.href = response.redirect || '/';
@@ -186,14 +202,14 @@ $(document).ready(function() {
                     submitBtn.prop('disabled', false).text('Create Account');
                 }
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 const error = xhr.responseJSON;
                 if (error && error.errors) {
                     // Show errors for each field
-                    Object.keys(error.errors).forEach(function(key) {
+                    Object.keys(error.errors).forEach(function (key) {
                         const errorElementId = 'signup' + key.charAt(0).toUpperCase() + key.slice(1) + 'Error';
-                        const errorMsg = Array.isArray(error.errors[key]) 
-                            ? error.errors[key][0] 
+                        const errorMsg = Array.isArray(error.errors[key])
+                            ? error.errors[key][0]
                             : error.errors[key];
                         showError(errorElementId, errorMsg);
                     });
@@ -206,17 +222,17 @@ $(document).ready(function() {
     });
 
     // OTP input - only numbers
-    $('#signupOtp').on('input', function() {
+    $('#signupOtp').on('input', function () {
         this.value = this.value.replace(/[^0-9]/g, '');
     });
 
     // Phone input - only numbers
-    $('#signupPhone').on('input', function() {
+    $('#signupPhone').on('input', function () {
         this.value = this.value.replace(/[^0-9]/g, '');
     });
 
     // Age input - only numbers
-    $('#signupAge').on('input', function() {
+    $('#signupAge').on('input', function () {
         this.value = this.value.replace(/[^0-9]/g, '');
     });
 
@@ -259,11 +275,11 @@ $(document).ready(function() {
         let timeLeft = 60; // 60 seconds
         const timerElement = $('#' + timerElementId);
         const resendBtn = $('#' + resendBtnId);
-        
+
         timerElement.text(`Resend OTP in ${timeLeft} seconds`);
         resendBtn.hide();
-        
-        window.signupOtpTimerInterval = setInterval(function() {
+
+        window.signupOtpTimerInterval = setInterval(function () {
             timeLeft--;
             if (timeLeft > 0) {
                 timerElement.text(`Resend OTP in ${timeLeft} seconds`);

@@ -25,6 +25,8 @@ class User extends Authenticatable
         'city',
         'age',
         'gstin',
+        'is_gst',
+        'gst_number',
         'gender',
         'password',
         'profile_image',

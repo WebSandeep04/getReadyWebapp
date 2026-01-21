@@ -83,6 +83,25 @@
                     <i class="bi bi-person icon"></i>
                     <div id="signupGenderError" class="text-danger small" style="display:none;"></div>
                 </div>
+
+                <!-- Business Type Selection -->
+                <div class="form-group mb-3 position-relative">
+                    <select name="is_gst" id="signupIsGst" class="form-control" required onchange="toggleSignupGstField()">
+                        <option value="">Select Business Type</option>
+                        <option value="0">Individual / Non-Business</option>
+                        <option value="1">Business (GST Available)</option>
+                    </select>
+                    <i class="bi bi-briefcase icon"></i>
+                    <div id="signupIsGstError" class="text-danger small" style="display:none;"></div>
+                </div>
+
+                <!-- GSTIN Field (Hidden by default) -->
+                <div class="form-group mb-3 position-relative" id="signupGstinContainer" style="display:none;">
+                    <input type="text" name="gstin" id="signupGstin" class="form-control" placeholder="Enter GSTIN (15 characters)" maxlength="15">
+                    <i class="bi bi-receipt icon"></i>
+                    <div id="signupGstinError" class="text-danger small" style="display:none;"></div>
+                </div>
+
                 <button type="submit" class="btn btn-warning w-100 fw-bold">Create Account</button>
             </div>
         </form>
@@ -101,6 +120,21 @@
             register: "{{ route('register') }}"
         }
     };
+
+    function toggleSignupGstField() {
+        const isGst = document.getElementById('signupIsGst').value === '1';
+        const gstContainer = document.getElementById('signupGstinContainer');
+        const gstInput = document.getElementById('signupGstin');
+        
+        if (isGst) {
+            gstContainer.style.display = 'block';
+            gstInput.setAttribute('required', 'required');
+        } else {
+            gstContainer.style.display = 'none';
+            gstInput.removeAttribute('required');
+            gstInput.value = ''; 
+        }
+    }
 </script>
 <script src="{{ asset('js/register.js') }}"></script>
 @endsection

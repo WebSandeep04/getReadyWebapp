@@ -35,13 +35,18 @@ class UserController extends Controller
             'email' => 'required|email|max:255|unique:users,email,' . $id,
             'phone' => 'required|string|max:20|unique:users,phone,' . $id,
             'address' => 'nullable|string|max:255',
-            'gstin' => 'nullable|string|max:15|regex:/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/',
+            'is_gst' => 'required|boolean',
+            'gstin' => 'required_if:is_gst,1|nullable|string|max:15|regex:/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/',
             'gender' => 'required|in:Boy,Girl,Men,Women',
         ]);
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
-        $user->update($request->only(['name', 'email', 'phone', 'address', 'gstin', 'gender']));
+        
+        $data = $request->only(['name', 'email', 'phone', 'address', 'gstin', 'gender', 'is_gst']);
+        $data['gst_number'] = $data['gstin'] ?? null;
+        
+        $user->update($data);
         return response()->json(['success' => true, 'user' => $user]);
     }
 
@@ -71,16 +76,18 @@ class UserController extends Controller
             'email' => 'required|email|max:255|unique:users,email,' . $user->id,
             'phone' => 'required|string|max:20|unique:users,phone,' . $user->id,
             'address' => 'nullable|string|max:255',
-            'gstin' => 'nullable|string|max:15|regex:/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/',
+            'is_gst' => 'required|boolean',
+            'gstin' => 'required_if:is_gst,1|nullable|string|max:15|regex:/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/',
             'gender' => 'required|in:Boy,Girl,Men,Women',
             'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif',
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()]);
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
-        $data = $request->only(['name', 'email', 'phone', 'address', 'gstin', 'gender']);
+        $data = $request->only(['name', 'email', 'phone', 'address', 'gstin', 'gender', 'is_gst']);
+        $data['gst_number'] = $data['gstin'] ?? null;
 
         // Handle profile image upload
         if ($request->hasFile('profile_image')) {

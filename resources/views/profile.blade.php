@@ -99,10 +99,19 @@
                             <div class="invalid-feedback" id="address-error"></div>
                         </div>
 
-                        <div class="form-group mb-4">
-                            <label for="gstin" class="form-label fw-bold">GSTIN</label>
+                        <div class="form-group mb-3">
+                            <label for="is_gst" class="form-label fw-bold">Business Type *</label>
+                            <select class="form-control" id="is_gst" name="is_gst" required onchange="toggleGstField()">
+                                <option value="0" {{ !$user->is_gst ? 'selected' : '' }}>Individual / Non-Business</option>
+                                <option value="1" {{ $user->is_gst ? 'selected' : '' }}>Business (GST Available)</option>
+                            </select>
+                            <div class="invalid-feedback" id="is_gst-error"></div>
+                        </div>
+
+                        <div class="form-group mb-4" id="gst-container" style="display: {{ $user->is_gst ? 'block' : 'none' }};">
+                            <label for="gstin" class="form-label fw-bold">GSTIN *</label>
                             <input type="text" class="form-control" id="gstin" name="gstin" 
-                                   value="{{ $user->gstin }}" 
+                                   value="{{ $user->gstin ?? $user->gst_number }}" 
                                    placeholder="Enter 15-digit GSTIN (e.g., 27AAAAA0000A1Z5)"
                                    maxlength="15">
                             <small class="text-muted">Format: 15 characters (e.g., 27AAAAA0000A1Z5)</small>
@@ -257,6 +266,20 @@ function resetForm() {
     // Clear errors
     $('.is-invalid').removeClass('is-invalid');
     $('#alert-container').empty();
+}
+function toggleGstField() {
+    const isGst = document.getElementById('is_gst').value === '1';
+    const gstContainer = document.getElementById('gst-container');
+    const gstInput = document.getElementById('gstin');
+    
+    if (isGst) {
+        gstContainer.style.display = 'block';
+        gstInput.setAttribute('required', 'required');
+    } else {
+        gstContainer.style.display = 'none';
+        gstInput.removeAttribute('required');
+        gstInput.value = ''; // Clear value if not business
+    }
 }
 </script>
 @endsection

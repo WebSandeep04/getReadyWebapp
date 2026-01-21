@@ -132,6 +132,13 @@
                                 <input type="text" class="form-control" id="editAddress" placeholder="Street, City, State">
                             </div>
                             <div class="col-12">
+                                <label class="form-label">Business Type</label>
+                                <select class="form-select" id="editIsGst">
+                                    <option value="0">Individual / Non-Business</option>
+                                    <option value="1">Business (GST Available)</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
                                 <label class="form-label">GSTIN</label>
                                 <input type="text" class="form-control" id="editGstin" placeholder="Enter 15-digit GSTIN (e.g., 27AAAAA0000A1Z5)" maxlength="15">
                                 <small class="text-muted">Format: 15 characters (e.g., 27AAAAA0000A1Z5)</small>
@@ -394,6 +401,7 @@ $(function() {
         $('#editPhone').val(user.phone);
         $('#editAddress').val(user.address);
         $('#editGstin').val(user.gstin || '');
+        $('#editIsGst').val(user.is_gst ? '1' : '0');
         $('#editGender').val(user.gender || 'Boy');
         $('#editUserErrors').html('');
         bootstrap.Modal.getOrCreateInstance(document.getElementById('editUserModal')).show();
@@ -411,6 +419,7 @@ $(function() {
             phone: $('#editPhone').val(),
             address: $('#editAddress').val(),
             gstin: $('#editGstin').val(),
+            is_gst: $('#editIsGst').val(),
             gender: $('#editGender').val(),
             _token: csrf,
         })

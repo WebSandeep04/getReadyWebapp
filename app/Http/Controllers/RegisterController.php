@@ -138,67 +138,72 @@ class RegisterController extends Controller
             }
         }
 
-        // Step 3: Create account with city, age, gender
-        if ($request->has('city') || $request->has('age') || $request->has('gender')) {
-            $validator = Validator::make($request->all(), [
-                'phone' => 'required|string|regex:/^[0-9]{10,15}$/|unique:users,phone',
-                'verification_token' => 'required|string',
-                'city' => 'required|string|max:255',
-                'age' => 'required|integer|min:1|max:120',
-                'gender' => 'required|in:Boy,Girl,Men,Women',
-            ]);
+            // Step 3: Create account with city, age, gender
+            if ($request->has('city') || $request->has('age') || $request->has('gender')) {
+                $validator = Validator::make($request->all(), [
+                    'phone' => 'required|string|regex:/^[0-9]{10,15}$/|unique:users,phone',
+                    'verification_token' => 'required|string',
+                    'city' => 'required|string|max:255',
+                    'age' => 'required|integer|min:1|max:120',
+                    'gender' => 'required|in:Boy,Girl,Men,Women',
+                    'is_gst' => 'required|boolean',
+                    'gstin' => 'required_if:is_gst,1|nullable|string|max:15|regex:/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/',
+                ]);
 
-            if ($validator->fails()) {
-                if ($request->ajax()) {
-                    return response()->json([
-                        'success' => false,
-                        'errors' => $validator->errors()
-                    ], 422);
+                if ($validator->fails()) {
+                    if ($request->ajax()) {
+                        return response()->json([
+                            'success' => false,
+                            'errors' => $validator->errors()
+                        ], 422);
+                    }
+                    return redirect()->back()->withErrors($validator)->withInput();
                 }
-                return redirect()->back()->withErrors($validator)->withInput();
-            }
 
-            $phone = $request->phone;
-            $verificationKey = 'signup_verified_' . $phone;
-            $storedToken = Cache::get($verificationKey);
+                $phone = $request->phone;
+                $verificationKey = 'signup_verified_' . $phone;
+                $storedToken = Cache::get($verificationKey);
 
-            // Verify token
-            if (!$storedToken || $storedToken !== $request->verification_token) {
-                if ($request->ajax()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Verification token invalid or expired. Please start over.'
-                    ], 422);
+                // Verify token
+                if (!$storedToken || $storedToken !== $request->verification_token) {
+                    if ($request->ajax()) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Verification token invalid or expired. Please start over.'
+                        ], 422);
+                    }
+                    return back()->withErrors([
+                        'verification_token' => 'Verification token invalid or expired.',
+                    ])->withInput();
                 }
-                return back()->withErrors([
-                    'verification_token' => 'Verification token invalid or expired.',
-                ])->withInput();
-            }
 
-            // Check if user already exists (shouldn't happen, but safety check)
-            if (User::where('phone', $phone)->exists()) {
-                if ($request->ajax()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'User already exists.'
-                    ], 422);
+                // Check if user already exists (shouldn't happen, but safety check)
+                if (User::where('phone', $phone)->exists()) {
+                    if ($request->ajax()) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'User already exists.'
+                        ], 422);
+                    }
+                    return back()->withErrors([
+                        'phone' => 'User already exists.',
+                    ])->withInput();
                 }
-                return back()->withErrors([
-                    'phone' => 'User already exists.',
-                ])->withInput();
-            }
 
-            // Create user account
-            $user = User::create([
-                'name' => 'User-' . substr($phone, -4),
-                'email' => null, 
-                'phone' => $phone,
-                'address' => null,
-                'city' => $request->city,
-                'age' => $request->age,
-                'gender' => $request->gender,
-                'password' => Hash::make(Str::random(16)), // Random password for mobile signup
-            ]);
+                // Create user account
+                $user = User::create([
+                    'name' => 'User-' . substr($phone, -4),
+                    'email' => null, 
+                    'phone' => $phone,
+                    'address' => null,
+                    'city' => $request->city,
+                    'age' => $request->age,
+                    'gender' => $request->gender,
+                    'is_gst' => $request->is_gst,
+                    'gstin' => $request->gstin,
+                    'gst_number' => $request->gstin,
+                    'password' => Hash::make(Str::random(16)), // Random password for mobile signup
+                ]);
 
             // Clear verification token from cache
             Cache::forget($verificationKey);

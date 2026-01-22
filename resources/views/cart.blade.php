@@ -79,7 +79,7 @@
                                     </div>
                                     <div class="col-md-3">
                                         <div class="d-flex flex-column align-items-end">
-                                            <div class="mb-2">
+                                            <!-- <div class="mb-2">
                                                 <label for="quantity-{{ $cartItem->id }}" class="form-label">Quantity:</label>
                                                 <input type="number" 
                                                        id="quantity-{{ $cartItem->id }}" 
@@ -88,7 +88,7 @@
                                                        min="1" 
                                                        max="10"
                                                        data-cart-item-id="{{ $cartItem->id }}">
-                                            </div>
+                                            </div> -->
                                                                                          <p class="fw-bold item-total">
                                                  @if($cartItem->purchase_type === 'buy')
                                                      ₹{{ number_format($cartItem->total_purchase_cost) }}

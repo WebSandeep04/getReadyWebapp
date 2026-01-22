@@ -92,6 +92,10 @@
       <label class="d-block text-left font-weight-bold mb-1">Title <span class="text-danger">*</span></label>
       <input type="text" name="title" placeholder="Title" value="{{ old('title') }}" required>
       @error('title')<div class="text-danger small">{{ $message }}</div>@enderror
+
+      <label class="d-block text-left font-weight-bold mb-1">Description <span class="text-danger">*</span></label>
+      <textarea name="description" placeholder="Description" required>{{ old('description') }}</textarea>
+      @error('description')<div class="text-danger small">{{ $message }}</div>@enderror
       
       <label class="d-block text-left font-weight-bold mb-1">Category <span class="text-danger">*</span></label>
       <select name="category" required>

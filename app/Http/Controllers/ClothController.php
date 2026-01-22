@@ -128,6 +128,7 @@ class ClothController extends Controller
         // Handle cloth details update
         $request->validate([
             'title' => 'required|string|max:255',
+            'description' => 'required|string',
             'category' => 'required|string|max:255',
             'gender' => 'required|in:Boy,Girl,Men,Women',
             'brand' => 'nullable|string|max:255',
@@ -151,7 +152,7 @@ class ClothController extends Controller
 
         // Prepare update data
         $updateData = $request->only([
-            'title', 'category', 'gender', 'brand', 'fabric', 'color', 
+            'title', 'description', 'category', 'gender', 'brand', 'fabric', 'color', 
             'chest_bust', 'waist', 'length', 'shoulder', 
             'sleeve_length', 'size', 'fit_type', 'condition', 'defects', 
             'rent_price', 'is_purchased', 'purchase_value', 'security_deposit'
@@ -229,6 +230,7 @@ class ClothController extends Controller
     {
         $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'title' => 'required|string|max:255',
+            'description' => 'required|string',
             'category' => 'required|exists:category,id',
             'gender' => 'required|in:Boy,Girl,Men,Women',
             'brand' => 'required|string|max:255',
@@ -269,6 +271,7 @@ class ClothController extends Controller
         $cloth = Cloth::create([
             'user_id' => Auth::id(),
             'title' => $request->input('title'),
+            'description' => $request->input('description'),
             'category' => $request->input('category'),
             'gender' => $request->input('gender'),
             'brand' => $request->input('brand'),

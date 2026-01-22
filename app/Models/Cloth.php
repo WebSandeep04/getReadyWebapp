@@ -14,6 +14,7 @@ class Cloth extends Model
     protected $fillable = [
         'user_id',
         'title',
+        'description',
         'category',
         'gender',
         'brand',

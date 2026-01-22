@@ -39,6 +39,7 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/sell', [ClothController::class, 'create'])->name('sell');
     Route::post('/sell', [ClothController::class, 'store'])->name('sell.store');
+    Route::post('/generate-description', [App\Http\Controllers\GeminiController::class, 'generateDescription'])->name('generate.description');
 });
 
 // Admin

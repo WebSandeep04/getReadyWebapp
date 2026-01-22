@@ -171,7 +171,12 @@
                         <div class="row">
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label for="description">Description *</label>
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <label for="description" class="mb-0">Description *</label>
+                                        <button type="button" class="btn btn-sm btn-outline-primary" data-toggle="modal" data-target="#aiDescriptionModal" title="Generate with AI">
+                                            <i class="fas fa-magic"></i>
+                                        </button>
+                                    </div>
                                     <textarea class="form-control" id="description" name="description" rows="3" required>{{ $cloth->description ?? '' }}</textarea>
                                 </div>
                             </div>
@@ -492,6 +497,36 @@
     </div>
 </div>
 
+<!-- AI Description Modal -->
+<div class="modal fade" id="aiDescriptionModal" tabindex="-1" role="dialog" aria-labelledby="aiDescriptionModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="aiDescriptionModalLabel">Generate Description with AI</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="rawDescription">Enter basic details (keywords, condition, style):</label>
+          <textarea class="form-control" id="rawDescription" rows="4" placeholder="e.g. Blue silk saree, worn once, golden border, perfect for weddings"></textarea>
+        </div>
+        <div id="aiLoading" class="text-center" style="display: none;">
+          <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+          <p class="mt-2">Generating description...</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="generateAiDescription()">Generate</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- JavaScript Variables -->
 <script>
     // Pass PHP variables to JavaScript
@@ -533,6 +568,43 @@ $(document).ready(function() {
         }
     }
 });
+</script>
+
+<script>
+function generateAiDescription() {
+    const rawDescription = $('#rawDescription').val();
+    if (!rawDescription) {
+        alert('Please enter some details.');
+        return;
+    }
+
+    $('#aiLoading').show();
+    
+    const title = $('#title').val();
+    
+    $.ajax({
+        url: '{{ route("generate.description") }}',
+        method: 'POST',
+        data: {
+            raw_description: rawDescription,
+            title: title,
+            _token: '{{ csrf_token() }}'
+        },
+        success: function(response) {
+            if (response.description) {
+                // Use ID selector for the textarea in edit page
+                $('#description').val(response.description);
+                $('#aiDescriptionModal').modal('hide');
+            }
+        },
+        error: function(xhr) {
+            alert('Error generating description: ' + (xhr.responseJSON?.error || 'Unknown error'));
+        },
+        complete: function() {
+            $('#aiLoading').hide();
+        }
+    });
+}
 </script>
 
 @endsection 

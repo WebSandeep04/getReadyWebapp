@@ -93,8 +93,13 @@
       <input type="text" name="title" placeholder="Title" value="{{ old('title') }}" required>
       @error('title')<div class="text-danger small">{{ $message }}</div>@enderror
 
-      <label class="d-block text-left font-weight-bold mb-1">Description <span class="text-danger">*</span></label>
-      <textarea name="description" placeholder="Description" required>{{ old('description') }}</textarea>
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <label class="font-weight-bold mb-0">Description <span class="text-danger">*</span></label>
+        <button type="button" class="btn btn-sm btn-outline-primary" data-toggle="modal" data-target="#aiDescriptionModal" title="Generate with AI">
+          <i class="fas fa-magic"></i>
+        </button>
+      </div>
+      <textarea name="description" id="description" placeholder="Description" required>{{ old('description') }}</textarea>
       @error('description')<div class="text-danger small">{{ $message }}</div>@enderror
       
       <label class="d-block text-left font-weight-bold mb-1">Category <span class="text-danger">*</span></label>
@@ -272,6 +277,37 @@
   </form>
 </div>
 
+
+
+<div class="modal fade" id="aiDescriptionModal" tabindex="-1" role="dialog" aria-labelledby="aiDescriptionModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="aiDescriptionModalLabel">Generate Description with AI</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="rawDescription">Enter basic details (keywords, condition, style):</label>
+          <textarea class="form-control" id="rawDescription" rows="4" placeholder="e.g. Blue silk saree, worn once, golden border, perfect for weddings"></textarea>
+        </div>
+        <div id="aiLoading" class="text-center" style="display: none;">
+          <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+          <p class="mt-2">Generating description...</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="generateAiDescription()">Generate</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="decorative">
   <img src="{{ asset('images/footer.png') }}" alt="Decoration">
 </div>
@@ -279,4 +315,39 @@
 
 @section('scripts')
 <script src="{{ asset('js/sell.js') }}"></script>
+<script>
+function generateAiDescription() {
+    const rawDescription = $('#rawDescription').val();
+    if (!rawDescription) {
+        alert('Please enter some details.');
+        return;
+    }
+
+    $('#aiLoading').show();
+    
+    const title = $('input[name="title"]').val();
+    
+    $.ajax({
+        url: '{{ route("generate.description") }}',
+        method: 'POST',
+        data: {
+            raw_description: rawDescription,
+            title: title,
+            _token: '{{ csrf_token() }}'
+        },
+        success: function(response) {
+            if (response.description) {
+                $('textarea[name="description"]').val(response.description);
+                $('#aiDescriptionModal').modal('hide');
+            }
+        },
+        error: function(xhr) {
+            alert('Error generating description: ' + (xhr.responseJSON?.error || 'Unknown error'));
+        },
+        complete: function() {
+            $('#aiLoading').hide();
+        }
+    });
+}
+</script>
 @endsection

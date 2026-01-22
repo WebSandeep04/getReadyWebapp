@@ -208,7 +208,16 @@ class AdminController extends Controller
     // Fetch all clothes (AJAX)
     public function fetchClothes(Request $request)
     {
-        $query = Cloth::with('images', 'user');
+        $query = Cloth::with([
+            'images', 
+            'user', 
+            'categoryRef', 
+            'fabricRef', 
+            'colorRef', 
+            'sizeRef', 
+            'bottomTypeRef', 
+            'fitTypeRef'
+        ]);
         
         // Apply status filter if provided
         if ($request->has('status')) {
@@ -230,49 +239,35 @@ class AdminController extends Controller
             }
         }
         
-        $clothes = $query->get();
+        $clothes = $query->latest()->get();
         
-        // Convert IDs to names for display
-        foreach ($clothes as $cloth) {
-            if ($cloth->category) {
-                $category = \App\Models\Category::find($cloth->category);
-                $cloth->category = $category ? $category->name : 'Unknown';
-            }
+        // Convert objects to display format efficiently
+        $formattedClothes = $clothes->map(function ($cloth) {
+            // Clone only needed properties or rely on serialization, 
+            // but we need to overwrite the IDs with Names as per current frontend expectation
             
-            if ($cloth->fabric) {
-                $fabric = \App\Models\FabricType::find($cloth->fabric);
-                $cloth->fabric = $fabric ? $fabric->name : 'Unknown';
-            }
+            // Map relationships to flat names
+            $cloth->category = $cloth->categoryRef ? $cloth->categoryRef->name : 'Unknown';
+            $cloth->fabric = $cloth->fabricRef ? $cloth->fabricRef->name : 'Unknown';
+            $cloth->color = $cloth->colorRef ? $cloth->colorRef->name : 'Unknown';
+            $cloth->size = $cloth->sizeRef ? $cloth->sizeRef->name : 'Unknown';
+            $cloth->bottom_type = $cloth->bottomTypeRef ? $cloth->bottomTypeRef->name : 'Unknown';
+            $cloth->fit_type = $cloth->fitTypeRef ? $cloth->fitTypeRef->name : 'Unknown';
             
-            if ($cloth->color) {
-                $color = \App\Models\Color::find($cloth->color);
-                $cloth->color = $color ? $color->name : 'Unknown';
-            }
+            // Format timestamps
+            $cloth->created_at_formatted = $cloth->created_at ? $cloth->created_at->toISOString() : null;
+            $cloth->updated_at_formatted = $cloth->updated_at ? $cloth->updated_at->toISOString() : null;
             
-            if ($cloth->size) {
-                $size = \App\Models\Size::find($cloth->size);
-                $cloth->size = $size ? $size->name : 'Unknown';
-            }
-            
-            if ($cloth->bottom_type) {
-                $bottomType = \App\Models\BottomType::find($cloth->bottom_type);
-                $cloth->bottom_type = $bottomType ? $bottomType->name : 'Unknown';
-            }
-            
-            if ($cloth->fit_type) {
-                $bodyTypeFit = \App\Models\BodyTypeFit::find($cloth->fit_type);
-                $cloth->fit_type = $bodyTypeFit ? $bodyTypeFit->name : 'Unknown';
-            }
-            
-            // Add timestamps for status detection
-            $cloth->created_at = $cloth->created_at->toISOString();
-            $cloth->updated_at = $cloth->updated_at->toISOString();
-            
-            // Add resubmission count for frontend detection
+            // Ensure numerics
             $cloth->resubmission_count = $cloth->resubmission_count ?? 0;
-        }
+
+            // Optional: Unset relationships to keep JSON clean if strict size needed
+            unset($cloth->categoryRef, $cloth->fabricRef, $cloth->colorRef, $cloth->sizeRef, $cloth->bottomTypeRef, $cloth->fitTypeRef);
+            
+            return $cloth;
+        });
         
-        return response()->json($clothes);
+        return response()->json($formattedClothes);
     }
 
     // Approve a cloth (AJAX)

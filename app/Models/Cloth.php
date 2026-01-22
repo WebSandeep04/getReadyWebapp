@@ -112,4 +112,12 @@ class Cloth extends Model
     {
         return $this->reviews()->count();
     }
+
+    // Optimization Relationships
+    public function categoryRef() { return $this->belongsTo(Category::class, 'category'); }
+    public function fabricRef() { return $this->belongsTo(FabricType::class, 'fabric'); }
+    public function colorRef() { return $this->belongsTo(Color::class, 'color'); }
+    public function sizeRef() { return $this->belongsTo(Size::class, 'size'); }
+    public function bottomTypeRef() { return $this->belongsTo(BottomType::class, 'bottom_type'); }
+    public function fitTypeRef() { return $this->belongsTo(BodyTypeFit::class, 'fit_type'); }
 } 

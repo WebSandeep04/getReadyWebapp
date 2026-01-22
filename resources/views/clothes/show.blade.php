@@ -617,10 +617,10 @@ $(document).ready(function() {
     const disabledDatesList = getDisabledDatesArray();
     const commonFlatpickrConfig = {
         minDate: "today",
-        dateFormat: "d/m/Y",
+        dateFormat: "Y-m-d", // Standard database format
         altInput: true,
-        altFormat: "d/m/Y",
-        disable: disabledDatesList  // Array of disabled dates - all dates visible, only unavailable disabled
+        altFormat: "F j, Y", // User friendly format
+        disable: disabledDatesList  // Array of disabled dates (YYYY-MM-DD) matches dateFormat
     };
     
     // Initialize Flatpickr for start date
@@ -640,7 +640,7 @@ $(document).ready(function() {
                 const autoEndDateStr = autoEndDate.toISOString().split('T')[0];
                 if (disabledDatesList.indexOf(autoEndDateStr) === -1) {
                     // Set the end date automatically
-                    endDatePicker.setDate(autoEndDate, false);
+                    endDatePicker.setDate(autoEndDate, true); // true to trigger onChange
                 } else {
                     // If auto end date is disabled, find next available date
                     let nextAvailableDate = new Date(autoEndDate);
@@ -652,21 +652,22 @@ $(document).ready(function() {
                         nextAvailableDate.setDate(nextAvailableDate.getDate() + 1);
                         const nextDateStr = nextAvailableDate.toISOString().split('T')[0];
                         if (disabledDatesList.indexOf(nextDateStr) === -1) {
-                            endDatePicker.setDate(nextAvailableDate, false);
+                            endDatePicker.setDate(nextAvailableDate, true);
                             foundAvailable = true;
                         }
                         tries++;
                     }
                 }
+            } else {
+                validateAndCalculateRental();
             }
-            validateAndCalculateRental();
         }
     }));
     
     // Initialize Flatpickr for end date
     const endDatePicker = flatpickr("#end_date", Object.assign({}, commonFlatpickrConfig, {
         onChange: function(selectedDates, dateStr, instance) {
-        validateAndCalculateRental();
+            validateAndCalculateRental();
         }
     }));
     
@@ -677,27 +678,20 @@ $(document).ready(function() {
         const $btn = $(this);
         const originalText = $btn.text();
         
-        // Get rental dates and cost
+        // Get rental dates and cost (Format: YYYY-MM-DD)
         const startDateStr = $('#start_date').val();
         const endDateStr = $('#end_date').val();
 
-        // Helper function to parse d/m/Y to Date object
-        function parseDate(dateStr) {
-            const parts = dateStr.split('/');
-            // new Date(year, monthIndex, day)
-            return new Date(parts[2], parts[1] - 1, parts[0]);
-        }
-
-        const startDate = parseDate(startDateStr);
-        const endDate = parseDate(endDateStr);
-
-        const daysDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1; // Include both start and end days
-        
         if (!startDateStr || !endDateStr) {
             showAlert('danger', 'Please select rental start and end dates');
             $btn.prop('disabled', true).html('<i class="bi bi-cart-plus me-2"></i>SELECT DATES TO RENT');
             return;
         }
+
+        const startDate = new Date(startDateStr);
+        const endDate = new Date(endDateStr);
+
+        const daysDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1; // Include both start and end days
         
         // Validate minimum rental period (4 days)
         const MIN_RENTAL_DAYS = 4;
@@ -708,7 +702,6 @@ $(document).ready(function() {
         }
         
         // Calculate rental cost based on 4-day minimum period
-        // Reuse MIN_RENTAL_DAYS defined above
         const basePrice = clothData.rentPrice; // Price for 4 days
         const perDayRate = basePrice / MIN_RENTAL_DAYS; // Per day rate after 4 days
         
@@ -732,18 +725,10 @@ $(document).ready(function() {
         // Show loading state
         $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Adding...');
         
-        // Format dates as Y-m-d for backend validation
-        const formatDateToYMD = (date) => {
-            const y = date.getFullYear();
-            const m = String(date.getMonth() + 1).padStart(2, '0');
-            const d = String(date.getDate()).padStart(2, '0');
-            return `${y}-${m}-${d}`;
-        };
-
         const requestData = {
             cloth_id: clothId,
-            rental_start_date: formatDateToYMD(startDate),
-            rental_end_date: formatDateToYMD(endDate),
+            rental_start_date: startDateStr, // Already YYYY-MM-DD
+            rental_end_date: endDateStr,     // Already YYYY-MM-DD
             total_rental_cost: rentCost,
             rental_days: daysDiff,
             _token: $('meta[name="csrf-token"]').attr('content')
@@ -852,7 +837,7 @@ $(document).ready(function() {
                              const errorMessages = Object.values(response.errors).flat().join(', ');
                              showAlert('danger', 'Validation error: ' + errorMessages);
                          } else {
-                             showAlert('danger', 'Please check your input and try again.');
+                             showAlert('danger', 'An error occurred. Please try again.');
                          }
                      } catch (e) {
                          showAlert('danger', 'An error occurred. Please try again.');
@@ -936,7 +921,6 @@ function validateAndCalculateRental() {
     }
     
     // Calculate prices based on 4-day minimum period
-    // Reuse MIN_RENTAL_DAYS defined above in this function
     const basePrice = clothData.rentPrice; // Price for 4 days
     const perDayRate = basePrice / MIN_RENTAL_DAYS; // Per day rate after 4 days
     
@@ -977,7 +961,7 @@ function validateAndCalculateRental() {
     $rentalSummary.show();
     
     // Enable rent button
-    $rentButton.prop('disabled', false).html('<i class="bi bi-cart-plus me-2"></i>Rent now - ₹' + totalCost.toLocaleString());
+    $rentButton.prop('disabled', false).html('<i class="bi bi-cart-plus me-2"></i>Rent now - ₹' + Math.round(totalCost).toLocaleString());
     
     // Clear any previous alerts
     $('.alert-danger').remove();
@@ -987,7 +971,7 @@ function checkAvailability(start, end) {
     const availableBlocks = clothData.availableBlocks;
     
     for (let block of availableBlocks) {
-        const blockStart = new Date(block.start_date);
+        const blockStart = new Date(block.start_date); // YYYY-MM-DD works in Date constructor
         const blockEnd = new Date(block.end_date);
         
         if (start >= blockStart && end <= blockEnd) {

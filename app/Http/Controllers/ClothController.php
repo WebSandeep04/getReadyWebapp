@@ -359,6 +359,17 @@ class ClothController extends Controller
             }
         }
 
+        // Send notification to user
+        \App\Models\Notification::create([
+            'user_id' => Auth::id(),
+            'title' => 'Item Listed Successfully',
+            'message' => "Your item '{$cloth->title}' has been listed successfully and is pending approval.",
+            'type' => 'success',
+            'icon' => 'bi-check2-circle',
+            'data' => ['cloth_id' => $cloth->id],
+            'read' => false
+        ]);
+
         return redirect('/')->with('success', 'Your item has been listed successfully!');
     }
 

@@ -60,6 +60,19 @@ class ReviewController extends Controller
             ]);
 
             $message = 'Review posted successfully!';
+
+            // Notify Cloth Owner
+            if ($cloth->user_id && $cloth->user_id !== Auth::id()) {
+                \App\Models\Notification::create([
+                    'user_id' => $cloth->user_id,
+                    'title' => 'New Review Received',
+                    'message' => Auth::user()->name . " rated your item '{$cloth->title}' {$request->rating} stars.",
+                    'type' => 'info',
+                    'icon' => 'bi-star-fill',
+                    'data' => ['cloth_id' => $cloth->id, 'review_id' => $review->id],
+                    'read' => false
+                ]);
+            }
         }
 
         // Load relationships for response

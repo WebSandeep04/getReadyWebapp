@@ -41,6 +41,19 @@ class QuestionController extends Controller
             'question' => $request->question,
         ]);
 
+        // Notify Cloth Owner
+        if ($cloth->user_id && $cloth->user_id !== Auth::id()) {
+            \App\Models\Notification::create([
+                'user_id' => $cloth->user_id,
+                'title' => 'New Question Asked',
+                'message' => Auth::user()->name . " asked a question about '{$cloth->title}'.",
+                'type' => 'info',
+                'icon' => 'bi-question-circle',
+                'data' => ['cloth_id' => $cloth->id, 'question_id' => $question->id],
+                'read' => false
+            ]);
+        }
+
         // Load relationships for response
         $question->load('user');
 
@@ -92,6 +105,19 @@ class QuestionController extends Controller
             'answered_by' => Auth::id(),
             'answered_at' => now(),
         ]);
+
+        // Notify User who asked
+        if ($question->user_id && $question->user_id !== Auth::id()) {
+            \App\Models\Notification::create([
+                'user_id' => $question->user_id,
+                'title' => 'Question Answered',
+                'message' => "The seller has answered your question about '{$question->cloth->title}'.",
+                'type' => 'success',
+                'icon' => 'bi-chat-text',
+                'data' =>(['cloth_id' => $question->cloth_id, 'question_id' => $question->id]),
+                'read' => false
+            ]);
+        }
 
         $question->load(['user', 'answerer']);
 

@@ -157,6 +157,30 @@ class LoginController extends Controller
 
         // Login user
         Auth::login($user, $request->filled('remember'));
+
+        // Check for first-time login (if last_login_at is null) and send welcome notification if not already sent
+        if (is_null($user->last_login_at)) {
+            // Check if welcome notification already exists (to avoid duplicates if registration already sent it)
+            $hasWelcomeNotification = \App\Models\Notification::where('user_id', $user->id)
+                ->where('title', 'Welcome to GetReady!')
+                ->exists();
+
+            if (!$hasWelcomeNotification) {
+                \App\Models\Notification::create([
+                    'user_id' => $user->id,
+                    'title' => 'Welcome to GetReady!',
+                    'message' => 'We are excited to have you on board. Start your journey by listing your first item or exploring our collection.',
+                    'type' => 'success',
+                    'icon' => 'bi-emoji-smile',
+                    'read' => false
+                ]);
+            }
+        }
+
+        // Update last login timestamp
+        $user->last_login_at = now();
+        $user->save();
+
         $request->session()->regenerate();
 
         if ($request->ajax()) {

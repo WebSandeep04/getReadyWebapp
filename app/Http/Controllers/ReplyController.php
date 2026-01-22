@@ -58,6 +58,27 @@ class ReplyController extends Controller
             'message' => $request->message,
         ]);
 
+        // Notify Parent Author (Reviewer or Questioner)
+        if ($model->user_id && $model->user_id !== Auth::id()) {
+            // Determine context (Review or Question)
+            $isReview = $model instanceof \App\Models\ProductReview;
+            $itemName = $model->cloth ? $model->cloth->title : 'item';
+            
+            \App\Models\Notification::create([
+                'user_id' => $model->user_id,
+                'title' => 'New Reply',
+                'message' => Auth::user()->name . " replied to your " . ($isReview ? 'review' : 'question') . " on '{$itemName}'.",
+                'type' => 'info',
+                'icon' => 'bi-reply',
+                'data' => [
+                    'cloth_id' => $model->cloth_id, 
+                    'target_id' => $model->id,
+                    'target_type' => $isReview ? 'review' : 'question'
+                ],
+                'read' => false
+            ]);
+        }
+
         // Load user relationship for response
         $reply->load('user');
 

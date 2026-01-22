@@ -229,6 +229,39 @@ class CheckoutController extends Controller
             }
         }
 
+        // 6. Send Notification to Buyer
+        \App\Models\Notification::create([
+            'user_id' => $user->id,
+            'title' => 'Order Placed Successfully',
+            'message' => "Your order #{$order->id} has been confirmed. Thank you for shopping with us!",
+            'type' => 'success',
+            'icon' => 'bi-bag-check',
+            'data' => ['order_id' => $order->id],
+            'read' => false
+        ]);
+
+        // 7. Send New Sale Notification to Sellers
+        foreach ($cartItems as $item) {
+            $cloth = $item->cloth;
+            if ($cloth && $cloth->user_id) {
+                $transactionType = $item->purchase_type === 'buy' ? 'sold' : 'rented';
+                $messageType = $item->purchase_type === 'buy' ? 'Sale' : 'Rental';
+                
+                \App\Models\Notification::create([
+                    'user_id' => $cloth->user_id,
+                    'title' => "New {$messageType}!",
+                    'message' => "Good news! Your item '{$cloth->title}' has been {$transactionType}.",
+                    'type' => 'success',
+                    'icon' => 'bi-cash-coin',
+                    'data' => [
+                        'cloth_id' => $cloth->id,
+                        'order_id' => $order->id
+                    ],
+                    'read' => false
+                ]);
+            }
+        }
+
         // clear cart
         $user->cartItems()->delete();
 

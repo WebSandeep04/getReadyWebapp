@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -10,6 +11,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use App\Services\Msg91Service;
 use Illuminate\Support\Str;
+
+
 
 class RegisterController extends Controller
 {
@@ -203,6 +206,16 @@ class RegisterController extends Controller
                     'gstin' => $request->gstin,
                     'gst_number' => $request->gstin,
                     'password' => Hash::make(Str::random(16)), // Random password for mobile signup
+                ]);
+
+                // Create welcome notification
+                Notification::create([
+                    'user_id' => $user->id,
+                    'title' => 'Welcome to GetReady!',
+                    'message' => 'We are excited to have you on board. Start your journey by listing your first item or exploring our collection.',
+                    'type' => 'success',
+                    'icon' => 'bi-emoji-smile',
+                    'read' => false
                 ]);
 
             // Clear verification token from cache

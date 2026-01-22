@@ -127,11 +127,11 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <p class="mb-1"><strong>Member Since:</strong></p>
-                                        <p class="text-muted">{{ $user->created_at->format('F j, Y') }}</p>
+                                        <p class="text-muted">{{ $user->created_at->format('d/m/Y') }}</p>
                                     </div>
                                     <div class="col-md-6">
                                         <p class="mb-1"><strong>Last Updated:</strong></p>
-                                        <p class="text-muted">{{ $user->updated_at->format('F j, Y') }}</p>
+                                        <p class="text-muted">{{ $user->updated_at->format('d/m/Y') }}</p>
                                     </div>
                                 </div>
                             </div>

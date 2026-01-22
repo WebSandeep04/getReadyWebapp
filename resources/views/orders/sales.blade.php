@@ -115,7 +115,7 @@
                                             {{ $order->status }}
                                         </span>
                                     </td>
-                                    <td>{{ $order->created_at->format('d M Y') }}</td>
+                                    <td>{{ $order->created_at->format('d/m/Y') }}</td>
                                     <td>
                                         @if($canRate && !$hasRated)
                                             <button type="button" class="btn btn-sm btn-outline-warning" 

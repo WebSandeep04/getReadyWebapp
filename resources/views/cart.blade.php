@@ -63,8 +63,8 @@
                                                     <p class="mb-1">
                                                         <strong>Rental Period:</strong><br>
                                                         <small class="text-muted">
-                                                            {{ \Carbon\Carbon::parse($cartItem->rental_start_date)->format('M d, Y') }} - 
-                                                            {{ \Carbon\Carbon::parse($cartItem->rental_end_date)->format('M d, Y') }}
+                                                            {{ \Carbon\Carbon::parse($cartItem->rental_start_date)->format('d/m/Y') }} - 
+                                                            {{ \Carbon\Carbon::parse($cartItem->rental_end_date)->format('d/m/Y') }}
                                                         </small>
                                                     </p>
                                                     <p class="mb-1">

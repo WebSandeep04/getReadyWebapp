@@ -100,9 +100,9 @@
           <div class="timeline">
             @foreach($cloth->availabilityBlocks->where('type', 'available') as $block)
               <div class="timeline__item">
-                <span>{{ \Carbon\Carbon::parse($block->start_date)->format('d M') }}</span>
+                <span>{{ \Carbon\Carbon::parse($block->start_date)->format('d/m/Y') }}</span>
                 <span class="text-muted">to</span>
-                <span>{{ \Carbon\Carbon::parse($block->end_date)->format('d M, Y') }}</span>
+                <span>{{ \Carbon\Carbon::parse($block->end_date)->format('d/m/Y') }}</span>
               </div>
             @endforeach
           </div>
@@ -114,9 +114,9 @@
           <div class="timeline timeline--blocked mt-3">
             @foreach($cloth->availabilityBlocks->where('type', 'blocked') as $block)
               <div class="timeline__item">
-                <span>{{ \Carbon\Carbon::parse($block->start_date)->format('d M') }}</span>
+                <span>{{ \Carbon\Carbon::parse($block->start_date)->format('d/m/Y') }}</span>
                 <span class="text-muted">to</span>
-                <span>{{ \Carbon\Carbon::parse($block->end_date)->format('d M, Y') }}</span>
+                <span>{{ \Carbon\Carbon::parse($block->end_date)->format('d/m/Y') }}</span>
                 @if($block->reason)
                   <small class="text-muted d-block">{{ $block->reason }}</small>
                 @endif
@@ -606,7 +606,9 @@ $(document).ready(function() {
     const disabledDatesList = getDisabledDatesArray();
     const commonFlatpickrConfig = {
         minDate: "today",
-        dateFormat: "Y-m-d",
+        dateFormat: "d/m/Y",
+        altInput: true,
+        altFormat: "d/m/Y",
         disable: disabledDatesList  // Array of disabled dates - all dates visible, only unavailable disabled
     };
     
@@ -665,11 +667,22 @@ $(document).ready(function() {
         const originalText = $btn.text();
         
         // Get rental dates and cost
-        const startDate = $('#start_date').val();
-        const endDate = $('#end_date').val();
-        const daysDiff = Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1; // Include both start and end days
+        const startDateStr = $('#start_date').val();
+        const endDateStr = $('#end_date').val();
+
+        // Helper function to parse d/m/Y to Date object
+        function parseDate(dateStr) {
+            const parts = dateStr.split('/');
+            // new Date(year, monthIndex, day)
+            return new Date(parts[2], parts[1] - 1, parts[0]);
+        }
+
+        const startDate = parseDate(startDateStr);
+        const endDate = parseDate(endDateStr);
+
+        const daysDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1; // Include both start and end days
         
-        if (!startDate || !endDate) {
+        if (!startDateStr || !endDateStr) {
             showAlert('danger', 'Please select rental start and end dates');
             $btn.prop('disabled', true).html('<i class="bi bi-cart-plus me-2"></i>SELECT DATES TO RENT');
             return;
@@ -708,10 +721,18 @@ $(document).ready(function() {
         // Show loading state
         $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Adding...');
         
+        // Format dates as Y-m-d for backend validation
+        const formatDateToYMD = (date) => {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        };
+
         const requestData = {
             cloth_id: clothId,
-            rental_start_date: startDate,
-            rental_end_date: endDate,
+            rental_start_date: formatDateToYMD(startDate),
+            rental_end_date: formatDateToYMD(endDate),
             total_rental_cost: rentCost,
             rental_days: daysDiff,
             _token: $('meta[name="csrf-token"]').attr('content')

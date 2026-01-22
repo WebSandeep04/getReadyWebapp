@@ -55,7 +55,7 @@
                             </h6>
                             <p class="mb-2">{{ $rejectionNotification->data['reject_reason'] ?? 'No specific reason provided.' }}</p>
                             <small class="text-muted">
-                                <i class="bi bi-calendar me-1"></i>Rejected on {{ $rejectionNotification->created_at->format('M d, Y \a\t g:i A') }}
+                                <i class="bi bi-calendar me-1"></i>Rejected on {{ $rejectionNotification->created_at->format('d/m/Y \a\t g:i A') }}
                             </small>
                         </div>
                     </div>

@@ -95,9 +95,9 @@
                                     <td>
                                         @if($order->has_rental_items)
                                             <span class="badge bg-light text-dark">
-                                                {{ \Carbon\Carbon::parse($order->rental_from)->format('d M Y') }}
-                                                —
-                                                {{ \Carbon\Carbon::parse($order->rental_to)->format('d M Y') }}
+                                                {{ \Carbon\Carbon::parse($order->rental_from)->format('d/m/Y') }}
+                                                -
+                                                {{ \Carbon\Carbon::parse($order->rental_to)->format('d/m/Y') }}
                                             </span>
                                         @else
                                             <span class="text-muted">—</span>
@@ -118,7 +118,7 @@
                                             <span class="text-muted">Pending</span>
                                         @endif
                                     </td>
-                                    <td>{{ $order->created_at->format('d M Y, h:i A') }}</td>
+                                    <td>{{ $order->created_at->format('d/m/Y, h:i A') }}</td>
                                     <td>
                                         @if($canRate && !$hasRated)
                                             <button type="button" class="btn btn-sm btn-outline-warning" 

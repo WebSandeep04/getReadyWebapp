@@ -34,6 +34,10 @@ class CartController extends Controller
         \Log::info('Cart add request:', $request->all());
 
         $cloth = Cloth::findOrFail($request->cloth_id);
+
+        if ($cloth->sku <= 0) {
+            return response()->json(['success' => false, 'message' => 'This item is sold out']);
+        }
         
         // Check if this is a buy request
         if ($request->has('purchase_type') && $request->purchase_type === 'buy') {
@@ -152,10 +156,15 @@ class CartController extends Controller
 
         $request->validate([
             'cart_item_id' => 'required|exists:cart_items,id',
-            'quantity' => 'required|integer|min:1|max:10',
+            'quantity' => 'required|integer|min:1',
         ]);
 
-        $cartItem = Auth::user()->cartItems()->findOrFail($request->cart_item_id);
+        $cartItem = Auth::user()->cartItems()->with('cloth')->findOrFail($request->cart_item_id);
+
+        if ($request->quantity > $cartItem->cloth->sku) {
+             return response()->json(['success' => false, 'message' => 'Requested quantity exceeds available stock (SKU: ' . $cartItem->cloth->sku . ')']);
+        }
+
         $cartItem->update(['quantity' => $request->quantity]);
 
         $cartCount = Auth::user()->cartItems()->count();

@@ -65,13 +65,21 @@
         </td>
         <td>{{ $order->created_at->format('d/m/Y, h:i A') }}</td>
         <td>
-            @if($order->buyer && $order->buyer->email)
-                <a href="mailto:{{ $order->buyer->email }}" class="btn btn-sm btn-outline-secondary">
-                    <i class="bi bi-envelope"></i>
-                </a>
-            @else
-                <span class="text-muted">—</span>
-            @endif
+            <div class="d-flex gap-2">
+                @if($order->buyer && $order->buyer->email)
+                    <a href="mailto:{{ $order->buyer->email }}" class="btn btn-sm btn-outline-secondary" title="Email Buyer">
+                        <i class="bi bi-envelope"></i>
+                    </a>
+                @endif
+                
+                @if($order->has_rental_items && $order->status !== 'Returned' && $order->status !== 'Cancelled')
+                    <button class="btn btn-sm btn-outline-primary mark-returned-btn" 
+                            data-order-id="{{ $order->id }}" 
+                            title="Mark as Returned">
+                        <i class="bi bi-box-arrow-in-left"></i>
+                    </button>
+                @endif
+            </div>
         </td>
     </tr>
 @empty

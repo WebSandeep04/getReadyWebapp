@@ -79,16 +79,16 @@
                                     </div>
                                     <div class="col-md-3">
                                         <div class="d-flex flex-column align-items-end">
-                                            <!-- <div class="mb-2">
+                                            <div class="mb-2">
                                                 <label for="quantity-{{ $cartItem->id }}" class="form-label">Quantity:</label>
                                                 <input type="number" 
                                                        id="quantity-{{ $cartItem->id }}" 
                                                        class="form-control quantity-input" 
                                                        value="{{ $cartItem->quantity }}" 
                                                        min="1" 
-                                                       max="10"
+                                                       max="{{ $cartItem->cloth->sku }}"
                                                        data-cart-item-id="{{ $cartItem->id }}">
-                                            </div> -->
+                                            </div>
                                                                                          <p class="fw-bold item-total">
                                                  @if($cartItem->purchase_type === 'buy')
                                                      ₹{{ number_format($cartItem->total_purchase_cost) }}
@@ -250,9 +250,16 @@ $(document).ready(function() {
     $('.quantity-input').change(function() {
         const cartItemId = $(this).data('cart-item-id');
         const quantity = parseInt($(this).val());
+        const maxQuantity = parseInt($(this).attr('max'));
         const $input = $(this);
         const $item = $(this).closest('.cart-item');
         
+        if (quantity > maxQuantity) {
+            showAlert('warning', 'Requested quantity exceeds available stock (' + maxQuantity + ')');
+            $(this).val(maxQuantity);
+            return;
+        }
+
         // Update item total immediately
         updateItemTotal(cartItemId);
         
@@ -272,10 +279,17 @@ $(document).ready(function() {
                     // Update cart count in header
                     updateCartCount(response.cartCount);
                     showAlert('success', response.message);
+                } else {
+                    showAlert('danger', response.message);
+                    // Reset to original value
+                    $input.val($input.data('original-value'));
+                    // Recalculate totals
+                    updateCartTotals();
                 }
             },
-            error: function() {
-                showAlert('danger', 'An error occurred. Please try again.');
+            error: function(xhr) {
+                const message = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'An error occurred. Please try again.';
+                showAlert('danger', message);
                 // Reset to original value
                 $input.val($input.data('original-value'));
                 // Recalculate totals
@@ -318,10 +332,13 @@ $(document).ready(function() {
                         });
                         
                         showAlert('success', response.message);
+                    } else {
+                         showAlert('danger', response.message);
                     }
                 },
-                error: function() {
-                    showAlert('danger', 'An error occurred. Please try again.');
+                error: function(xhr) {
+                    const message = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'An error occurred. Please try again.';
+                    showAlert('danger', message);
                 }
             });
         }
@@ -426,24 +443,32 @@ function updateCartCount(count) {
 }
 
 // Show alert message
+// Show alert message
 function showAlert(type, message) {
+    // Check if alert container exists, if not create it
+    if ($('#alert-container').length === 0) {
+        $('body').append('<div id="alert-container" style="position: fixed; top: 20px; right: 20px; z-index: 1050; min-width: 300px; max-width: 400px;"></div>');
+    }
+
     const alertHtml = `
-        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+        <div class="alert alert-${type} alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi ${type === 'success' ? 'bi-check-circle' : 'bi-exclamation-triangle'} me-2"></i>
             ${message}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     `;
     
-    // Remove existing alerts
-    $('.alert').remove();
-    
     // Add new alert
-    $('body').prepend(alertHtml);
+    $('#alert-container').append(alertHtml);
+    
+    console.log('Alert:', type, message);
     
     // Auto-hide after 3 seconds
     setTimeout(function() {
-        $('.alert').fadeOut();
-    }, 3000);
+        $('#alert-container .alert').first().fadeOut(function() {
+            $(this).remove();
+        });
+    }, 4000);
 }
 
 const checkoutBtn = document.getElementById('checkoutBtn');

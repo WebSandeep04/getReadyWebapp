@@ -259,6 +259,17 @@ class CheckoutController extends Controller
                     ],
                     'read' => false
                 ]);
+
+                // Update SKU logic
+                if ($cloth->sku > 0) {
+                    $newSku = $cloth->sku - $item->quantity;
+                    $cloth->sku = max(0, $newSku); // Ensure doesn't go below 0
+                    
+                    if ($cloth->sku == 0) {
+                        $cloth->is_available = false; // Disable if Sold Out
+                    }
+                    $cloth->save();
+                }
             }
         }
 

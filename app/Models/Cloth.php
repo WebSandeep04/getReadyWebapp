@@ -33,6 +33,7 @@ class Cloth extends Model
         'is_purchased',
         'security_deposit',
         'is_available',
+        'sku',
         'chest_bust',
         'waist',
         'length',

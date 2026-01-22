@@ -187,13 +187,19 @@
               </div>
             </div>
 
-            <button class="rent-button add-to-cart-btn w-100" data-cloth-id="{{ $cloth->id }}" disabled>
-              <i class="bi bi-cart-plus me-2"></i>Select dates to rent
-            </button>
+            @if($cloth->sku > 0)
+              <button class="rent-button add-to-cart-btn w-100" data-cloth-id="{{ $cloth->id }}" id="productRentBtn" disabled>
+                <i class="bi bi-cart-plus me-2"></i>Select dates to rent
+              </button>
 
-            @if($cloth->is_purchased)
-              <button class="buy-button add-to-cart-buy-btn w-100 mt-2" data-cloth-id="{{ $cloth->id }}">
-                <i class="bi bi-bag-check me-2"></i>Buy once - ₹{{ number_format($cloth->purchase_value) }}
+              @if($cloth->is_purchased)
+                <button class="buy-button add-to-cart-buy-btn w-100 mt-2" data-cloth-id="{{ $cloth->id }}" id="productBuyBtn">
+                  <i class="bi bi-bag-check me-2"></i>Buy once - ₹{{ number_format($cloth->purchase_value) }}
+                </button>
+              @endif
+            @else
+              <button class="btn btn-secondary w-100" disabled>
+                <i class="bi bi-x-circle me-2"></i>Sold Out
               </button>
             @endif
 

@@ -54,6 +54,7 @@ Route::get('/admin/dashboard', function() {
 Route::get('/admin/cloth-approval', [AdminController::class, 'clothApproval'])->name('admin.cloth-approval');
 Route::get('/admin/orders', [AdminController::class, 'orders'])->name('admin.orders');
 Route::get('/admin/orders/data', [AdminController::class, 'ordersData'])->name('admin.orders.data');
+Route::post('/admin/orders/{id}/return', [AdminController::class, 'markAsReturned'])->name('admin.orders.return');
 
 // User
 Route::get('/user', [UserController::class, 'index'])->name('user.index');

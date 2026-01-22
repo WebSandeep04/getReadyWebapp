@@ -294,6 +294,40 @@ $(function() {
         searchTimer = setTimeout(fetchOrders, 500);
     });
 
+    // Mark as Returned Logic
+    $tableBody.on('click', '.mark-returned-btn', function(e) {
+        e.preventDefault();
+        const $btn = $(this);
+        const orderId = $btn.data('order-id');
+        
+        if (!confirm('Are you sure you want to mark this order as Returned? This will increment the stock (SKU) for rented items.')) {
+            return;
+        }
+
+        $btn.prop('disabled', true);
+        
+        $.ajax({
+            url: `/admin/orders/${orderId}/return`,
+            type: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}'
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert(response.message);
+                    fetchOrders();
+                } else {
+                    alert(response.message || 'Action failed');
+                    $btn.prop('disabled', false);
+                }
+            },
+            error: function(xhr) {
+                alert('Error: ' + (xhr.responseJSON?.message || 'Something went wrong'));
+                $btn.prop('disabled', false);
+            }
+        });
+    });
+
     $form.on('submit', function(e) {
         e.preventDefault();
         fetchOrders();

@@ -33,7 +33,7 @@
         <td>
             @if($order->has_rental_items && $order->rental_to)
                 <div class="d-flex flex-column">
-                    <span>{{ \Carbon\Carbon::parse($order->rental_from)->format('d M') }} – {{ \Carbon\Carbon::parse($order->rental_to)->format('d M, Y') }}</span>
+                    <span>{{ \Carbon\Carbon::parse($order->rental_from)->format('d/m/Y') }} – {{ \Carbon\Carbon::parse($order->rental_to)->format('d/m/Y') }}</span>
                     @if($isOverdue)
                         <span class="timeline-flag overdue"><i class="bi bi-exclamation-octagon"></i>Overdue by {{ $daysOverdue }}d</span>
                     @elseif($rentalEnd && $rentalEnd->isToday())
@@ -63,7 +63,7 @@
                 <span class="text-muted">Unpaid</span>
             @endif
         </td>
-        <td>{{ $order->created_at->format('d M Y, h:i A') }}</td>
+        <td>{{ $order->created_at->format('d/m/Y, h:i A') }}</td>
         <td>
             @if($order->buyer && $order->buyer->email)
                 <a href="mailto:{{ $order->buyer->email }}" class="btn btn-sm btn-outline-secondary">

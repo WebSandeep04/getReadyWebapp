@@ -173,9 +173,7 @@
                                 <div class="form-group">
                                     <div class="d-flex justify-content-between align-items-center mb-1">
                                         <label for="description" class="mb-0">Description *</label>
-                                        <button type="button" class="btn btn-sm btn-outline-primary" data-toggle="modal" data-target="#aiDescriptionModal" title="Generate with AI">
-                                            <i class="fas fa-magic"></i>
-                                        </button>
+                                        <img src="{{ asset('images/icon/gemini_logo.jpeg') }}" alt="Generate with AI" data-toggle="modal" data-target="#aiDescriptionModal" title="Generate with AI" style="cursor: pointer; height: 30px; width: auto;">
                                     </div>
                                     <textarea class="form-control" id="description" name="description" rows="3" required>{{ $cloth->description ?? '' }}</textarea>
                                 </div>

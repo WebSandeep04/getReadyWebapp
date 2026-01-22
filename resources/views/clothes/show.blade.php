@@ -17,7 +17,7 @@
       <div class="product-gallery card shadow-sm">
         <div class="product-gallery__main">
           @if($cloth->images->count())
-            <img src="{{ asset('storage/' . $cloth->images->first()->image_path) }}" alt="{{ $cloth->title }}" class="img-fluid rounded-4 w-100" id="activeProductImage">
+            <img src="{{ asset('storage/' . $cloth->images->first()->image_path) }}" alt="{{ $cloth->title }}" class="img-fluid rounded-4 w-100" id="activeProductImage" style="cursor: pointer;">
           @else
             <img src="{{ asset('images/lehenga.jpg') }}" alt="{{ $cloth->title }}" class="img-fluid rounded-4 w-100">
           @endif
@@ -499,6 +499,17 @@
     </div>
   </div>
 </section>
+
+<!-- Image Lightbox Modal -->
+<div class="modal fade" id="imageLightboxModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content bg-transparent border-0">
+      <div class="modal-body p-0 position-relative text-center">
+        <img src="" id="lightboxImage" class="img-fluid rounded shadow-lg" style="max-height: 90vh;">
+      </div>
+    </div>
+  </div>
+</div>
 
 <section class="related mt-5">
   <div class="container">
@@ -1404,6 +1415,14 @@ $(document).ready(function() {
     });
     $('.rating-text').text(selectedRating + ' out of 5 stars');
     @endif
+
+    // Image Lightbox
+    $('#activeProductImage').on('click', function() {
+        const src = $(this).attr('src');
+        $('#lightboxImage').attr('src', src);
+        const modal = new bootstrap.Modal(document.getElementById('imageLightboxModal'));
+        modal.show();
+    });
 });
 </script>
 @endsection 

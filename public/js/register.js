@@ -157,7 +157,7 @@ $(document).ready(function () {
         }
 
         if (!gender) {
-            showError('signupGenderError', 'Please select your gender');
+            showError('signupGenderError', 'Please select your user type');
             hasError = true;
         }
 

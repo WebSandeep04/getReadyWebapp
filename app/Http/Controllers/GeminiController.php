@@ -23,7 +23,7 @@ class GeminiController extends Controller
 
         $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={$apiKey}";
 
-        $prompt = "Please write a professional and attractive description for a cloth item titled '{$title}' based on these details: {$rawDescription}. The description should be suitable for a rental/selling listing. strictly keep it under 200 characters.";
+        $prompt = "Write exactly ONE single, professional, and attractive description paragraph for a cloth item titled '{$title}' based on these details: {$rawDescription}. Do not provide options, lists, or labels like 'Option 1'. Just write the final description text directly. Keep it under 200 characters.";
 
         $response = \Illuminate\Support\Facades\Http::withHeaders([
             'Content-Type' => 'application/json',

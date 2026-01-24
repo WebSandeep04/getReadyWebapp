@@ -1,14 +1,14 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Manage Garment Conditions')
-@section('page_title', 'Manage Garment Conditions')
+@section('title', 'Manage Outfit Conditions')
+@section('page_title', 'Manage Outfit Conditions')
 
 @section('content')
 @include('admin.components.setup-crud', [
     'config' => [
         'slug' => 'garment-conditions',
-        'singular' => 'Garment Condition',
-        'plural' => 'Garment Conditions',
+        'singular' => 'Outfit Condition',
+        'plural' => 'Outfit Conditions',
         'badge' => 'Quality · Care',
         'hero_title' => 'Signal garment quality transparently',
         'hero_subtitle' => 'Label condition states so renters know exactly what to expect on delivery day.',
@@ -27,8 +27,8 @@
         'modal' => [
             'field_label' => 'Condition name',
             'field_placeholder' => 'e.g. Couture Mint',
-            'add_title' => 'Add Garment Condition',
-            'edit_title' => 'Edit Garment Condition',
+            'add_title' => 'Add Outfit Condition',
+            'edit_title' => 'Edit Outfit Condition',
         ],
     ],
 ])

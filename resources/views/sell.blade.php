@@ -80,7 +80,7 @@
 <div class="container">
   <div class="steps">
     <span class="step active">Outfit Info-Basic</span>
-    <span class="step">Garment Specifications</span>
+    <span class="step">Outfit Specifications</span>
     <span class="step">Availability & Pricing</span>
     <span class="step">Images</span>
   </div>
@@ -167,9 +167,9 @@
       </select>
       @error('size')<div class="text-danger small">{{ $message }}</div>@enderror
       
-      <label class="d-block text-left font-weight-bold mb-1">Garment Condition <span class="text-danger">*</span></label>
+      <label class="d-block text-left font-weight-bold mb-1">Outfit Condition <span class="text-danger">*</span></label>
       <select name="condition" required>
-        <option value="">Select Garment Condition</option>
+        <option value="">Select Outfit Condition</option>
         <option value="Brand New" {{ old('condition') == 'Brand New' ? 'selected' : '' }}>Brand New</option>
         <option value="Like New" {{ old('condition') == 'Like New' ? 'selected' : '' }}>Like New</option>
         <option value="Excellent" {{ old('condition') == 'Excellent' ? 'selected' : '' }}>Excellent</option>
@@ -207,6 +207,10 @@
       <label class="d-block text-left font-weight-bold mb-1">MRP <span class="text-danger">*</span></label>
       <input type="number" name="purchase_value" placeholder="MRP (₹)" value="{{ old('purchase_value') }}" required>
       @error('purchase_value')<div class="text-danger small">{{ $message }}</div>@enderror
+
+      <label class="d-block text-left font-weight-bold mb-1">SKU <span class="text-danger">*</span></label>
+      <input type="number" name="sku" placeholder="SKU" value="{{ old('sku', 1) }}" required>
+      @error('sku')<div class="text-danger small">{{ $message }}</div>@enderror
       
       <!-- Availability Management Section -->
       <div class="availability-section">
@@ -277,30 +281,135 @@
 
 
 
-<div class="modal fade" id="aiDescriptionModal" tabindex="-1" role="dialog" aria-labelledby="aiDescriptionModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
+<style>
+/* Cloud Modal Styles */
+.cloud-modal .modal-dialog {
+    max-width: 500px;
+    margin-top: 10vh;
+}
+
+.cloud-modal .modal-content {
+    background-color: #fff;
+    border: none;
+    border-radius: 50px; /* Rounded main body */
+    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    position: relative;
+    padding: 20px;
+    overflow: visible; /* Allow pseudo-elements to stick out if we add bumps later */
+}
+
+/* Cloud Bumps Effect using Pseudo-elements */
+.cloud-modal .modal-content::before,
+.cloud-modal .modal-content::after {
+    content: '';
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+    z-index: -1;
+}
+
+/* Top Bump */
+.cloud-modal .modal-content::before {
+    width: 120px;
+    height: 120px;
+    top: -50px;
+    left: 80px;
+}
+
+/* Right Bump */
+.cloud-modal .modal-content::after {
+    width: 100px;
+    height: 100px;
+    top: -30px;
+    right: 60px;
+}
+
+.cloud-body {
+    position: relative;
+    z-index: 1; /* Keep content above bumps */
+    text-align: center;
+    padding: 10px;
+}
+
+.cloud-textarea {
+    width: 100%;
+    border: 2px dashed #bce0fd;
+    border-radius: 20px;
+    padding: 15px;
+    resize: none;
+    background: #f0f8ff; /* Light alice blue */
+    color: #333;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.3s;
+    height: 120px;
+}
+
+.cloud-textarea:focus {
+    border-color: #007bff;
+    background: #fff;
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.1);
+}
+
+.cloud-btn {
+    background: linear-gradient(135deg, #6dd5fa 0%, #2980b9 100%);
+    border: none;
+    border-radius: 30px;
+    padding: 10px 30px;
+    color: white;
+    font-weight: bold;
+    margin-top: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: transform 0.2s;
+}
+
+.cloud-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+}
+
+.cloud-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 1.5rem;
+    color: #aaa;
+    cursor: pointer;
+    z-index: 10;
+    transition: color 0.2s;
+}
+
+.cloud-close:hover {
+    color: #333;
+}
+
+.cloud-title {
+    font-family: 'Comic Sans MS', 'Cursive', sans-serif; /* Playful font for cloud theme */
+    color: #2980b9;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+}
+</style>
+
+<div class="modal fade cloud-modal" id="aiDescriptionModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="aiDescriptionModalLabel">Generate Description with AI</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
+      <span class="cloud-close" data-dismiss="modal">&times;</span>
+      
+      <div class="cloud-body">
+        <h5 class="cloud-title">✨ Dream up a Description ✨</h5>
+        
+        <textarea class="cloud-textarea" id="rawDescription" 
+          placeholder="Describe your outfit here... e.g. 'Red silk saree, worn once, perfect for weddings'"></textarea>
+
+        <div id="aiLoading" class="mt-3" style="display: none;">
+            <div class="spinner-border text-primary text-sm" role="status" style="width: 1.5rem; height: 1.5rem;"></div>
+            <span class="ml-2 text-muted small">Floating ideas...</span>
+        </div>
+
+        <button type="button" class="cloud-btn" onclick="generateAiDescription()">
+           Generate
         </button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label for="rawDescription">Enter basic details (keywords, condition, style):</label>
-          <textarea class="form-control" id="rawDescription" rows="4" placeholder="e.g. Blue silk saree, worn once, golden border, perfect for weddings"></textarea>
-        </div>
-        <div id="aiLoading" class="text-center" style="display: none;">
-          <div class="spinner-border text-primary" role="status">
-            <span class="sr-only">Loading...</span>
-          </div>
-          <p class="mt-2">Generating description...</p>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" onclick="generateAiDescription()">Generate</button>
       </div>
     </div>
   </div>
@@ -317,11 +426,12 @@
 function generateAiDescription() {
     const rawDescription = $('#rawDescription').val();
     if (!rawDescription) {
-        alert('Please enter some details.');
+        alert('Please tell me a little bit about the outfit!');
         return;
     }
 
     $('#aiLoading').show();
+    $('.cloud-btn').prop('disabled', true); // Disable button
     
     const title = $('input[name="title"]').val();
     
@@ -335,15 +445,17 @@ function generateAiDescription() {
         },
         success: function(response) {
             if (response.description) {
+                // Formatting the response nicely in the text area
                 $('textarea[name="description"]').val(response.description);
                 $('#aiDescriptionModal').modal('hide');
             }
         },
         error: function(xhr) {
-            alert('Error generating description: ' + (xhr.responseJSON?.error || 'Unknown error'));
+            alert('Oops! ' + (xhr.responseJSON?.error || 'Something went wrong.'));
         },
         complete: function() {
             $('#aiLoading').hide();
+            $('.cloud-btn').prop('disabled', false);
         }
     });
 }

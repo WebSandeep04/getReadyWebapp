@@ -74,7 +74,7 @@
                 </div>
                 <div class="form-group mb-3 position-relative">
                     <select name="gender" id="signupGender" class="form-control" required>
-                        <option value="">Select Gender</option>
+                        <option value="">Select User Type</option>
                         <option value="Boy">Boy</option>
                         <option value="Girl">Girl</option>
                         <option value="Men">Men</option>
@@ -87,8 +87,8 @@
                 <!-- Business Type Selection -->
                 <div class="form-group mb-3 position-relative">
                     <select name="is_gst" id="signupIsGst" class="form-control" required onchange="toggleSignupGstField()">
-                        <option value="">Select Business Type</option>
-                        <option value="0">Individual / Non-Business</option>
+                        <option value="" disabled>Select Business Type</option>
+                        <option value="0" selected>Individual / Non-Business</option>
                         <option value="1">Business (GST Available)</option>
                     </select>
                     <i class="bi bi-briefcase icon"></i>

@@ -12,7 +12,7 @@
                 ['label' => 'Bottom Types', 'route' => 'bottom_types.index', 'icon' => 'bi-slack'],
                 ['label' => 'Sizes', 'route' => 'sizes.index', 'icon' => 'bi-arrows-expand'],
                 ['label' => 'Body Type Fits', 'route' => 'body_type_fits.index', 'icon' => 'bi-person-bounding-box'],
-                ['label' => 'Garment Conditions', 'route' => 'garment_conditions.index', 'icon' => 'bi-shield-check'],
+                ['label' => 'Outfit Conditions', 'route' => 'garment_conditions.index', 'icon' => 'bi-shield-check'],
                 ['label' => 'Frontend Settings', 'route' => 'admin.frontend', 'icon' => 'bi-globe'],
             ],
         ],

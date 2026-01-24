@@ -241,6 +241,7 @@ class ClothController extends Controller
             'condition' => 'required|in:Brand New,Like New,Excellent,Good,Fair',
             'defects' => 'nullable|string',
             'purchase_value' => 'required|numeric|min:0',
+            'sku' => 'required|integer|min:1',
             'rent_price' => [
                 'required',
                 'numeric',
@@ -282,6 +283,7 @@ class ClothController extends Controller
             'condition' => $request->input('condition'),
             'defects' => $request->input('defects'),
             'purchase_value' => $request->input('purchase_value'),
+            'sku' => $request->input('sku', 1),
             'rent_price' => $request->input('rent_price'),
             'is_purchased' => 1, // Always set to 1
             'security_deposit' => $request->input('security_deposit'),

@@ -58,6 +58,7 @@
                                 <th>Security</th>
                                 <th>Rental Window</th>
                                 <th>Status</th>
+                                <th>Tracking</th>
                                 <th>Payment</th>
                                 <th>Placed</th>
                             </tr>
@@ -106,6 +107,22 @@
                                         <span class="badge bg-{{ $order->status === 'Confirmed' ? 'success' : ($order->status === 'Delivered' ? 'primary' : ($order->status === 'Cancelled' ? 'danger' : 'warning text-dark')) }}">
                                             {{ $order->status }}
                                         </span>
+                                    </td>
+                                    <td>
+                                        @if($order->shipment)
+                                            <div class="small">
+                                                <span class="fw-bold d-block">{{ $order->shipment->courier_name }}</span>
+                                                <span class="text-muted d-block" style="font-size: 0.8em">AWB: {{ $order->shipment->waybill_number }}</span>
+                                                @if($order->shipment->status)
+                                                    <span class="badge bg-secondary mb-1">{{ $order->shipment->status }}</span>
+                                                @endif
+                                                @if($order->shipment->tracking_url)
+                                                    <a href="{{ $order->shipment->tracking_url }}" target="_blank" class="btn btn-xs btn-outline-info p-0 px-1" style="font-size: 0.75rem;">Track</a>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <span class="text-muted small">—</span>
+                                        @endif
                                     </td>
                                     <td>
                                         @if($latestPayment)

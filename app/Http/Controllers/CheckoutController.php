@@ -229,6 +229,65 @@ class CheckoutController extends Controller
             }
         }
 
+        // 5. Create Shipment via Xpressbees (Immediate)
+        try {
+            \Illuminate\Support\Facades\Log::info("Checkout: Attempting to create shipment for Order #{$order->id}");
+            
+            // Re-instantiate service here or inject it. Using manual instantiation for simplicity in this flow context
+            $courier = new \App\Services\XpressbeesService();
+            
+            $addressParts = explode(',', $order->delivery_address);
+            $city = trim($addressParts[count($addressParts)-2] ?? 'Mumbai');
+            $pincode = trim($addressParts[count($addressParts)-1] ?? '400001');
+
+            $orderLoad = [
+                'order_number' => $order->id,
+                'payment_method' => 'Prepaid',
+                'consignee_name' => $user->name,
+                'consignee_phone' => $user->phone ?? '9999999999',
+                'consignee_address' => $order->delivery_address,
+                'consignee_pincode' => $pincode,
+                'consignee_city' => $city,
+                'consignee_state' => 'Maharashtra',
+                'products' => [],
+                'total_amount' => $order->total_amount,
+                'weight' => 0.5,
+                'length' => 10,
+                'breadth' => 10,
+                'height' => 10
+            ];
+
+            foreach ($order->items as $item) {
+                 $orderLoad['products'][] = [
+                     'name' => $item->cloth->title ?? 'Item',
+                     'qty' => 1,
+                     'price' => $item->price
+                 ];
+            }
+
+            $response = $courier->createOrder($orderLoad);
+
+            if ($response && isset($response['awb_number'])) {
+                \App\Models\Shipment::create([
+                    'order_id' => $order->id,
+                    'courier_name' => 'Xpressbees',
+                    'waybill_number' => $response['awb_number'],
+                    'reference_id' => $response['order_id'] ?? null,
+                    'tracking_url' => $response['label_url'] ?? null,
+                    'label_url' => $response['label_url'] ?? null, // Often same as tracking or specific label PDF
+                    'status' => 'Booked',
+                ]);
+                
+                $order->update(['status' => 'Order Confirmed & Shipment Created']);
+                \Illuminate\Support\Facades\Log::info("Checkout: Shipment created successfully. AWB: {$response['awb_number']}");
+            } else {
+                \Illuminate\Support\Facades\Log::error("Checkout: Failed to create shipment. Response: " . json_encode($response));
+            }
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Checkout: Shipment Creation Exception: " . $e->getMessage());
+        }
+
         // 6. Send Notification to Buyer
         \App\Models\Notification::create([
             'user_id' => $user->id,

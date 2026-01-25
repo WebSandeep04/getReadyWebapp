@@ -28,7 +28,7 @@ class RejectionController extends Controller
                             ->where('resubmission_count', '>', 0); // Re-approval items
                       });
             })
-            ->with(['images', 'user'])
+            ->with(['images', 'user', 'categoryRef'])
             ->get();
 
         return view('rejections.index', compact('rejectedClothes'));
@@ -98,6 +98,7 @@ class RejectionController extends Controller
         // Validate the request
         $request->validate([
             'title' => 'required|string|max:255',
+            'description' => 'required|string|max:1000',
             'category' => 'required|exists:category,id',
             'gender' => 'required|in:Boy,Girl,Men,Women',
             'brand' => 'nullable|string|max:255',
@@ -115,13 +116,50 @@ class RejectionController extends Controller
             'length' => 'nullable|numeric',
             'shoulder' => 'nullable|numeric',
             'sleeve_length' => 'nullable|numeric',
+            'new_images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp',
         ]);
 
         // Debug: Log validation passed
         \Log::info("Validation passed for cloth ID: {$id}");
 
+        // Handle Image Deletions
+        if ($request->filled('deleted_images')) {
+            $imagesToDelete = \App\Models\ClothImage::whereIn('id', $request->input('deleted_images'))
+                                                    ->where('cloth_id', $cloth->id) // Security: Ensure images belong to this cloth
+                                                    ->get();
+
+            foreach ($imagesToDelete as $img) {
+                // Delete physical file
+                if (\Illuminate\Support\Facades\Storage::disk('public')->exists($img->image_path)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($img->image_path);
+                }
+                // Delete DB record
+                $img->delete();
+            }
+        }
+
+        // Handle New Image Uploads
+        if ($request->hasFile('new_images')) {
+            // Optional: If you want to replace all images, uncomment the next line
+            // \App\Models\ClothImage::where('cloth_id', $cloth->id)->delete();
+            
+            foreach ($request->file('new_images') as $image) {
+                // Generate a unique filename
+                $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+                
+                // Store the file in the 'public/clothes' directory
+                $path = $image->storeAs('clothes', $filename, 'public');
+                
+                // Create ClothImage record
+                \App\Models\ClothImage::create([
+                    'cloth_id' => $cloth->id,
+                    'image_path' => $path // Store relative path like 'clothes/filename.jpg'
+                ]);
+            }
+        }
+
         // Update the cloth
-        $updateData = $request->all();
+        $updateData = $request->except(['new_images', 'deleted_images']); // Exclude non-column fields
         \Log::info("Update data: " . json_encode($updateData));
         
         $cloth->update($updateData);

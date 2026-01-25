@@ -274,6 +274,15 @@ class AdminController extends Controller
     public function approveCloth($id)
     {
         $cloth = Cloth::with('user')->findOrFail($id);
+        
+        // Prevent approving rejected items
+        if ($cloth->is_approved === 0) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Cannot approve a rejected item. User must resubmit it first.'
+            ], 400);
+        }
+
         $cloth->is_approved = 1; // Use integer 1 instead of true
         $cloth->save();
 

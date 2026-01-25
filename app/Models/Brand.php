@@ -10,4 +10,9 @@ class Brand extends Model
         'name',
         'logo',
     ];
+
+    public function clothes()
+    {
+        return $this->hasMany(Cloth::class, 'brand_id');
+    }
 }

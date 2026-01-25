@@ -12,6 +12,8 @@ use App\Models\Color;
 use App\Models\Size;
 use App\Models\BottomType;
 use App\Models\BodyTypeFit;
+use App\Models\Brand;
+use App\Models\GarmentCondition;
 
 class RejectionController extends Controller
 {
@@ -28,7 +30,7 @@ class RejectionController extends Controller
                             ->where('resubmission_count', '>', 0); // Re-approval items
                       });
             })
-            ->with(['images', 'user', 'categoryRef'])
+            ->with(['images', 'user', 'category'])
             ->get();
 
         // Attach latest rejection reason to each cloth
@@ -67,6 +69,9 @@ class RejectionController extends Controller
         $fitTypes = BodyTypeFit::orderBy('name')->get();
         $sizes = Size::all();
 
+        $brands = Brand::orderBy('name')->get();
+        $garmentConditions = GarmentCondition::all();
+
         return view('rejections.show', compact(
             'cloth', 
             'rejectionNotification', 
@@ -75,7 +80,9 @@ class RejectionController extends Controller
             'colors', 
             'bottomTypes', 
             'fitTypes',
-            'sizes'
+            'sizes',
+            'brands',
+            'garmentConditions'
         ));
     }
 
@@ -107,13 +114,13 @@ class RejectionController extends Controller
             'description' => 'required|string|max:1000',
             'category' => 'required|exists:category,id',
             'gender' => 'required|in:Boy,Girl,Men,Women',
-            'brand' => 'nullable|string|max:255',
+            'brand' => 'nullable|exists:brands,id',
             'fabric' => 'nullable|exists:fabric_types,id',
             'color' => 'nullable|exists:colors,id',
             'bottom_type' => 'nullable|exists:bottom_types,id',
             'size' => 'required|exists:sizes,id',
             'fit_type' => 'nullable|exists:body_type_fits,id',
-            'condition' => 'required|in:Brand New,Like New,Excellent,Good,Fair',
+            'condition' => 'required|exists:garment_conditions,id',
             'defects' => 'nullable|string',
             'rent_price' => 'required|numeric|min:0',
             'security_deposit' => 'required|numeric|min:0',
@@ -166,6 +173,26 @@ class RejectionController extends Controller
 
         // Update the cloth
         $updateData = $request->except(['new_images', 'deleted_images']); // Exclude non-column fields
+        
+        // Map request fields to database column names with _id suffix if they don't match
+        $mapping = [
+            'category' => 'category_id',
+            'brand' => 'brand_id',
+            'fabric' => 'fabric_id',
+            'color' => 'color_id',
+            'bottom_type' => 'bottom_type_id',
+            'size' => 'size_id',
+            'fit_type' => 'fit_type_id',
+            'condition' => 'condition_id',
+        ];
+        
+        foreach ($mapping as $requestKey => $dbColumn) {
+            if (isset($updateData[$requestKey])) {
+                $updateData[$dbColumn] = $updateData[$requestKey];
+                unset($updateData[$requestKey]);
+            }
+        }
+
         \Log::info("Update data: " . json_encode($updateData));
         
         $cloth->update($updateData);

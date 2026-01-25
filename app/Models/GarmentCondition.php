@@ -11,4 +11,9 @@ class GarmentCondition extends Model
 
     protected $table = 'garment_conditions';
     protected $fillable = ['name'];
+
+    public function clothes()
+    {
+        return $this->hasMany(Cloth::class, 'condition_id');
+    }
 } 

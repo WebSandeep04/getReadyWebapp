@@ -20,7 +20,7 @@ class ProductController extends Controller
         // Filter by categories (multiple selection)
         if ($request->filled('categories')) {
             $categories = is_array($request->categories) ? $request->categories : [$request->categories];
-            $query->whereIn('category', $categories);
+            $query->whereIn('category_id', $categories);
         }
 
         // Filter by gender (multiple selection)
@@ -42,7 +42,7 @@ class ProductController extends Controller
         // Filter by condition (multiple selection)
         if ($request->filled('conditions')) {
             $conditions = is_array($request->conditions) ? $request->conditions : [$request->conditions];
-            $query->whereIn('condition', $conditions);
+            $query->whereIn('condition_id', $conditions);
         }
 
         // Filter by price range
@@ -98,7 +98,7 @@ class ProductController extends Controller
         // Get filter options
         $categories = Category::orderBy('name')->get();
         $sizes = Size::orderBy('name')->get();
-        $conditions = ['Brand New', 'Like New', 'Excellent', 'Good', 'Fair'];
+        $conditions = GarmentCondition::all();
         $genders = ['Boy', 'Girl', 'Men', 'Women'];
 
         $showFilters = false;

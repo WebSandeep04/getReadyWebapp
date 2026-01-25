@@ -9,6 +9,10 @@ class Size extends Model
 {
     use HasFactory;
 
-    protected $table = 'sizes';
     protected $fillable = ['name'];
-} 
+
+    public function clothes()
+    {
+        return $this->hasMany(Cloth::class, 'size_id');
+    }
+}

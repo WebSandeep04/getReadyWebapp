@@ -9,6 +9,10 @@ class BottomType extends Model
 {
     use HasFactory;
 
-    protected $table = 'bottom_types';
     protected $fillable = ['name'];
-} 
+
+    public function clothes()
+    {
+        return $this->hasMany(Cloth::class, 'bottom_type_id');
+    }
+}

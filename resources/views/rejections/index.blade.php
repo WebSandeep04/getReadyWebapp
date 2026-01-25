@@ -112,7 +112,7 @@
                                                 @endif
                                             </td>
                                             <td class="py-2">
-                                                <span class="text-dark">{{ $cloth->categoryRef->name ?? 'Unknown' }}</span>
+                                                <span class="text-dark">{{ $cloth->category->name ?? 'Unknown' }}</span>
                                             </td>
                                             <td class="py-2">
                                                 <div style="line-height: 1.2;">

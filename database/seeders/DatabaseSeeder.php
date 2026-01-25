@@ -10,6 +10,7 @@ use App\Models\Size;
 use App\Models\BottomType;
 use App\Models\BodyTypeFit;
 use App\Models\GarmentCondition;
+use App\Models\Brand;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -78,5 +79,13 @@ class DatabaseSeeder extends Seeder
         GarmentCondition::create(['name' => 'Excellent']);
         GarmentCondition::create(['name' => 'Good']);
         GarmentCondition::create(['name' => 'Fair']);
+
+        // Create sample brands
+        Brand::create(['name' => 'Zara']);
+        Brand::create(['name' => 'H&M']);
+        Brand::create(['name' => 'Manyavar']);
+        Brand::create(['name' => 'Sabyasachi']);
+        Brand::create(['name' => 'FabIndia']);
+        Brand::create(['name' => 'Biba']);
     }
 }

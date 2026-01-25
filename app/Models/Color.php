@@ -9,6 +9,10 @@ class Color extends Model
 {
     use HasFactory;
 
-    protected $table = 'colors';
     protected $fillable = ['name'];
-} 
+
+    public function clothes()
+    {
+        return $this->hasMany(Cloth::class, 'color_id');
+    }
+}

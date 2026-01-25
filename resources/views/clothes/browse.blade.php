@@ -77,10 +77,10 @@
                             @foreach($conditions as $condition)
                                 <div class="filter-item">
                                     <label class="filter-checkbox">
-                                        <input type="checkbox" name="conditions[]" value="{{ $condition }}" 
-                                               {{ in_array($condition, (array)request('conditions', [])) ? 'checked' : '' }}>
+                                        <input type="checkbox" name="conditions[]" value="{{ $condition->id }}" 
+                                               {{ in_array($condition->id, (array)request('conditions', [])) ? 'checked' : '' }}>
                                         <span class="checkmark"></span>
-                                        <span class="filter-label">{{ $condition }}</span>
+                                        <span class="filter-label">{{ $condition->name }}</span>
                                         <i class="bi bi-chevron-right float-end"></i>
                                     </label>
                                 </div>

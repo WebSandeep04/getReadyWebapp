@@ -9,6 +9,10 @@ class FabricType extends Model
 {
     use HasFactory;
 
-    protected $table = 'fabric_types';
     protected $fillable = ['name'];
-} 
+
+    public function clothes()
+    {
+        return $this->hasMany(Cloth::class, 'fabric_id');
+    }
+}

@@ -159,7 +159,7 @@
                                     <select class="form-control" id="category" name="category" required>
                                         <option value="">Select Category</option>
                                         @foreach($categories as $category)
-                                            <option value="{{ $category->id }}" {{ $cloth->category == $category->id ? 'selected' : '' }}>
+                                            <option value="{{ $category->id }}" {{ $cloth->category_id == $category->id ? 'selected' : '' }}>
                                                 {{ $category->name }}
                                             </option>
                                         @endforeach
@@ -203,7 +203,7 @@
                                     <select class="form-control" id="fabric" name="fabric">
                                         <option value="">Select Fabric Type</option>
                                         @foreach($fabricTypes as $fabricType)
-                                            <option value="{{ $fabricType->id }}" {{ $cloth->fabric == $fabricType->id ? 'selected' : '' }}>
+                                            <option value="{{ $fabricType->id }}" {{ $cloth->fabric_id == $fabricType->id ? 'selected' : '' }}>
                                                 {{ $fabricType->name }}
                                             </option>
                                         @endforeach
@@ -216,7 +216,7 @@
                                     <select class="form-control" id="color" name="color">
                                         <option value="">Select Color</option>
                                         @foreach($colors as $color)
-                                            <option value="{{ $color->id }}" {{ $cloth->color == $color->id ? 'selected' : '' }}>
+                                            <option value="{{ $color->id }}" {{ $cloth->color_id == $color->id ? 'selected' : '' }}>
                                                 {{ $color->name }}
                                             </option>
                                         @endforeach
@@ -232,7 +232,7 @@
                                     <select class="form-control" id="size" name="size" required>
                                         <option value="">Select Size</option>
                                         @foreach($sizes as $size)
-                                            <option value="{{ $size->id }}" {{ $cloth->size == $size->id ? 'selected' : '' }}>
+                                            <option value="{{ $size->id }}" {{ $cloth->size_id == $size->id ? 'selected' : '' }}>
                                                 {{ $size->name }}
                                             </option>
                                         @endforeach
@@ -245,7 +245,7 @@
                                     <select class="form-control" id="brand" name="brand">
                                         <option value="">Select Brand</option>
                                         @foreach($brands as $brand)
-                                            <option value="{{ $brand->name }}" {{ $cloth->brand == $brand->name ? 'selected' : '' }}>
+                                            <option value="{{ $brand->id }}" {{ $cloth->brand_id == $brand->id ? 'selected' : '' }}>
                                                 {{ $brand->name }}
                                             </option>
                                         @endforeach
@@ -261,7 +261,7 @@
                                     <select class="form-control" id="fit_type" name="fit_type">
                                         <option value="">Select Fit Type</option>
                                         @foreach($fitTypes as $fitType)
-                                            <option value="{{ $fitType->id }}" {{ $cloth->fit_type == $fitType->id ? 'selected' : '' }}>
+                                            <option value="{{ $fitType->id }}" {{ $cloth->fit_type_id == $fitType->id ? 'selected' : '' }}>
                                                 {{ $fitType->name }}
                                             </option>
                                         @endforeach
@@ -272,12 +272,11 @@
                                 <div class="form-group">
                                     <label for="condition">Condition *</label>
                                     <select class="form-control" id="condition" name="condition" required>
-                                        <option value="">Select Condition</option>
-                                        <option value="Brand New" {{ $cloth->condition == 'Brand New' ? 'selected' : '' }}>Brand New</option>
-                                        <option value="Like New" {{ $cloth->condition == 'Like New' ? 'selected' : '' }}>Like New</option>
-                                        <option value="Excellent" {{ $cloth->condition == 'Excellent' ? 'selected' : '' }}>Excellent</option>
-                                        <option value="Good" {{ $cloth->condition == 'Good' ? 'selected' : '' }}>Good</option>
-                                        <option value="Fair" {{ $cloth->condition == 'Fair' ? 'selected' : '' }}>Fair</option>
+                                        @foreach($garmentConditions as $condition)
+                                            <option value="{{ $condition->id }}" {{ $cloth->condition_id == $condition->id ? 'selected' : '' }}>
+                                                {{ $condition->name }}
+                                            </option>
+                                        @endforeach
                                     </select>
                                 </div>
                             </div>

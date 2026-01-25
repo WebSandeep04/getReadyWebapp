@@ -11,4 +11,9 @@ class BodyTypeFit extends Model
 
     protected $table = 'body_type_fits';
     protected $fillable = ['name'];
-} 
+
+    public function clothes()
+    {
+        return $this->hasMany(Cloth::class, 'fit_type_id');
+    }
+}

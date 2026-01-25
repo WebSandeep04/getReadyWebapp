@@ -53,10 +53,10 @@
                                         @endif
                                     </td>
                                     <td class="align-middle">{{ $cloth->title }}</td>
-                                    <td class="align-middle">{{ $cloth->category }}</td>
+                                    <td class="align-middle">{{ $cloth->category->name ?? 'Unknown' }}</td>
                                     <td class="align-middle">{{ $cloth->gender }}</td>
-                                    <td class="align-middle">{{ $sizes->find($cloth->size)->name ?? 'Unknown' }}</td>
-                                    <td class="align-middle">{{ $cloth->condition }}</td>
+                                    <td class="align-middle">{{ $cloth->size->name ?? 'Unknown' }}</td>
+                                    <td class="align-middle">{{ $cloth->condition->name ?? 'Unknown' }}</td>
                                     <td class="align-middle">₹{{ $cloth->rent_price }}</td>
                                     <td class="align-middle">
                                         @if($cloth->is_approved == 1)

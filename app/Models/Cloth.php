@@ -15,15 +15,15 @@ class Cloth extends Model
         'user_id',
         'title',
         'description',
-        'category',
+        'category_id',
         'gender',
-        'brand',
-        'fabric',
-        'color',
-        'bottom_type',
-        'size',
-        'fit_type',
-        'condition',
+        'brand_id',
+        'fabric_id',
+        'color_id',
+        'bottom_type_id',
+        'size_id',
+        'fit_type_id',
+        'condition_id',
         'defects',
         'is_cleaned',
         'is_approved',
@@ -114,11 +114,23 @@ class Cloth extends Model
         return $this->reviews()->count();
     }
 
-    // Optimization Relationships
-    public function categoryRef() { return $this->belongsTo(Category::class, 'category'); }
-    public function fabricRef() { return $this->belongsTo(FabricType::class, 'fabric'); }
-    public function colorRef() { return $this->belongsTo(Color::class, 'color'); }
-    public function sizeRef() { return $this->belongsTo(Size::class, 'size'); }
-    public function bottomTypeRef() { return $this->belongsTo(BottomType::class, 'bottom_type'); }
-    public function fitTypeRef() { return $this->belongsTo(BodyTypeFit::class, 'fit_type'); }
+    // Standard Relationships
+    public function category() { return $this->belongsTo(Category::class, 'category_id'); }
+    public function brand() { return $this->belongsTo(Brand::class, 'brand_id'); }
+    public function fabric() { return $this->belongsTo(FabricType::class, 'fabric_id'); }
+    public function color() { return $this->belongsTo(Color::class, 'color_id'); }
+    public function size() { return $this->belongsTo(Size::class, 'size_id'); }
+    public function bottomType() { return $this->belongsTo(BottomType::class, 'bottom_type_id'); }
+    public function fitType() { return $this->belongsTo(BodyTypeFit::class, 'fit_type_id'); }
+    public function condition() { return $this->belongsTo(GarmentCondition::class, 'condition_id'); }
+
+    // Compatibility Aliases (Ref)
+    public function categoryRef() { return $this->category(); }
+    public function brandRef() { return $this->brand(); }
+    public function fabricRef() { return $this->fabric(); }
+    public function colorRef() { return $this->color(); }
+    public function sizeRef() { return $this->size(); }
+    public function bottomTypeRef() { return $this->bottomType(); }
+    public function fitTypeRef() { return $this->fitType(); }
+    public function conditionRef() { return $this->condition(); }
 } 

@@ -10,12 +10,11 @@ use App\Models\Color;
 use App\Models\Size;
 use App\Models\Brand;
 use App\Models\BodyTypeFit;
-use Illuminate\Support\Facades\Auth;
+use App\Models\BottomType;
+use App\Models\GarmentCondition;
 use App\Models\ClothImage;
 use App\Models\AvailabilityBlock;
 use Illuminate\Support\Facades\Storage;
-use App\Models\GarmentCondition;
-use App\Models\BottomType;
 
 class ClothController extends Controller
 {
@@ -33,38 +32,48 @@ class ClothController extends Controller
         ])->findOrFail($id);
         
         // Save category ID for related items and filtering
-        $categoryId = $cloth->category;
+        $categoryId = $cloth->category_id;
 
         // Convert IDs to names for display
-        if ($cloth->category) {
-            $category = Category::find($cloth->category);
+        if ($cloth->category_id) {
+            $category = Category::find($cloth->category_id);
             $cloth->category = $category ? $category->name : 'Unknown';
         }
         
-        if ($cloth->fabric) {
-            $fabric = FabricType::find($cloth->fabric);
+        if ($cloth->brand_id) {
+            $brand = Brand::find($cloth->brand_id);
+            $cloth->brand = $brand ? $brand->name : 'Unknown';
+        }
+        
+        if ($cloth->fabric_id) {
+            $fabric = FabricType::find($cloth->fabric_id);
             $cloth->fabric = $fabric ? $fabric->name : 'Unknown';
         }
         
-        if ($cloth->color) {
-            $color = Color::find($cloth->color);
+        if ($cloth->color_id) {
+            $color = Color::find($cloth->color_id);
             $cloth->color = $color ? $color->name : 'Unknown';
         }
         
-        if ($cloth->size) {
+        if ($cloth->size_id) {
                 // The Size model uses the 'sizes' table    
-            $size = Size::where('id', $cloth->size)->first();
+            $size = Size::where('id', $cloth->size_id)->first();
             $cloth->size = $size ? $size->name : 'Unknown';
         }
         
-        if ($cloth->bottom_type) {
-            $bottomType = BottomType::find($cloth->bottom_type);
+        if ($cloth->bottom_type_id) {
+            $bottomType = BottomType::find($cloth->bottom_type_id);
             $cloth->bottom_type = $bottomType ? $bottomType->name : 'Unknown';
         }
         
-        if ($cloth->fit_type) {
-            $bodyTypeFit = BodyTypeFit::find($cloth->fit_type);
+        if ($cloth->fit_type_id) {
+            $bodyTypeFit = BodyTypeFit::find($cloth->fit_type_id);
             $cloth->fit_type = $bodyTypeFit ? $bodyTypeFit->name : 'Unknown';
+        }
+        
+        if ($cloth->condition_id) {
+            $condition = GarmentCondition::find($cloth->condition_id);
+            $cloth->condition = $condition ? $condition->name : 'Unknown';
         }
         
         // Get user's existing review if logged in
@@ -83,7 +92,7 @@ class ClothController extends Controller
         }
         
         // Get related clothes (same category)
-        $relatedClothes = Cloth::where('category', $categoryId)
+        $relatedClothes = Cloth::where('category_id', $categoryId)
             ->where('id', '!=', $id)
             ->where('is_approved', 1)
             ->inRandomOrder()
@@ -96,7 +105,7 @@ class ClothController extends Controller
 
     public function index()
     {
-        $clothes = Cloth::where('user_id', Auth::id())->with('images')->get();
+        $clothes = Cloth::where('user_id', Auth::id())->with(['images', 'category', 'size', 'brand', 'condition'])->get();
         $sizes = Size::all();
         $showFilters = false;
         
@@ -115,9 +124,10 @@ class ClothController extends Controller
         $colors = Color::orderBy('name')->get();
         $fitTypes = BodyTypeFit::orderBy('name')->get();
 
+        $garmentConditions = GarmentCondition::all();
         $showFilters = true;   
         
-        return view('clothes.edit', compact('cloth', 'sizes', 'brands', 'categories', 'fabricTypes', 'colors', 'fitTypes', 'showFilters'));
+        return view('clothes.edit', compact('cloth', 'sizes', 'brands', 'categories', 'fabricTypes', 'colors', 'fitTypes', 'garmentConditions', 'showFilters'));
     }
 
     public function update(Request $request, $id)
@@ -151,17 +161,17 @@ class ClothController extends Controller
             'description' => 'required|string',
             'category' => 'required|string|max:255',
             'gender' => 'required|in:Boy,Girl,Men,Women',
-            'brand' => 'nullable|string|max:255',
-            'fabric' => 'nullable|string|max:255',
-            'color' => 'nullable|string|max:255',
+            'brand' => 'required|exists:brands,id',
+            'fabric' => 'nullable|exists:fabric_types,id',
+            'color' => 'nullable|exists:colors,id',
             'chest_bust' => 'nullable|string|max:50',
             'waist' => 'nullable|string|max:50',
             'length' => 'nullable|string|max:50',
             'shoulder' => 'nullable|string|max:50',
             'sleeve_length' => 'nullable|string|max:50',
             'size' => 'required|exists:sizes,id',
-            'fit_type' => 'nullable|string|max:255',
-            'condition' => 'required|in:Brand New,Like New,Excellent,Good,Fair',
+            'fit_type' => 'nullable|exists:body_type_fits,id',
+            'condition' => 'required|exists:garment_conditions,id',
             'defects' => 'nullable|string',
             'is_cleaned' => 'boolean',
             'rent_price' => 'required|numeric|min:0',
@@ -177,6 +187,16 @@ class ClothController extends Controller
             'sleeve_length', 'size', 'fit_type', 'condition', 'defects', 
             'rent_price', 'is_purchased', 'purchase_value', 'security_deposit'
         ]);
+
+        // Map request fields to database column names with _id suffix if they don't match
+        if (isset($updateData['category'])) { $updateData['category_id'] = $updateData['category']; unset($updateData['category']); }
+        if (isset($updateData['brand'])) { $updateData['brand_id'] = $updateData['brand']; unset($updateData['brand']); }
+        if (isset($updateData['fabric'])) { $updateData['fabric_id'] = $updateData['fabric']; unset($updateData['fabric']); }
+        if (isset($updateData['color'])) { $updateData['color_id'] = $updateData['color']; unset($updateData['color']); }
+        if (isset($updateData['size'])) { $updateData['size_id'] = $updateData['size']; unset($updateData['size']); }
+        if (isset($updateData['fit_type'])) { $updateData['fit_type_id'] = $updateData['fit_type']; unset($updateData['fit_type']); }
+        if (isset($updateData['bottom_type'])) { $updateData['bottom_type_id'] = $updateData['bottom_type']; unset($updateData['bottom_type']); }
+        if (isset($updateData['condition'])) { $updateData['condition_id'] = $updateData['condition']; unset($updateData['condition']); }
         
         // Handle checkboxes
         $updateData['is_cleaned'] = $request->has('is_cleaned') ? 1 : 0;
@@ -253,12 +273,12 @@ class ClothController extends Controller
             'description' => 'required|string',
             'category' => 'required|exists:category,id',
             'gender' => 'required|in:Boy,Girl,Men,Women',
-            'brand' => 'required|string|max:255',
+            'brand' => 'required|exists:brands,id',
             'fabric' => 'required|exists:fabric_types,id',
             'color' => 'required|exists:colors,id',
             'size' => 'required|exists:sizes,id',
             'body_type_fit' => 'nullable|exists:body_type_fits,id',
-            'condition' => 'required|in:Brand New,Like New,Excellent,Good,Fair',
+            'condition' => 'required|exists:garment_conditions,id',
             'defects' => 'nullable|string',
             'purchase_value' => 'required|numeric|min:0',
             'sku' => 'required|integer|min:1',
@@ -293,14 +313,14 @@ class ClothController extends Controller
             'user_id' => Auth::id(),
             'title' => $request->input('title'),
             'description' => $request->input('description'),
-            'category' => $request->input('category'),
+            'category_id' => $request->input('category'),
             'gender' => $request->input('gender'),
-            'brand' => $request->input('brand'),
-            'fabric' => $request->input('fabric'),
-            'color' => $request->input('color'),
-            'size' => $request->input('size'),
-            'fit_type' => $request->input('body_type_fit'),
-            'condition' => $request->input('condition'),
+            'brand_id' => $request->input('brand'),
+            'fabric_id' => $request->input('fabric'),
+            'color_id' => $request->input('color'),
+            'size_id' => $request->input('size'),
+            'fit_type_id' => $request->input('body_type_fit'),
+            'condition_id' => $request->input('condition'),
             'defects' => $request->input('defects'),
             'purchase_value' => $request->input('purchase_value'),
             'sku' => $request->input('sku', 1),

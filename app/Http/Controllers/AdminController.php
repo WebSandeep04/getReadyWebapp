@@ -8,6 +8,14 @@ use App\Models\User;
 use App\Models\Notification;
 use App\Models\FrontendSetting;
 use App\Models\Order;
+use App\Models\Category;
+use App\Models\Brand;
+use App\Models\FabricType;
+use App\Models\Color;
+use App\Models\Size;
+use App\Models\BottomType;
+use App\Models\BodyTypeFit;
+use App\Models\GarmentCondition;
 use Illuminate\Support\Carbon;
 
 class AdminController extends Controller
@@ -211,12 +219,14 @@ class AdminController extends Controller
         $query = Cloth::with([
             'images', 
             'user', 
-            'categoryRef', 
-            'fabricRef', 
-            'colorRef', 
-            'sizeRef', 
-            'bottomTypeRef', 
-            'fitTypeRef'
+            'category', 
+            'brand',
+            'fabric', 
+            'color', 
+            'size', 
+            'bottomType', 
+            'fitType',
+            'condition'
         ]);
         
         // Apply status filter if provided
@@ -247,12 +257,24 @@ class AdminController extends Controller
             // but we need to overwrite the IDs with Names as per current frontend expectation
             
             // Map relationships to flat names
-            $cloth->category = $cloth->categoryRef ? $cloth->categoryRef->name : 'Unknown';
-            $cloth->fabric = $cloth->fabricRef ? $cloth->fabricRef->name : 'Unknown';
-            $cloth->color = $cloth->colorRef ? $cloth->colorRef->name : 'Unknown';
-            $cloth->size = $cloth->sizeRef ? $cloth->sizeRef->name : 'Unknown';
-            $cloth->bottom_type = $cloth->bottomTypeRef ? $cloth->bottomTypeRef->name : 'Unknown';
-            $cloth->fit_type = $cloth->fitTypeRef ? $cloth->fitTypeRef->name : 'Unknown';
+            $cloth->category_name = $cloth->category ? $cloth->category->name : 'Unknown';
+            $cloth->brand_name = $cloth->brand ? $cloth->brand->name : 'Unknown';
+            $cloth->fabric_name = $cloth->fabric ? $cloth->fabric->name : 'Unknown';
+            $cloth->color_name = $cloth->color ? $cloth->color->name : 'Unknown';
+            $cloth->size_name = $cloth->size ? $cloth->size->name : 'Unknown';
+            $cloth->bottom_type_name = $cloth->bottomType ? $cloth->bottomType->name : 'Unknown';
+            $cloth->fit_type_name = $cloth->fitType ? $cloth->fitType->name : 'Unknown';
+            $cloth->condition_name = $cloth->condition ? $cloth->condition->name : 'Unknown';
+            
+            // For frontend compatibility with existing keys if needed (but we really should change them)
+            $cloth->category = $cloth->category_name;
+            $cloth->brand = $cloth->brand_name;
+            $cloth->fabric = $cloth->fabric_name;
+            $cloth->color = $cloth->color_name;
+            $cloth->size = $cloth->size_name;
+            $cloth->bottom_type = $cloth->bottom_type_name;
+            $cloth->fit_type = $cloth->fit_type_name;
+            $cloth->condition = $cloth->condition_name;
             
             // Format timestamps
             $cloth->created_at_formatted = $cloth->created_at ? $cloth->created_at->toISOString() : null;
@@ -262,7 +284,7 @@ class AdminController extends Controller
             $cloth->resubmission_count = $cloth->resubmission_count ?? 0;
 
             // Optional: Unset relationships to keep JSON clean if strict size needed
-            unset($cloth->categoryRef, $cloth->fabricRef, $cloth->colorRef, $cloth->sizeRef, $cloth->bottomTypeRef, $cloth->fitTypeRef);
+            unset($cloth->category, $cloth->brand, $cloth->fabric, $cloth->color, $cloth->size, $cloth->bottomType, $cloth->fitType, $cloth->condition);
             
             return $cloth;
         });

@@ -120,7 +120,7 @@
       <select name="brand" required>
         <option value="">Select Brand</option>
         @foreach($brands as $brand)
-          <option value="{{ $brand->name }}" {{ old('brand') == $brand->name ? 'selected' : '' }}>
+          <option value="{{ $brand->id }}" {{ old('brand') == $brand->id ? 'selected' : '' }}>
             {{ $brand->name }}
           </option>
         @endforeach
@@ -165,11 +165,11 @@
       <label class="d-block text-left font-weight-bold mb-1">Outfit Condition <span class="text-danger">*</span></label>
       <select name="condition" required>
         <option value="">Select Outfit Condition</option>
-        <option value="Brand New" {{ old('condition') == 'Brand New' ? 'selected' : '' }}>Brand New</option>
-        <option value="Like New" {{ old('condition') == 'Like New' ? 'selected' : '' }}>Like New</option>
-        <option value="Excellent" {{ old('condition') == 'Excellent' ? 'selected' : '' }}>Excellent</option>
-        <option value="Good" {{ old('condition') == 'Good' ? 'selected' : '' }}>Good</option>
-        <option value="Fair" {{ old('condition') == 'Fair' ? 'selected' : '' }}>Fair</option>
+        @foreach($garment_conditions as $condition)
+          <option value="{{ $condition->id }}" {{ old('condition') == $condition->id ? 'selected' : '' }}>
+            {{ $condition->name }}
+          </option>
+        @endforeach
       </select>
       @error('condition')<div class="text-danger small">{{ $message }}</div>@enderror
       

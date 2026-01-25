@@ -242,7 +242,7 @@
                                 <select class="form-select" id="category" name="category" required>
                                     <option value="">Select Category</option>
                                     @foreach($categories as $category)
-                                        <option value="{{ $category->id }}" {{ $cloth->category == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+                                        <option value="{{ $category->id }}" {{ $cloth->category_id == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -264,7 +264,7 @@
                                 <label for="size" class="form-label">Size <span class="text-danger">*</span></label>
                                 <select class="form-select" id="size" name="size" required>
                                     @foreach($sizes as $size)
-                                        <option value="{{ $size->id }}" {{ $cloth->size == $size->id ? 'selected' : '' }}>{{ $size->name }}</option>
+                                        <option value="{{ $size->id }}" {{ $cloth->size_id == $size->id ? 'selected' : '' }}>{{ $size->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -273,22 +273,27 @@
                             <div class="form-group">
                                 <label for="condition" class="form-label">Condition <span class="text-danger">*</span></label>
                                 <select class="form-select" id="condition" name="condition" required>
-                                    @foreach(['Brand New', 'Like New', 'Excellent', 'Good', 'Fair'] as $cond)
-                                        <option value="{{ $cond }}" {{ $cloth->condition == $cond ? 'selected' : '' }}>{{ $cond }}</option>
+                                    @foreach($garmentConditions as $cond)
+                                        <option value="{{ $cond->id }}" {{ $cloth->condition_id == $cond->id ? 'selected' : '' }}>{{ $cond->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Brand</label>
-                            <input type="text" class="form-control" name="brand" value="{{ $cloth->brand }}" placeholder="e.g. Zara, H&M">
+                            <select class="form-select" name="brand">
+                                <option value="">Select Brand</option>
+                                @foreach($brands as $brand)
+                                    <option value="{{ $brand->id }}" {{ $cloth->brand_id == $brand->id ? 'selected' : '' }}>{{ $brand->name }}</option>
+                                @endforeach
+                            </select>
                         </div>
                          <div class="col-md-6">
                             <label class="form-label">Color</label>
                             <select class="form-select" name="color">
                                 <option value="">Select Color</option>
                                 @foreach($colors as $color)
-                                    <option value="{{ $color->id }}" {{ $cloth->color == $color->id ? 'selected' : '' }}>{{ $color->name }}</option>
+                                    <option value="{{ $color->id }}" {{ $cloth->color_id == $color->id ? 'selected' : '' }}>{{ $color->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -304,7 +309,7 @@
                             <select class="form-select" name="fabric">
                                 <option value="">Select Fabric</option>
                                 @foreach($fabricTypes as $fabric)
-                                    <option value="{{ $fabric->id }}" {{ $cloth->fabric == $fabric->id ? 'selected' : '' }}>{{ $fabric->name }}</option>
+                                    <option value="{{ $fabric->id }}" {{ $cloth->fabric_id == $fabric->id ? 'selected' : '' }}>{{ $fabric->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -313,7 +318,7 @@
                             <select class="form-select" name="bottom_type">
                                 <option value="">None</option>
                                 @foreach($bottomTypes as $bt)
-                                    <option value="{{ $bt->id }}" {{ $cloth->bottom_type == $bt->id ? 'selected' : '' }}>{{ $bt->name }}</option>
+                                    <option value="{{ $bt->id }}" {{ $cloth->bottom_type_id == $bt->id ? 'selected' : '' }}>{{ $bt->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -322,7 +327,7 @@
                             <select class="form-select" name="fit_type">
                                 <option value="">None</option>
                                 @foreach($fitTypes as $ft)
-                                    <option value="{{ $ft->id }}" {{ $cloth->fit_type == $ft->id ? 'selected' : '' }}>{{ $ft->name }}</option>
+                                    <option value="{{ $ft->id }}" {{ $cloth->fit_type_id == $ft->id ? 'selected' : '' }}>{{ $ft->name }}</option>
                                 @endforeach
                             </select>
                         </div>

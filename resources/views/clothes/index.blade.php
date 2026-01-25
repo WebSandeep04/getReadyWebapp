@@ -40,7 +40,7 @@
                         <tbody>
                             @foreach($clothes as $cloth)
                                 <tr>
-                                    <td>
+                                    <td class="align-middle">
                                         @if($cloth->images->count() > 0)
                                             <img src="{{ asset('storage/' . $cloth->images->first()->image_path) }}" 
                                                  alt="{{ $cloth->title }}" 
@@ -52,34 +52,34 @@
                                             </div>
                                         @endif
                                     </td>
-                                    <td>{{ $cloth->title }}</td>
-                                    <td>{{ $cloth->category }}</td>
-                                    <td>{{ $cloth->gender }}</td>
-                                    <td>{{ $sizes->find($cloth->size)->name ?? 'Unknown' }}</td>
-                                    <td>{{ $cloth->condition }}</td>
-                                    <td>₹{{ $cloth->rent_price }}</td>
-                                    <td>
+                                    <td class="align-middle">{{ $cloth->title }}</td>
+                                    <td class="align-middle">{{ $cloth->category }}</td>
+                                    <td class="align-middle">{{ $cloth->gender }}</td>
+                                    <td class="align-middle">{{ $sizes->find($cloth->size)->name ?? 'Unknown' }}</td>
+                                    <td class="align-middle">{{ $cloth->condition }}</td>
+                                    <td class="align-middle">₹{{ $cloth->rent_price }}</td>
+                                    <td class="align-middle">
                                         <span class="badge {{ $cloth->is_approved === 1 ? 'badge-success' : 'badge-warning' }}">
                                             {{ $cloth->is_approved === 1 ? 'Approved' : 'Pending Approval' }}
                                         </span>
                                     </td>
-                                    <td>
+                                    <td class="align-middle">
                                         <a href="{{ route('clothes.show', $cloth->id) }}" 
-                                           class="btn btn-info btn-sm">
-                                            <i class="fas fa-eye"></i> View
+                                           class="btn btn-info btn-sm mr-1" title="View">
+                                            <i class="bi bi-eye"></i>
                                         </a>
-                                                                                 <a href="{{ route('listed.clothes.edit', $cloth->id) }}" 
-                                            class="btn btn-primary btn-sm">
-                                             <i class="fas fa-edit"></i> Edit
-                                         </a>
+                                        <a href="{{ route('listed.clothes.edit', $cloth->id) }}" 
+                                           class="btn btn-primary btn-sm mr-1" title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
                                         <form action="{{ route('listed.clothes.destroy', $cloth->id) }}" 
                                               method="POST" 
                                               style="display: inline;"
                                               onsubmit="return confirm('Are you sure you want to delete this cloth?')">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm">
-                                                <i class="fas fa-trash"></i> Delete
+                                            <button type="submit" class="btn btn-danger btn-sm" title="Delete">
+                                                <i class="bi bi-trash"></i>
                                             </button>
                                         </form>
                                     </td>

@@ -11,6 +11,45 @@
 @section('content')
 <div id="alert-container"></div>
 
+<!-- Measurements Modal -->
+<div class="modal fade" id="measurementsModal" tabindex="-1" aria-labelledby="measurementsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content rounded-4 border-0 shadow">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title font-weight-bold" id="measurementsModalLabel">Measurements</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body pt-2">
+        <p class="text-muted small mb-3">All measurements are in inches.</p>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+            <span>Chest / Bust</span>
+            <span class="font-weight-bold text-dark">{{ $cloth->chest_bust ?? '—' }}"</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+            <span>Waist</span>
+            <span class="font-weight-bold text-dark">{{ $cloth->waist ?? '—' }}"</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+            <span>Length</span>
+            <span class="font-weight-bold text-dark">{{ $cloth->length ?? '—' }}"</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+            <span>Shoulder</span>
+            <span class="font-weight-bold text-dark">{{ $cloth->shoulder ?? '—' }}"</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+            <span>Sleeve Length</span>
+            <span class="font-weight-bold text-dark">{{ $cloth->sleeve_length ?? '—' }}"</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
 <section class="product-hero container">
   <div class="row g-4 align-items-start">
     <div class="col-lg-7">
@@ -21,9 +60,11 @@
           @else
             <img src="{{ asset('images/lehenga.jpg') }}" alt="{{ $cloth->title }}" class="img-fluid rounded-4 w-100">
           @endif
+          @if($cloth->is_approved === 1)
           <div class="floating-badge">
             <i class="bi bi-shield-check"></i> QC Passed
           </div>
+          @endif
         </div>
         @if($cloth->images->count() > 1)
           <div class="product-gallery__thumbs">
@@ -68,7 +109,12 @@
             <p>{{ $cloth->condition }}</p>
           </div>
           <div>
-            <label>Measurements</label>
+            <label class="d-flex align-items-center mb-1">
+              Measurements 
+              <button type="button" class="btn btn-link p-0 ms-2 text-primary" data-toggle="modal" data-target="#measurementsModal" style="margin-left: 5px; line-height: 1;">
+                <i class="bi bi-info-circle" style="font-size: 0.9rem;"></i>
+              </button>
+            </label>
             <p>Chest {{ $cloth->chest_bust ?? '—' }}, Waist {{ $cloth->waist ?? '—' }}</p>
           </div>
           <!-- <div>
@@ -94,7 +140,7 @@
       <div class="card shadow-sm mt-4 p-4 availability-card">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h5 class="mb-0"><i class="bi bi-calendar-week me-2 text-primary"></i>Availability</h5>
-          <span class="badge bg-light text-dark">{{ $cloth->availabilityBlocks->where('type','available')->count() ? 'Managed calendar' : 'Always available' }}</span>
+          <span class="badge bg-light text-dark">{{ $cloth->availabilityBlocks->where('type','available')->count() ? '' : 'Always available' }}</span>
         </div>
         @if($cloth->availabilityBlocks->where('type', 'available')->count() > 0)
           <div class="timeline">
@@ -211,7 +257,7 @@
           </div>
         </div>
 
-        <div class="support-card card shadow-sm mt-3">
+        <!-- <div class="support-card card shadow-sm mt-3">
           <div class="card-body d-flex align-items-center gap-3">
             <div class="support-icon">
               <i class="bi bi-headset"></i>
@@ -222,7 +268,7 @@
             </div>
             <a href="https://wa.me/15551234567" class="btn btn-outline-primary btn-sm">Chat</a>
           </div>
-        </div>
+        </div> -->
       </div>
     </div>
   </div>

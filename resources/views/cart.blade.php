@@ -137,6 +137,22 @@
                                     return $item->cloth->security_deposit * $item->quantity; 
                                 });
                             @endphp
+
+                            <!-- Address Check -->
+                            <div class="mb-3 border-bottom pb-3">
+                                <span class="d-block fw-bold mb-1">Delivery Address:</span>
+                                @if(Auth::user()->address)
+                                    <p class="text-muted small mb-0" id="userAddress">{{ Auth::user()->address }}</p>
+                                    <a href="{{ route('profile') }}" class="small text-primary text-decoration-none">Change</a>
+                                @else
+                                    <div class="alert alert-danger small mb-1 p-2">
+                                        <i class="bi bi-geo-alt-fill me-1"></i> No address found!
+                                    </div>
+                                    <a href="{{ route('profile') }}" class="btn btn-sm btn-outline-danger w-100 mt-1">
+                                         + Add Address
+                                    </a>
+                                @endif
+                            </div>
                             
                             @if($rentalItems->count() > 0)
                                 <div class="d-flex justify-content-between mb-2">
@@ -160,13 +176,31 @@
                                 <span class="h5">Total:</span>
                                 <span class="h5 text-warning total-amount">₹{{ number_format($total + $securityDeposit) }}</span>
                             </div>
+
+                            <!-- Payment Method Selection -->
+                            <div class="mb-3">
+                                <label class="block text-gray-700 text-sm font-bold mb-2 fw-bold">Payment Method</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="payment_method" id="payment_online" value="online" checked>
+                                    <label class="form-check-label" for="payment_online">
+                                        Online Payment (Razorpay)
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="payment_method" id="payment_cod" value="cod">
+                                    <label class="form-check-label" for="payment_cod">
+                                        Cash on Delivery (COD)
+                                    </label>
+                                </div>
+                            </div>
                             
                             <button class="btn btn-warning w-100 mb-2"
                                     id="checkoutBtn"
+                                    data-has-address="{{ Auth::user()->address ? 'true' : 'false' }}"
                                     data-create-url="{{ route('checkout.create') }}"
                                     data-verify-url="{{ route('checkout.verify') }}">
                                 <i class="bi bi-credit-card me-2"></i>
-                                Proceed to Checkout
+                                Place Order
                             </button>
                             
                             <a href="/" class="btn btn-outline-secondary w-100">
@@ -477,8 +511,21 @@ if (checkoutBtn) {
     const verifyUrl = checkoutBtn.dataset.verifyUrl;
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
+    const hasAddress = checkoutBtn.dataset.hasAddress === 'true';
+
     checkoutBtn.addEventListener('click', async function() {
-        toggleCheckoutButton(true, 'Preparing Payment...');
+        if (!hasAddress) {
+            if(confirm('You need to add a delivery address first. Go to Profile?')) {
+                window.location.href = "{{ route('profile') }}";
+            }
+            return;
+        }
+
+        const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
+        const btnText = paymentMethod === 'cod' ? 'Placing Order...' : 'Preparing Payment...';
+        
+        toggleCheckoutButton(true, btnText);
+        
         try {
             const response = await fetch(createUrl, {
                 method: 'POST',
@@ -487,13 +534,30 @@ if (checkoutBtn) {
                     'Accept': 'application/json',
                     'X-CSRF-TOKEN': csrfToken
                 },
-                body: JSON.stringify({})
+                body: JSON.stringify({
+                    payment_method: paymentMethod
+                })
             });
             const data = await response.json();
+            
             if (!response.ok || !data.success) {
-                throw new Error(data.message || 'Unable to start checkout.');
+                throw new Error(data.message || 'Unable to process order.');
             }
-            launchRazorpayCheckout(data, verifyUrl, csrfToken);
+
+            if (paymentMethod === 'cod') {
+                // Determine redirect URL properly
+                console.log('COD Order Placed:', data);
+                if (data.redirect) {
+                     window.location.href = data.redirect;
+                } else {
+                     // Fallback if redirect is missing
+                     showAlert('success', 'Order placed successfully!');
+                     window.location.href = '/orders';
+                }
+            } else {
+                launchRazorpayCheckout(data, verifyUrl, csrfToken);
+            }
+
         } catch (error) {
             toggleCheckoutButton(false);
             showAlert('danger', error.message);
@@ -572,7 +636,7 @@ function toggleCheckoutButton(disabled, text) {
     checkoutBtn.disabled = disabled;
     checkoutBtn.innerHTML = disabled
         ? `<span class="spinner-border spinner-border-sm me-2"></span>${text}`
-        : '<i class="bi bi-credit-card me-2"></i>Proceed to Checkout';
+        : '<i class="bi bi-credit-card me-2"></i>Place Order';
 }
 </script>
 @endsection

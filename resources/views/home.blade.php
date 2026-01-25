@@ -1,5 +1,6 @@
 @extends('layouts.app')
 <!-- before removing storage in public -->
+ <!-- before implementing delivery self logic -->
 @section('title', frontend_setting('site_title', 'Get Ready - Home'))
 
 @push('styles')

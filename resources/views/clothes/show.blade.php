@@ -574,17 +574,35 @@
   <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h4 class="mb-0">More like this</h4>
-      <a href="/" class="btn btn-outline-dark btn-sm">Browse all</a>
+      <a href="{{ route('clothes.index', ['categories' => $categoryId]) }}" class="btn btn-warning btn-sm">Browse all</a>
     </div>
-    <div class="carousel">
-      <button class="prev">←</button>
+    <div class="carousel mb-5">
+      @if($relatedClothes->count() > 0)
+      <div class="carousel-items p-2 d-flex gap-3" style="overflow-x: auto;">
+        @foreach($relatedClothes as $related)
+        <div class="card border-0 shadow-sm" style="min-width: 250px; cursor: pointer;" onclick="window.location.href='{{ route('clothes.show', $related->id) }}'">
+          @if($related->images->count())
+            <img src="{{ asset('storage/' . $related->images->first()->image_path) }}" class="card-img-top rounded-top" alt="{{ $related->title }}" style="height: 300px; object-fit: cover;">
+          @else
+            <img src="{{ asset('images/placeholder.jpg') }}" class="card-img-top rounded-top" alt="{{ $related->title }}" style="height: 300px; object-fit: cover;">
+          @endif
+          <div class="card-body p-3">
+            <h6 class="card-title fw-bold mb-1 text-truncate">{{ $related->title }}</h6>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="text-primary fw-bold">₹{{ number_format($related->rent_price) }}<small class="text-muted fw-normal">/4 days</small></span>
+              <span class="badge bg-light text-dark border">{{ $related->size ?? 'Free' }}</span>
+            </div>
+          </div>
+        </div>
+        @endforeach
+      </div>
+      @else
       <div class="carousel-items">
-        <div class="item placeholder-card">
-          <div class="placeholder-image"></div>
-          <p>Curated looks coming soon...</p>
+        <div class="item placeholder-card w-100 bg-light p-4 text-center rounded">
+          <p class="mb-0 text-muted">No similar items found at the moment.</p>
         </div>
       </div>
-      <button class="next">→</button>
+      @endif
     </div>
   </div>
 </section>

@@ -32,6 +32,9 @@ class ClothController extends Controller
             'questions.replies.user'
         ])->findOrFail($id);
         
+        // Save category ID for related items and filtering
+        $categoryId = $cloth->category;
+
         // Convert IDs to names for display
         if ($cloth->category) {
             $category = Category::find($cloth->category);
@@ -79,8 +82,16 @@ class ClothController extends Controller
                 })->exists();
         }
         
+        // Get related clothes (same category)
+        $relatedClothes = Cloth::where('category', $categoryId)
+            ->where('id', '!=', $id)
+            ->where('is_approved', 1)
+            ->inRandomOrder()
+            ->take(6)
+            ->get();
+        
         $showFilters = false;
-        return view('clothes.show', compact('cloth', 'showFilters', 'userReview', 'canReview'));
+        return view('clothes.show', compact('cloth', 'showFilters', 'userReview', 'canReview', 'relatedClothes', 'categoryId'));
     }
 
     public function index()

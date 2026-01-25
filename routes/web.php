@@ -18,9 +18,8 @@ use App\Http\Controllers\ReplyController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-// Registration
-Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
-Route::post('/register', [RegisterController::class, 'register']);
+// Registration (Moved to Login/OTP flow)
+Route::post('/complete-registration', [LoginController::class, 'completeRegistration'])->name('complete.registration');
 
 // Login
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');

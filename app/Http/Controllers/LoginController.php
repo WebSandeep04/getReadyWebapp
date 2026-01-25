@@ -24,9 +24,8 @@ class LoginController extends Controller
         $showFilters = false;
         $previousUrl = url()->previous();
         $loginUrl = route('login');
-        $registerUrl = route('register');
 
-        if ($previousUrl === $loginUrl || $previousUrl === $registerUrl) {
+        if ($previousUrl === $loginUrl) {
             $previousUrl = url('/');
         }
 
@@ -65,17 +64,12 @@ class LoginController extends Controller
             $phone = $request->phone;
             $user = User::where('phone', $phone)->first();
 
-            if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No account found with this mobile number.'
-                ], 404);
-            }
-
             // Generate 6-digit OTP
             $otp = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
             
             // Store OTP in cache for 10 minutes
+            // Use same key format as RegisterController so we can interchange if needed, 
+            // but sticking to login_otp works if we handle verification here.
             $otpKey = 'login_otp_' . $phone;
             Cache::put($otpKey, $otp, now()->addMinutes(10));
 
@@ -137,25 +131,31 @@ class LoginController extends Controller
             ])->withInput();
         }
 
-        // OTP verified, find user and login
+        // OTP verified, check if user exists
         $user = User::where('phone', $phone)->first();
-
-        if (!$user) {
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User not found.'
-                ], 404);
-            }
-            return back()->withErrors([
-                'phone' => 'User not found.',
-            ])->withInput();
-        }
 
         // Clear OTP from cache
         Cache::forget($otpKey);
 
-        // Login user
+        if (!$user) {
+            // New User: Generate verification token for registration
+            $verificationToken = Str::random(32);
+            // Use key format expected by RegisterController
+            $verificationKey = 'signup_verified_' . $phone;
+            Cache::put($verificationKey, $verificationToken, now()->addMinutes(15));
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'is_new_user' => true,
+                    'message' => 'OTP verified. Please complete your profile.',
+                    'verification_token' => $verificationToken
+                ]);
+            }
+            return back()->with('error', 'Please enable Javascript to complete registration.');
+        }
+
+        // User exists: Login
         Auth::login($user, $request->filled('remember'));
 
         // Check for first-time login (if last_login_at is null) and send welcome notification if not already sent
@@ -224,8 +224,91 @@ class LoginController extends Controller
         return $forAjax ? url()->previous() : url('/');
     }
 
+    /**
+     * Complete registration for new users.
+     */
+    public function completeRegistration(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'phone' => 'required|string|regex:/^[0-9]{10,15}$/',
+            'verification_token' => 'required|string',
+            'city' => 'required|string|max:255',
+            'age' => 'required|integer|min:1|max:120',
+            'gender' => 'required|in:Boy,Girl,Men,Women',
+            'is_gst' => 'required|boolean',
+            'gstin' => 'required_if:is_gst,1|nullable|string|max:15|regex:/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $phone = $request->phone;
+        // The token key must match what was stored in handleMobileLogin
+        $verificationKey = 'signup_verified_' . $phone;
+        $storedToken = Cache::get($verificationKey);
+
+        // Verify token
+        if (!$storedToken || $storedToken !== $request->verification_token) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Verification token invalid or expired. Please start over.'
+            ], 422);
+        }
+
+        // Check if user already exists
+        if (User::where('phone', $phone)->exists()) {
+             return response()->json([
+                'success' => false,
+                'message' => 'User already exists.'
+            ], 422);
+        }
+
+        // Create user account
+        $user = User::create([
+            'name' => 'User-' . substr($phone, -4),
+            'email' => null, 
+            'phone' => $phone,
+            'address' => null,
+            'city' => $request->city,
+            'age' => $request->age,
+            'gender' => $request->gender,
+            'is_gst' => $request->is_gst,
+            'gstin' => $request->gstin,
+            'gst_number' => $request->gstin,
+            'password' => \Illuminate\Support\Facades\Hash::make(Str::random(16)),
+        ]);
+
+        // Create welcome notification
+        \App\Models\Notification::create([
+            'user_id' => $user->id,
+            'title' => 'Welcome to GetReady!',
+            'message' => 'We are excited to have you on board. Start your journey by listing your first item or exploring our collection.',
+            'type' => 'success',
+            'icon' => 'bi-emoji-smile',
+            'read' => false
+        ]);
+
+        // Clear verification token from cache
+        Cache::forget($verificationKey);
+
+        // Login user
+        Auth::login($user);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Account created successfully!',
+            'redirect' => url('/')
+        ]);
+    }
+
     private function isSafeRedirect(string $redirect): bool
     {
+        // Allow redirects to relative paths or the app's own URL
+        // Simple check to prevent open redirect vulnerabilities
         return Str::startsWith($redirect, ['/']) || Str::startsWith($redirect, url('/'));
     }
 } 

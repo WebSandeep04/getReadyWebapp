@@ -58,11 +58,52 @@
             </div>
             <button type="button" id="resendLoginOtpBtn" class="btn btn-link text-warning p-0" style="display:none;">Resend OTP</button>
           </div>
-          <button type="submit" class="btn-login w-100 text-white">Verify & Login</button>
+          <button type="submit" class="btn-login w-100 text-white">Verify OTP</button>
+        </div>
+
+        <!-- Step 3: Complete Profile (For New Users) -->
+        <div id="mobileLoginStep3" style="display:none;">
+            <input type="hidden" name="verification_token" id="verificationToken">
+            
+            <div class="form-group position-relative mb-3">
+                <input type="text" name="city" id="city" class="form-control" placeholder="City">
+                <i class="bi bi-geo-alt icon"></i>
+            </div>
+            
+            <div class="form-group position-relative mb-3">
+                <input type="number" name="age" id="age" class="form-control" placeholder="Age" min="10" max="100">
+                <i class="bi bi-calendar icon"></i>
+            </div>
+            
+            <div class="form-group position-relative mb-3">
+                <select name="gender" id="gender" class="form-control">
+                    <option value="" disabled selected>Select User Type</option>
+                    <option value="Men">Men</option>
+                    <option value="Women">Women</option>
+                    <option value="Boy">Boy</option>
+                    <option value="Girl">Girl</option>
+                </select>
+                <i class="bi bi-person icon"></i>
+            </div>
+            
+            <div class="form-group position-relative mb-3">
+                <select name="is_gst" id="is_gst" class="form-control">
+                    <option value="0">Individual / Non-Business</option>
+                    <option value="1">Business (GST Available)</option>
+                </select>
+                <i class="bi bi-briefcase icon"></i>
+            </div>
+            
+            <div class="form-group position-relative mb-3" id="gstinGroup" style="display:none;">
+                <input type="text" name="gstin" id="gstin" class="form-control" placeholder="Enter GSTIN" maxlength="15">
+                <i class="bi bi-receipt icon"></i>
+            </div>
+            
+            <button type="submit" class="btn-login w-100 text-white">Complete Registration</button>
         </div>
       </form>
 
-      <p class="text-center mt-3 text-white">Don't have an account? <a href="{{ route('register') }}" class="text-white">Register</a></p>
+
     </div>
   </div>
 </div>

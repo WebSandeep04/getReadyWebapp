@@ -283,8 +283,32 @@ class AdminController extends Controller
             // Ensure numerics
             $cloth->resubmission_count = $cloth->resubmission_count ?? 0;
 
-            // Optional: Unset relationships to keep JSON clean if strict size needed
-            return $cloth;
+            // Convert to array and remove relationship objects to avoid [object Object] in JS
+            $data = $cloth->toArray();
+            
+            // Explicitly unset relationships to ensure flattened string versions are used
+            $relationsToUnset = [
+                'category', 'brand', 'fabric', 'color', 'size', 
+                'bottomType', 'bottom_type', 'fitType', 'fit_type', 'condition'
+            ];
+            
+            foreach ($relationsToUnset as $rel) {
+                if (isset($data[$rel]) && (is_array($data[$rel]) || is_object($data[$rel]))) {
+                    unset($data[$rel]);
+                }
+            }
+
+            // Re-assign flattened names to original keys for JS compatibility
+            $data['category'] = $cloth->category_name;
+            $data['brand'] = $cloth->brand_name;
+            $data['fabric'] = $cloth->fabric_name;
+            $data['color'] = $cloth->color_name;
+            $data['size'] = $cloth->size_name;
+            $data['bottom_type'] = $cloth->bottom_type_name;
+            $data['fit_type'] = $cloth->fit_type_name;
+            $data['condition'] = $cloth->condition_name;
+            
+            return $data;
         });
         
         return response()->json($formattedClothes);

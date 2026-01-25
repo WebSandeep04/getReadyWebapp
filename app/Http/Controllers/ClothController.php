@@ -22,11 +22,19 @@ class ClothController extends Controller
     public function show($id)
     {
         $cloth = Cloth::with([
-            'user',
-            'images',
-            'availabilityBlocks',
-            'reviews.user',
-            'reviews.replies.user',
+            'images', 
+            'user', 
+            'category', 
+            'brand', 
+            'fabric', 
+            'color', 
+            'size', 
+            'bottomType', 
+            'fitType', 
+            'condition',
+            'availabilityBlocks', 
+            'reviews.user', 
+            'reviews.replies.user', 
             'questions.user',
             'questions.answerer',
             'questions.replies.user'
@@ -34,48 +42,6 @@ class ClothController extends Controller
         
         // Save category ID for related items and filtering
         $categoryId = $cloth->category_id;
-
-        // Convert IDs to names for display
-        if ($cloth->category_id) {
-            $category = Category::find($cloth->category_id);
-            $cloth->category = $category ? $category->name : 'Unknown';
-        }
-        
-        if ($cloth->brand_id) {
-            $brand = Brand::find($cloth->brand_id);
-            $cloth->brand = $brand ? $brand->name : 'Unknown';
-        }
-        
-        if ($cloth->fabric_id) {
-            $fabric = FabricType::find($cloth->fabric_id);
-            $cloth->fabric = $fabric ? $fabric->name : 'Unknown';
-        }
-        
-        if ($cloth->color_id) {
-            $color = Color::find($cloth->color_id);
-            $cloth->color = $color ? $color->name : 'Unknown';
-        }
-        
-        if ($cloth->size_id) {
-                // The Size model uses the 'sizes' table    
-            $size = Size::where('id', $cloth->size_id)->first();
-            $cloth->size = $size ? $size->name : 'Unknown';
-        }
-        
-        if ($cloth->bottom_type_id) {
-            $bottomType = BottomType::find($cloth->bottom_type_id);
-            $cloth->bottom_type = $bottomType ? $bottomType->name : 'Unknown';
-        }
-        
-        if ($cloth->fit_type_id) {
-            $bodyTypeFit = BodyTypeFit::find($cloth->fit_type_id);
-            $cloth->fit_type = $bodyTypeFit ? $bodyTypeFit->name : 'Unknown';
-        }
-        
-        if ($cloth->condition_id) {
-            $condition = GarmentCondition::find($cloth->condition_id);
-            $cloth->condition = $condition ? $condition->name : 'Unknown';
-        }
         
         // Get user's existing review if logged in
         $userReview = null;
@@ -96,6 +62,7 @@ class ClothController extends Controller
         $relatedClothes = Cloth::where('category_id', $categoryId)
             ->where('id', '!=', $id)
             ->where('is_approved', 1)
+            ->with(['images', 'category', 'brand', 'size', 'condition'])
             ->inRandomOrder()
             ->take(6)
             ->get();

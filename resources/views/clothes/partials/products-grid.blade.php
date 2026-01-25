@@ -21,7 +21,7 @@
                 <h6 class="product-title">{{ $cloth->title }}</h6>
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     @if($cloth->brand)
-                        <p class="product-brand mb-0">{{ $cloth->brand }}</p>
+                        <p class="product-brand mb-0">{{ $cloth->brand->name ?? 'Unknown' }}</p>
                     @else
                         <span></span>
                     @endif
@@ -48,9 +48,15 @@
         </a>
     </div>
 @empty
-    <div class="no-products text-center py-5">
-        <h4 class="text-muted">No products found</h4>
-        <p class="text-muted">Try adjusting your filters</p>
+    <div class="no-products text-center py-5 w-100">
+        <div class="mb-4">
+            <i class="bi bi-search text-muted" style="font-size: 3rem; opacity: 0.3;"></i>
+        </div>
+        <h4 class="text-muted fw-bold">No products found</h4>
+        <p class="text-muted mb-4">We couldn't find any clothes matching your selected dates or filters.</p>
+        <a href="{{ route('clothes.index') }}" class="btn btn-outline-warning">
+            <i class="bi bi-x-circle me-1"></i> Clear all filters
+        </a>
     </div>
 @endforelse
 

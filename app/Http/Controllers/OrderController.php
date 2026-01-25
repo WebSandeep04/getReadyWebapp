@@ -32,7 +32,9 @@ class OrderController extends Controller
                 // Filter items to only show those belonging to the current user (in case of mixed carts)
                 $query->whereHas('cloth', function ($q) use ($userId) {
                     $q->where('user_id', $userId);
-                })->with('cloth');
+                })->with(['cloth' => function($q) {
+                    $q->with(['category', 'brand', 'size', 'color', 'fabric', 'condition', 'fitType', 'bottomType']);
+                }]);
             }, 'buyer', 'payments'])
             ->latest()
             ->paginate(10);

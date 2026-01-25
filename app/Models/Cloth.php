@@ -75,6 +75,14 @@ class Cloth extends Model
     }
 
     /**
+     * Get the order items for this cloth.
+     */
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    /**
      * Get the availability blocks for this cloth.
      */
     public function availabilityBlocks()

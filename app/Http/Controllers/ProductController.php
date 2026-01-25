@@ -13,7 +13,7 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         // Start with approved and available clothes
-        $query = Cloth::with(['images', 'user'])
+        $query = Cloth::with(['images', 'user', 'category', 'brand', 'size', 'color', 'fabric', 'condition', 'fitType', 'bottomType'])
             ->where('is_approved', 1)
             ->where('is_available', true);
 
@@ -53,21 +53,62 @@ class ProductController extends Controller
             $query->where('rent_price', '<=', $request->price_max);
         }
 
+        // Date Range Availability Filter
+        if ($request->filled('from_date') && $request->filled('to_date')) {
+            $d1 = $request->from_date;
+            $d2 = $request->to_date;
+
+            // 1. Availability Logic (Whitelist)
+            // Show if: (No explicit availability defined) OR (Explicit range OVERLAPS with request)
+            $query->where(function($q) use ($d1, $d2) {
+                // Case A: Generally available (no whitelist blocks)
+                $q->whereDoesntHave('availabilityBlocks', function($aq) {
+                    $aq->where('type', 'available');
+                })
+                // Case B: Whitelist blocks exist - check for ANY OVERLAP
+                // (BlockStart <= ReqEnd) AND (BlockEnd >= ReqStart)
+                ->orWhereHas('availabilityBlocks', function($aq) use ($d1, $d2) {
+                    $aq->where('type', 'available')
+                      ->where('start_date', '<=', $d2)
+                      ->where('end_date', '>=', $d1);
+                });
+            });
+
+            // 2. Blocking Logic (Blacklist) - Blocked Dates
+            // Hide ONLY if the block covers the ENTIRE requested range (Full Enclosure)
+            // Exclude if: (BlockStart <= ReqStart) AND (BlockEnd >= ReqEnd)
+            $query->whereDoesntHave('availabilityBlocks', function($q) use ($d1, $d2) {
+                $q->where('type', 'blocked')
+                  ->where('start_date', '<=', $d1)
+                  ->where('end_date', '>=', $d2);
+            });
+
+            // 3. Occupancy Logic (Blacklist) - Existing Orders
+            // Hide ONLY if the order covers the ENTIRE requested range
+            // Exclude if: (OrderStart <= ReqStart) AND (OrderEnd >= ReqEnd)
+            $query->whereDoesntHave('orderItems.order', function($oq) use ($d1, $d2) {
+                $oq->whereIn('status', ['Confirmed', 'Delivered'])
+                   ->where('rental_from', '<=', $d1)
+                   ->where('rental_to', '>=', $d2);
+            });
+        }
+
         // Filter by deal type
         if ($request->filled('deal_type')) {
             if ($request->deal_type === 'rent') {
-                // Only rental items (all items are rental by default)
+                // Only rental items (all items are rental by default in current logic)
             } elseif ($request->deal_type === 'purchase') {
                 $query->where('is_purchased', true);
             }
         }
-
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('brand', 'like', "%{$search}%");
+                  ->orWhereHas('brand', function($bq) use ($search) {
+                      $bq->where('name', 'like', "%{$search}%");
+                  });
             });
         }
 

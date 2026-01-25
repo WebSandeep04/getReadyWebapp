@@ -59,7 +59,6 @@
                                 <th>Type</th>
                                 <th>Status</th>
                                 <th>Date</th>
-                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -80,7 +79,7 @@
                                     <td>
                                         <ul class="list-unstyled mb-0 small">
                                             @foreach($order->items as $item)
-                                                <li>{{ $item->cloth->title }} ({{ $item->cloth->size }})</li>
+                                                <li>{{ $item->cloth->title }} ({{ $item->cloth->size->name ?? 'N/A' }})</li>
                                             @endforeach
                                         </ul>
                                     </td>
@@ -116,21 +115,6 @@
                                         </span>
                                     </td>
                                     <td>{{ $order->created_at->format('d/m/Y') }}</td>
-                                    <td>
-                                        @if($canRate && !$hasRated)
-                                            <button type="button" class="btn btn-sm btn-outline-warning" 
-                                                data-toggle="modal" 
-                                                data-target="#rateModal"
-                                                data-order-id="{{ $order->id }}"
-                                                data-buyer-name="{{ $order->buyer->name }}">
-                                                <i class="bi bi-star me-1"></i>Rate Buyer
-                                            </button>
-                                        @elseif($hasRated)
-                                            <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Rated</span>
-                                        @else
-                                            <span class="text-muted small">—</span>
-                                        @endif
-                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>

@@ -4,6 +4,22 @@
 
 @section('styles')
 <link rel="stylesheet" href="{{ asset('css/browse.css') }}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+    .date-picker { background-color: #fff !important; cursor: pointer; }
+    .filter-group-spacing { margin-top: 1.5rem; }
+    /* Mobile date filter styles */
+    @media (max-width: 768px) {
+        .header-date-filter {
+            display: flex !important;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .header-date-filter .input-group {
+            flex: 1;
+        }
+    }
+</style>
 @endsection
 
 @section('content')
@@ -13,7 +29,10 @@
             <!-- Left Sidebar - Filters -->
             <div class="col-md-3 col-lg-2 sidebar-filters">
                 <div class="filter-section">
-                    <h5 class="filter-title">Filter by</h5>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="filter-title mb-0">Filter by</h5>
+                        <a href="{{ route('clothes.index') }}" class="text-warning small text-decoration-none">Clear all</a>
+                    </div>
                     
                     <!-- Category Filter -->
                     <div class="filter-group">
@@ -135,12 +154,23 @@
                                        name="search" 
                                        id="searchInput" 
                                        class="form-control search-input" 
-                                       placeholder="Search for anything" 
+                                       placeholder="Search for clothes..." 
                                        value="{{ request('search') }}"
                                        autocomplete="off">
                             </div>
                         </div>
-
+                        
+                        <div class="header-date-filter d-none d-md-flex align-items-center gap-1">
+                            <div class="input-group input-group-sm" style="width: 140px;">
+                                <span class="input-group-text bg-white border-end-0 text-warning"><i class="bi bi-calendar-range"></i></span>
+                                <input type="text" id="fromDateFilter" class="form-control border-start-0 ps-0 date-picker" 
+                                       placeholder="From" value="{{ request('from_date') }}" readonly style="font-size: 0.8rem;">
+                            </div>
+                            <div class="input-group input-group-sm" style="width: 120px;">
+                                <input type="text" id="toDateFilter" class="form-control date-picker" 
+                                       placeholder="To" value="{{ request('to_date') }}" readonly style="font-size: 0.8rem;">
+                            </div>
+                        </div>
                         <div class="sort-section">
                             <select name="sort_by" id="sortBy" class="form-select sort-filter">
                                 <option value="default" {{ request('sort_by', 'default') === 'default' ? 'selected' : '' }}>Sort by default</option>
@@ -177,8 +207,26 @@
 @endsection
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
 $(document).ready(function() {
+    // Initialize Floatpickr
+    const fromDatePickr = flatpickr("#fromDateFilter", {
+        dateFormat: "Y-m-d",
+        onChange: function(selectedDates, dateStr) {
+            // Ensure To Date is not before From Date
+            toDatePickr.set('minDate', dateStr);
+            loadProducts(1);
+        }
+    });
+
+    const toDatePickr = flatpickr("#toDateFilter", {
+        dateFormat: "Y-m-d",
+        onChange: function() {
+            loadProducts(1);
+        }
+    });
+
     let filterTimeout;
     const $productsGrid = $('#productsGrid');
     const $paginationWrapper = $('#paginationWrapper');
@@ -201,7 +249,9 @@ $(document).ready(function() {
             status: $('input[name="status"]:checked').val() || 'any',
             deal_type: $('input[name="deal_type"]:checked').val() || 'all',
             sort_by: $('#sortBy').val() || 'default',
-            search: $('.search-section input[name="search"]').val() || ''
+            search: $('.search-section input[name="search"]').val() || '',
+            from_date: $('#fromDateFilter').val() || '',
+            to_date: $('#toDateFilter').val() || ''
         };
         
         // Collect checked checkboxes
@@ -331,6 +381,15 @@ $(document).ready(function() {
             // Restore select
             $('#sortBy').val(filters.sort_by);
             $('.search-section input[name="search"]').val(filters.search);
+
+            // Restore dates
+            if (filters.from_date) {
+                fromDatePickr.setDate(filters.from_date);
+                toDatePickr.set('minDate', filters.from_date);
+            }
+            if (filters.to_date) {
+                toDatePickr.setDate(filters.to_date);
+            }
             
             loadProducts(filters.page || 1);
         }

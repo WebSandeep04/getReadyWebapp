@@ -574,7 +574,7 @@
   <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h4 class="mb-0">More like this</h4>
-      <a href="{{ route('clothes.index', ['categories' => $categoryId]) }}" class="btn btn-warning btn-sm">Browse all</a>
+      <a href="{{ route('clothes.index', ['categories' => $cloth->category->id ?? $categoryId]) }}" class="btn btn-warning btn-sm">Browse all</a>
     </div>
     <div class="carousel mb-5">
       @if($relatedClothes->count() > 0)
@@ -590,7 +590,7 @@
             <h6 class="card-title fw-bold mb-1 text-truncate">{{ $related->title }}</h6>
             <div class="d-flex justify-content-between align-items-center">
               <span class="text-primary fw-bold">₹{{ number_format($related->rent_price) }}<small class="text-muted fw-normal">/4 days</small></span>
-              <span class="badge bg-light text-dark border">{{ $related->size ?? 'Free' }}</span>
+              <span class="badge bg-light text-dark border">{{ $related->size->name ?? 'Free' }}</span>
             </div>
           </div>
         </div>
@@ -693,7 +693,6 @@ $(document).ready(function() {
     // Base Flatpickr config - all dates visible, only unavailable disabled
     const disabledDatesList = getDisabledDatesArray();
     const commonFlatpickrConfig = {
-        minDate: "today",
         dateFormat: "Y-m-d", // Standard database format
         altInput: true,
         altFormat: "F j, Y", // User friendly format

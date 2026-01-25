@@ -23,14 +23,11 @@ class CheckoutController extends Controller
         if ($cartItems->isEmpty()) {
             return response()->json(['success' => false, 'message' => 'Your cart is empty'], 422);
         }
-
-        // Validate Address
-        if (empty($user->address)) {
-            return response()->json([
-                'success' => false, 
-                'message' => 'Please provide a delivery address in your profile before checkout.',
-                'redirect' => route('profile') // Optional: Frontend can use this to redirect
-            ], 422);
+        
+        // Validate Address from Request
+        $deliveryAddress = $request->input('delivery_address');
+        if (empty($deliveryAddress)) {
+             return response()->json(['success' => false, 'message' => 'Delivery address is required.'], 422);
         }
 
         // Calculate Totals
@@ -67,7 +64,7 @@ class CheckoutController extends Controller
             'has_rental_items' => $rentalSubtotal > 0,
             'has_purchase_items' => $buySubtotal > 0,
             'status' => 'Pending',
-            'delivery_address' => $user->address ?? 'Not provided',
+            'delivery_address' => $deliveryAddress,
             'rental_from' => !empty($rentalStartDates) ? min($rentalStartDates) : now(),
             'rental_to' => !empty($rentalEndDates) ? max($rentalEndDates) : now()->addDays(3),
         ]);

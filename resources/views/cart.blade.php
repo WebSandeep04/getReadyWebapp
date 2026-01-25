@@ -138,19 +138,25 @@
                                 });
                             @endphp
 
-                            <!-- Address Check -->
+                            <!-- Address Selection -->
                             <div class="mb-3 border-bottom pb-3">
-                                <span class="d-block fw-bold mb-1">Delivery Address:</span>
+                                <label class="d-block fw-bold mb-1">Delivery Address:</label>
+                                
                                 @if(Auth::user()->address)
-                                    <p class="text-muted small mb-0" id="userAddress">{{ Auth::user()->address }}</p>
-                                    <a href="{{ route('profile') }}" class="small text-primary text-decoration-none">Change</a>
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <p class="text-muted small mb-0" id="displayAddress" style="white-space: pre-wrap;">{{ Auth::user()->address }}</p>
+                                        <button class="btn btn-link btn-sm p-0 ms-2" onclick="openAddressModal()">Change</button>
+                                    </div>
+                                    <!-- Hidden input to store the actual address to be sent -->
+                                    <input type="hidden" id="finalDeliveryAddress" value="{{ Auth::user()->address }}">
                                 @else
                                     <div class="alert alert-danger small mb-1 p-2">
-                                        <i class="bi bi-geo-alt-fill me-1"></i> No address found!
+                                        <i class="bi bi-geo-alt-fill me-1"></i> No delivery address found.
                                     </div>
                                     <a href="{{ route('profile') }}" class="btn btn-sm btn-outline-danger w-100 mt-1">
-                                         + Add Address
+                                         + Add Profile Address
                                     </a>
+                                    <input type="hidden" id="finalDeliveryAddress" value="">
                                 @endif
                             </div>
                             
@@ -196,7 +202,6 @@
                             
                             <button class="btn btn-warning w-100 mb-2"
                                     id="checkoutBtn"
-                                    data-has-address="{{ Auth::user()->address ? 'true' : 'false' }}"
                                     data-create-url="{{ route('checkout.create') }}"
                                     data-verify-url="{{ route('checkout.verify') }}">
                                 <i class="bi bi-credit-card me-2"></i>
@@ -222,6 +227,28 @@
                 </a>
             </div>
         @endif
+    </div>
+</div>
+
+<!-- Custom Address Modal -->
+<div class="modal fade" id="addressModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Change Delivery Address</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small">This will only change the address for <strong>this specific order</strong>. Your profile address will remain unchanged.</p>
+                <textarea class="form-control" id="modalAddressInput" rows="4" placeholder="Enter new delivery address..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveCustomAddress()">Use this Address</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -511,13 +538,11 @@ if (checkoutBtn) {
     const verifyUrl = checkoutBtn.dataset.verifyUrl;
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-    const hasAddress = checkoutBtn.dataset.hasAddress === 'true';
-
     checkoutBtn.addEventListener('click', async function() {
-        if (!hasAddress) {
-            if(confirm('You need to add a delivery address first. Go to Profile?')) {
-                window.location.href = "{{ route('profile') }}";
-            }
+        const address = document.getElementById('finalDeliveryAddress').value.trim();
+        
+        if (!address) {
+            alert('Please add a delivery address first.');
             return;
         }
 
@@ -535,7 +560,8 @@ if (checkoutBtn) {
                     'X-CSRF-TOKEN': csrfToken
                 },
                 body: JSON.stringify({
-                    payment_method: paymentMethod
+                    payment_method: paymentMethod,
+                    delivery_address: address
                 })
             });
             const data = await response.json();
@@ -637,6 +663,31 @@ function toggleCheckoutButton(disabled, text) {
     checkoutBtn.innerHTML = disabled
         ? `<span class="spinner-border spinner-border-sm me-2"></span>${text}`
         : '<i class="bi bi-credit-card me-2"></i>Place Order';
+}
+
+// Address Modal Logic
+function openAddressModal() {
+    // Populate modal with current selected address
+    const currentAddr = $('#finalDeliveryAddress').val();
+    $('#modalAddressInput').val(currentAddr);
+    $('#addressModal').modal('show');
+}
+
+function saveCustomAddress() {
+    const newAddr = $('#modalAddressInput').val().trim();
+    if (!newAddr) {
+        alert('Address cannot be empty.');
+        return;
+    }
+    
+    // Update Hidden Input and Display
+    $('#finalDeliveryAddress').val(newAddr);
+    $('#displayAddress').text(newAddr);
+    
+    // Check if it's different from profile (optional visual cue)
+    // $('#displayAddress').addClass('text-primary'); 
+
+    $('#addressModal').modal('hide');
 }
 </script>
 @endsection

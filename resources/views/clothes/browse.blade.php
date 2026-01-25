@@ -4,7 +4,6 @@
 
 @section('styles')
 <link rel="stylesheet" href="{{ asset('css/browse.css') }}">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <style>
     .date-picker { background-color: #fff !important; cursor: pointer; }
     .filter-group-spacing { margin-top: 1.5rem; }
@@ -163,12 +162,12 @@
                         <div class="header-date-filter d-none d-md-flex align-items-center gap-1">
                             <div class="input-group input-group-sm" style="width: 140px;">
                                 <span class="input-group-text bg-white border-end-0 text-warning"><i class="bi bi-calendar-range"></i></span>
-                                <input type="text" id="fromDateFilter" class="form-control border-start-0 ps-0 date-picker" 
-                                       placeholder="From" value="{{ request('from_date') }}" readonly style="font-size: 0.8rem;">
+                                <input type="date" id="fromDateFilter" class="form-control border-start-0 ps-0 text-muted" 
+                                       placeholder="From" value="{{ request('from_date') }}" style="font-size: 0.8rem;">
                             </div>
-                            <div class="input-group input-group-sm" style="width: 120px;">
-                                <input type="text" id="toDateFilter" class="form-control date-picker" 
-                                       placeholder="To" value="{{ request('to_date') }}" readonly style="font-size: 0.8rem;">
+                            <div class="input-group input-group-sm" style="width: 130px;">
+                                <input type="date" id="toDateFilter" class="form-control text-muted" 
+                                       placeholder="To" value="{{ request('to_date') }}" style="font-size: 0.8rem;" min="{{ request('from_date') }}">
                             </div>
                         </div>
                         <div class="sort-section">
@@ -207,24 +206,23 @@
 @endsection
 
 @section('scripts')
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
 $(document).ready(function() {
-    // Initialize Floatpickr
-    const fromDatePickr = flatpickr("#fromDateFilter", {
-        dateFormat: "Y-m-d",
-        onChange: function(selectedDates, dateStr) {
-            // Ensure To Date is not before From Date
-            toDatePickr.set('minDate', dateStr);
-            loadProducts(1);
+    // Handle Date Input Changes (Native)
+    $('#fromDateFilter').on('change', function() {
+        const fromDate = $(this).val();
+        $('#toDateFilter').attr('min', fromDate); // Enforce min date on To field
+        
+        // If To Date is earlier than new From Date, clear it
+        if ($('#toDateFilter').val() && $('#toDateFilter').val() < fromDate) {
+            $('#toDateFilter').val('');
         }
+        
+        loadProducts(1);
     });
 
-    const toDatePickr = flatpickr("#toDateFilter", {
-        dateFormat: "Y-m-d",
-        onChange: function() {
-            loadProducts(1);
-        }
+    $('#toDateFilter').on('change', function() {
+        loadProducts(1);
     });
 
     let filterTimeout;
@@ -384,11 +382,11 @@ $(document).ready(function() {
 
             // Restore dates
             if (filters.from_date) {
-                fromDatePickr.setDate(filters.from_date);
-                toDatePickr.set('minDate', filters.from_date);
+                $('#fromDateFilter').val(filters.from_date);
+                $('#toDateFilter').attr('min', filters.from_date);
             }
             if (filters.to_date) {
-                toDatePickr.setDate(filters.to_date);
+                $('#toDateFilter').val(filters.to_date);
             }
             
             loadProducts(filters.page || 1);

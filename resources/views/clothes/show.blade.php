@@ -693,6 +693,7 @@ $(document).ready(function() {
     // Base Flatpickr config - all dates visible, only unavailable disabled
     const disabledDatesList = getDisabledDatesArray();
     const commonFlatpickrConfig = {
+        minDate: "today",
         dateFormat: "Y-m-d", // Standard database format
         altInput: true,
         altFormat: "F j, Y", // User friendly format

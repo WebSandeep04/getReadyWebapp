@@ -73,11 +73,17 @@ class CartController extends Controller
             // Validate rental request
             $request->validate([
                 'cloth_id' => 'required|exists:clothes,id',
-                'rental_start_date' => 'required|date',
+                'rental_start_date' => 'required|date|after_or_equal:today',
                 'rental_end_date' => 'required|date|after:rental_start_date',
                 'total_rental_cost' => 'required|numeric|min:0',
                 'rental_days' => 'required|integer|min:4', // Minimum 4 days rental period
             ]);
+
+            // Backend Availability Check (Mirroring Frontend Logic)
+            $isAvailable = $this->checkAvailability($cloth, $request->rental_start_date, $request->rental_end_date);
+            if (!$isAvailable['success']) {
+                return response()->json(['success' => false, 'message' => $isAvailable['message']], 422);
+            }
             
             // Check if item is already in cart
             $existingItem = Auth::user()->cartItems()->where('cloth_id', $request->cloth_id)->first();
@@ -208,5 +214,50 @@ class CartController extends Controller
         });
 
         return response()->json(['cartItems' => $items]);
+    }
+
+    /**
+     * Check if dates are valid based on Availability Blocks
+     */
+    private function checkAvailability(Cloth $cloth, $start, $end)
+    {
+        $startDate = \Carbon\Carbon::parse($start);
+        $endDate = \Carbon\Carbon::parse($end);
+
+        // 1. Check Whitelist (Available Blocks)
+        // If there are ANY 'available' blocks, the requested range MUST fall entirely within one of them.
+        $availableBlocks = $cloth->availabilityBlocks()->where('type', 'available')->get();
+        
+        if ($availableBlocks->count() > 0) {
+            $isCovered = false;
+            foreach ($availableBlocks as $block) {
+                $blockStart = \Carbon\Carbon::parse($block->start_date);
+                $blockEnd = \Carbon\Carbon::parse($block->end_date);
+
+                if ($startDate->gte($blockStart) && $endDate->lte($blockEnd)) {
+                    $isCovered = true;
+                    break;
+                }
+            }
+            if (!$isCovered) {
+                return ['success' => false, 'message' => 'Selected dates are not within available rental periods (Backend Check)'];
+            }
+        }
+
+        // 2. Check Blacklist (Blocked Blocks)
+        // Requested range must NOT overlap with any 'blocked' block
+        $blockedBlocks = $cloth->availabilityBlocks()->where('type', 'blocked')->get();
+        
+        foreach ($blockedBlocks as $block) {
+            $blockStart = \Carbon\Carbon::parse($block->start_date);
+            $blockEnd = \Carbon\Carbon::parse($block->end_date);
+
+            // Check overlap
+            if ($startDate->lte($blockEnd) && $endDate->gte($blockStart)) {
+                return ['success' => false, 'message' => 'Selected dates overlap with a blocked period (Backend Check)'];
+            }
+        }
+
+        return ['success' => true];
     }
 }

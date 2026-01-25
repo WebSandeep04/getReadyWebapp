@@ -79,15 +79,15 @@
 
       <div class="card shadow-sm mt-4 p-4">
         <div class="d-flex flex-wrap gap-2 mb-3">
-          <span class="chip"><i class="bi bi-grid"></i>{{ $cloth->category }}</span>
+          <span class="chip"><i class="bi bi-grid"></i>{{ $cloth->category->name ?? 'General' }}</span>
           <span class="chip"><i class="bi bi-person"></i>{{ $cloth->gender }}</span>
-          <span class="chip"><i class="bi bi-droplet-half"></i>{{ $cloth->color ?? 'Not specified' }}</span>
-          <span class="chip"><i class="bi bi-rulers"></i>Size {{ $cloth->size }}</span>
-          <span class="chip"><i class="bi bi-scissors"></i>{{ $cloth->fabric ?? 'Fabric TBC' }}</span>
+          <span class="chip"><i class="bi bi-droplet-half"></i>{{ $cloth->color->name ?? 'Not specified' }}</span>
+          <span class="chip"><i class="bi bi-rulers"></i>Size {{ $cloth->size->name ?? $cloth->size }}</span>
+          <span class="chip"><i class="bi bi-scissors"></i>{{ $cloth->fabric->name ?? 'Fabric TBC' }}</span>
         </div>
 
         <h1 class="product-title">{{ $cloth->title }}</h1>
-        <p class="text-muted mb-2">{{ $cloth->brand ?? 'Independent Designer' }}</p>
+        <p class="text-muted mb-2">{{ $cloth->brand->name ?? 'Independent Designer' }}</p>
         
         <!-- @if($cloth->user && $cloth->user->average_rating > 0)
           <div class="mb-4">
@@ -102,11 +102,11 @@
         <div class="info-grid">
           <div>
             <label>Fit Type</label>
-            <p>{{ $cloth->fit_type ?? 'Regular fit' }}</p>
+            <p>{{ $cloth->fitType->name ?? 'Regular fit' }}</p>
           </div>
           <div>
             <label>Condition</label>
-            <p>{{ $cloth->condition }}</p>
+            <p>{{ $cloth->condition->name ?? $cloth->condition }}</p>
           </div>
           <div>
             <label class="d-flex align-items-center mb-1">
@@ -127,7 +127,7 @@
           <div>
             <h6>Fabric & Highlights</h6>
             <p class="mb-0">
-              {{ $cloth->fabric ?? 'Premium blended fabric' }} · {{ ucfirst(strtolower($cloth->color ?? 'Multi')) }} tone · {{ $cloth->bottom_type ?? 'Two-piece' }} silhouette
+              {{ $cloth->fabric->name ?? 'Premium blended fabric' }} · {{ ucfirst(strtolower($cloth->color->name ?? 'Multi')) }} tone · {{ $cloth->bottomType->name ?? 'Two-piece' }} silhouette
             </p>
           </div>
           <div>
@@ -838,8 +838,8 @@ $(document).ready(function() {
             },
             error: function(xhr, status, error) {
                 if (xhr.status === 401) {
-                    // User not logged in, redirect to login
-                    window.location.href = '/login';
+                    // User not logged in, redirect to login with intended redirect
+                    window.location.href = "{{ route('login') }}?redirect=" + encodeURIComponent(window.location.href);
                 } else if (xhr.status === 422) {
                     // Validation error
                     try {
@@ -904,8 +904,8 @@ $(document).ready(function() {
              },
              error: function(xhr, status, error) {
                  if (xhr.status === 401) {
-                     // User not logged in, redirect to login
-                     window.location.href = '/login';
+                     // User not logged in, redirect to login with intended redirect
+                     window.location.href = "{{ route('login') }}?redirect=" + encodeURIComponent(window.location.href);
                  } else if (xhr.status === 422) {
                      // Validation error
                      try {
@@ -1297,7 +1297,7 @@ $(document).ready(function() {
             },
             error: function(xhr) {
                 if (xhr.status === 401) {
-                    window.location.href = '/login';
+                    window.location.href = "{{ route('login') }}?redirect=" + encodeURIComponent(window.location.href);
                 } else {
                     const error = xhr.responseJSON;
                     if (error && error.errors) {
@@ -1343,7 +1343,7 @@ $(document).ready(function() {
             },
             error: function(xhr) {
                 if (xhr.status === 401) {
-                    window.location.href = '/login';
+                    window.location.href = "{{ route('login') }}?redirect=" + encodeURIComponent(window.location.href);
                 } else {
                     const error = xhr.responseJSON;
                     if (error && error.errors) {

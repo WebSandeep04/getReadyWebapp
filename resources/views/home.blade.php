@@ -216,7 +216,7 @@ $(document).ready(function() {
             },
             error: function(xhr, status, error) {
                 if (xhr.status === 401) {
-                    window.location.href = '/login';
+                    window.location.href = "{{ route('login') }}?redirect=" + encodeURIComponent(window.location.href);
                 } else {
                     showAlert('danger', 'An error occurred. Please try again.');
                 }

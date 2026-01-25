@@ -15,6 +15,7 @@ use App\Models\GarmentCondition;
 use App\Models\ClothImage;
 use App\Models\AvailabilityBlock;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class ClothController extends Controller
 {

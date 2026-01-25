@@ -103,7 +103,7 @@ $(document).ready(function () {
       },
       error: function (xhr) {
         if (xhr.status === 401) {
-          window.location.href = '/login';
+          window.location.href = '/login?redirect=' + encodeURIComponent(window.location.href);
         } else {
           if (typeof showAlert === 'function') {
             showAlert('danger', 'Failed to post reply. Please try again.');

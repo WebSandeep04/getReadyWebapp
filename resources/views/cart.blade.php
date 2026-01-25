@@ -39,8 +39,8 @@
                                     <div class="col-md-6">
                                         <h5 class="card-title">{{ $cartItem->cloth->title }}</h5>
                                         <p class="card-text text-muted">
-                                            <small>Size: {{ $cartItem->cloth->size }}</small><br>
-                                            <small>Condition: {{ $cartItem->cloth->condition }}</small>
+                                            <small>Size: {{ $cartItem->cloth->sizeRef->name ?? 'Unknown' }}</small><br>
+                                            <small>Condition: {{ $cartItem->cloth->conditionRef->name ?? 'Unknown' }}</small>
                                         </p>
                                         @if($cartItem->purchase_type === 'buy')
                                             <div class="purchase-info">

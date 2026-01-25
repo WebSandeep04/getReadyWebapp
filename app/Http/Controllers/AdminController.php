@@ -284,8 +284,6 @@ class AdminController extends Controller
             $cloth->resubmission_count = $cloth->resubmission_count ?? 0;
 
             // Optional: Unset relationships to keep JSON clean if strict size needed
-            unset($cloth->category, $cloth->brand, $cloth->fabric, $cloth->color, $cloth->size, $cloth->bottomType, $cloth->fitType, $cloth->condition);
-            
             return $cloth;
         });
         

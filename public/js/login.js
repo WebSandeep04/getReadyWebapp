@@ -117,7 +117,8 @@ $(document).ready(function () {
                     age: age,
                     gender: gender,
                     is_gst: isGst,
-                    gstin: gstin
+                    gstin: gstin,
+                    redirect: redirectValue
                 },
                 success: function (response) {
                     if (response.success) {

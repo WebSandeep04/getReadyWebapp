@@ -15,7 +15,7 @@ class CartController extends Controller
         $cartItems = [];
         
         if (Auth::check()) {
-            $cartItems = Auth::user()->cartItems()->with('cloth.images')->get();
+            $cartItems = Auth::user()->cartItems()->with(['cloth.images', 'cloth.size', 'cloth.condition'])->get();
         }
         
         return view('cart', compact('showFilters', 'cartItems'));

@@ -1,19 +1,19 @@
 // Cart functionality
-$(document).ready(function() {
+$(document).ready(function () {
     // Load cart items on page load to check rented status
     loadCartItems();
 
     // Add to cart functionality
-    $('.add-to-cart-btn').click(function(e) {
+    $('.add-to-cart-btn').click(function (e) {
         e.preventDefault();
-        
+
         const clothId = $(this).data('cloth-id');
         const $btn = $(this);
         const originalText = $btn.text();
-        
+
         // Show loading state
         $btn.prop('disabled', true).text('Adding...');
-        
+
         $.ajax({
             url: '/cart/add',
             type: 'POST',
@@ -21,44 +21,44 @@ $(document).ready(function() {
                 cloth_id: clothId,
                 _token: $('meta[name="csrf-token"]').attr('content')
             },
-            success: function(response) {
+            success: function (response) {
                 if (response.success) {
                     // Update cart count
                     updateCartCount(response.cartCount);
-                    
+
                     // Show success message
                     showAlert('success', response.message);
-                    
+
                     // Update all buttons for this item to "RENTED"
                     updateAllRentButtons(clothId, true);
-                    
+
                     // Reload cart items to update the list
                     loadCartItems();
                 } else {
                     showAlert('danger', response.message);
                 }
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 if (xhr.status === 401) {
-                    // User not logged in, redirect to login
-                    window.location.href = '/login';
+                    // User not logged in, redirect to login with intended redirect
+                    window.location.href = '/login?redirect=' + encodeURIComponent(window.location.href);
                 } else {
                     showAlert('danger', 'An error occurred. Please try again.');
                 }
             },
-            complete: function() {
+            complete: function () {
                 $btn.prop('disabled', false);
             }
         });
     });
 
     // Remove from cart functionality
-    $('.remove-from-cart-btn').click(function(e) {
+    $('.remove-from-cart-btn').click(function (e) {
         e.preventDefault();
-        
+
         const cartItemId = $(this).data('cart-item-id');
         const $item = $(this).closest('.cart-item');
-        
+
         if (confirm('Are you sure you want to remove this item from cart?')) {
             $.ajax({
                 url: '/cart/remove',
@@ -67,34 +67,34 @@ $(document).ready(function() {
                     cart_item_id: cartItemId,
                     _token: $('meta[name="csrf-token"]').attr('content')
                 },
-                success: function(response) {
+                success: function (response) {
                     if (response.success) {
                         // Update cart count
                         updateCartCount(response.cartCount);
-                        
+
                         // Get the cloth ID from the removed item
                         const clothId = $item.data('cloth-id');
-                        
+
                         // Update all buttons for this item back to "RENT NOW"
                         updateAllRentButtons(clothId, false);
-                        
+
                         // Reload cart items to update the list
                         loadCartItems();
-                        
+
                         // Remove item from DOM
-                        $item.fadeOut(function() {
+                        $item.fadeOut(function () {
                             $(this).remove();
-                            
+
                             // Check if cart is empty
                             if ($('.cart-item').length === 0) {
                                 $('.cart-container').html('<div class="text-center py-5"><h5>Your cart is empty</h5><a href="/" class="btn btn-warning">Continue Shopping</a></div>');
                             }
                         });
-                        
+
                         showAlert('success', response.message);
                     }
                 },
-                error: function() {
+                error: function () {
                     showAlert('danger', 'An error occurred. Please try again.');
                 }
             });
@@ -102,11 +102,11 @@ $(document).ready(function() {
     });
 
     // Update quantity functionality
-    $('.quantity-input').change(function() {
+    $('.quantity-input').change(function () {
         const cartItemId = $(this).data('cart-item-id');
         const quantity = $(this).val();
         const $input = $(this);
-        
+
         $.ajax({
             url: '/cart/update-quantity',
             type: 'POST',
@@ -115,18 +115,18 @@ $(document).ready(function() {
                 quantity: quantity,
                 _token: $('meta[name="csrf-token"]').attr('content')
             },
-            success: function(response) {
+            success: function (response) {
                 if (response.success) {
                     // Update cart count
                     updateCartCount(response.cartCount);
-                    
+
                     // Update total price for this item
                     updateItemTotal(cartItemId);
-                    
+
                     showAlert('success', response.message);
                 }
             },
-            error: function() {
+            error: function () {
                 showAlert('danger', 'An error occurred. Please try again.');
                 // Reset to original value
                 $input.val($input.data('original-value'));
@@ -135,7 +135,7 @@ $(document).ready(function() {
     });
 
     // Initialize quantity inputs
-    $('.quantity-input').each(function() {
+    $('.quantity-input').each(function () {
         $(this).data('original-value', $(this).val());
     });
 });
@@ -145,13 +145,13 @@ function loadCartItems() {
     $.ajax({
         url: '/cart/items',
         type: 'GET',
-        success: function(response) {
+        success: function (response) {
             if (response.cartItems) {
                 window.cartItems = response.cartItems;
                 checkRentedItems();
             }
         },
-        error: function() {
+        error: function () {
             // If error, assume no items in cart
             window.cartItems = [];
         }
@@ -161,10 +161,10 @@ function loadCartItems() {
 // Update all rent buttons for a specific item
 function updateAllRentButtons(clothId, isRented) {
     const buttons = $(`.add-to-cart-btn[data-cloth-id="${clothId}"]`);
-    
-    buttons.each(function() {
+
+    buttons.each(function () {
         const $btn = $(this);
-        
+
         if (isRented) {
             $btn.text('RENTED')
                 .addClass('btn-success')
@@ -184,8 +184,8 @@ function updateAllRentButtons(clothId, isRented) {
 // Check which items are already in cart and update buttons
 function checkRentedItems() {
     if (!window.cartItems) return;
-    
-    window.cartItems.forEach(function(item) {
+
+    window.cartItems.forEach(function (item) {
         updateAllRentButtons(item.cloth_id, true);
     });
 }
@@ -209,7 +209,7 @@ function updateItemTotal(cartItemId) {
     const quantity = $item.find('.quantity-input').val();
     const price = parseFloat($item.find('.item-price').data('price'));
     const total = quantity * price;
-    
+
     $item.find('.item-total').text('₹' + total.toFixed(2));
 }
 
@@ -221,15 +221,15 @@ function showAlert(type, message) {
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     `;
-    
+
     // Remove existing alerts
     $('.alert').remove();
-    
+
     // Add new alert
     $('body').prepend(alertHtml);
-    
+
     // Auto-hide after 3 seconds
-    setTimeout(function() {
+    setTimeout(function () {
         $('.alert').fadeOut();
     }, 3000);
 } 

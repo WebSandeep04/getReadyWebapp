@@ -301,7 +301,7 @@ class LoginController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Account created successfully!',
-            'redirect' => url('/')
+            'redirect' => $this->determineRedirectPath($request, true)
         ]);
     }
 

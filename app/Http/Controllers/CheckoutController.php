@@ -18,7 +18,7 @@ class CheckoutController extends Controller
             return response()->json(['success' => false, 'message' => 'Authentication required'], 401);
         }
 
-        $cartItems = $user->cartItems()->with('cloth')->get();
+        $cartItems = $user->cartItems()->with(['cloth.images', 'cloth.size', 'cloth.condition'])->get();
 
         if ($cartItems->isEmpty()) {
             return response()->json(['success' => false, 'message' => 'Your cart is empty'], 422);
@@ -279,7 +279,7 @@ class CheckoutController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Payment verified successfully.',
-            'redirect' => route('home', ['payment' => 'success']),
+            'redirect' => route('orders.index', ['payment' => 'success']),
         ]);
     }
 }

@@ -1,5 +1,5 @@
 @extends('layouts.app')
-
+<!-- before removing storage in public -->
 @section('title', frontend_setting('site_title', 'Get Ready - Home'))
 
 @push('styles')

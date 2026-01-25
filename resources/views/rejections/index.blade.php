@@ -75,6 +75,7 @@
                                     <tr>
                                         <th class="ps-3 py-3" style="width: 80px;">Image</th>
                                         <th class="py-3">Details</th>
+                                        <th class="py-3" style="width: 25%;">Reason</th>
                                         <th class="py-3">Category</th>
                                         <th class="py-3">Pricing</th>
                                         <th class="py-3">Status</th>
@@ -102,6 +103,15 @@
                                                 <small class="text-muted" style="font-size: 0.75rem;">ID: #{{ $cloth->id }}</small>
                                             </td>
                                             <td class="py-2">
+                                                 @if($cloth->is_approved == -1)
+                                                    <div class="text-danger small fw-semibold text-wrap" style="line-height: 1.3; font-size: 0.85rem;">
+                                                        {{ $cloth->latest_rejection_reason }}
+                                                    </div>
+                                                @else
+                                                    <span class="text-muted small">-</span>
+                                                @endif
+                                            </td>
+                                            <td class="py-2">
                                                 <span class="text-dark">{{ $cloth->categoryRef->name ?? 'Unknown' }}</span>
                                             </td>
                                             <td class="py-2">
@@ -111,16 +121,26 @@
                                                 </div>
                                             </td>
                                             <td class="py-2">
-                                                <span class="badge bg-danger text-white rounded-pill px-3">
-                                                    Rejected
-                                                </span>
+                                                @if($cloth->is_approved == -1)
+                                                    <span class="badge bg-danger text-white rounded-pill px-3">
+                                                        Rejected
+                                                    </span>
+                                                @else
+                                                    <span class="badge bg-info text-dark rounded-pill px-3">
+                                                        Resubmitted
+                                                    </span>
+                                                @endif
                                             </td>
                                             <td class="text-end pe-3 py-2">
-                                                <a href="{{ route('rejections.show', $cloth->id) }}" 
-                                                   class="btn btn-danger btn-sm text-white shadow-sm" 
-                                                   data-bs-toggle="tooltip" title="Fix & Resubmit">
-                                                    <i class="bi bi-wrench-adjustable"></i>
-                                                </a>
+                                                @if($cloth->is_approved == -1)
+                                                    <a href="{{ route('rejections.show', $cloth->id) }}" 
+                                                       class="btn btn-danger btn-sm text-white shadow-sm" 
+                                                       data-bs-toggle="tooltip" title="Fix & Resubmit">
+                                                        <i class="bi bi-wrench-adjustable"></i>
+                                                    </a>
+                                                @else
+                                                    <small class="text-muted italic">Awaiting Review</small>
+                                                @endif
                                             </td>
                                         </tr>
                                     @endforeach

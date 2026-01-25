@@ -230,7 +230,7 @@ class AdminController extends Controller
                     $query->where('is_approved', 1);
                     break;
                 case 'rejected':
-                    $query->where('is_approved', 0);
+                    $query->where('is_approved', -1);
                     break;
                 case 're-approval':
                     $query->where('is_approved', null)
@@ -276,7 +276,7 @@ class AdminController extends Controller
         $cloth = Cloth::with('user')->findOrFail($id);
         
         // Prevent approving rejected items
-        if ($cloth->is_approved === 0) {
+        if ($cloth->is_approved === -1) {
             return response()->json([
                 'success' => false, 
                 'message' => 'Cannot approve a rejected item. User must resubmit it first.'
@@ -322,7 +322,7 @@ class AdminController extends Controller
         }
         
         // Allow rejecting pending, rejected, and re-approval items
-        $cloth->is_approved = 0; // Use integer 0 instead of false
+        $cloth->is_approved = -1; // Use integer -1 for rejected
         $cloth->save();
 
         // Send notification to the user with rejection reason
@@ -379,7 +379,7 @@ class AdminController extends Controller
         $total = Cloth::count();
         $approved = Cloth::where('is_approved', 1)->count(); // Use integer 1
         $pending = Cloth::where('is_approved', null)->count(); // Use null for pending
-        $rejected = Cloth::where('is_approved', 0)->count(); // Use integer 0
+        $rejected = Cloth::where('is_approved', -1)->count(); // Use integer -1 for rejected
 
         return response()->json([
             'total' => $total,

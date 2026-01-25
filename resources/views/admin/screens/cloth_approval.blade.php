@@ -413,7 +413,7 @@ $(function() {
 
             if (cloth.is_approved === 1 || cloth.is_approved === true) {
                 approvedCount++;
-            } else if (cloth.is_approved === 0 || cloth.is_approved === false) {
+            } else if (cloth.is_approved === -1) {
                 rejectedCount++;
             } else if (cloth.is_approved === null) {
                 if (cloth.resubmission_count > 0) {
@@ -463,7 +463,7 @@ $(function() {
                 statusBadge = '<span class="badge bg-success">Approved</span>';
                 approveDisabled = true;
                 rejectDisabled = true;
-            } else if (cloth.is_approved === 0 || cloth.is_approved === false) {
+            } else if (cloth.is_approved === -1) {
                 statusBadge = '<span class="badge bg-danger">Rejected</span>';
                 approveDisabled = true; // Cannot approve rejected items until resubmission
             } else if (cloth.is_approved === null) {
@@ -710,7 +710,7 @@ $(function() {
             $('#detailStatus').html('<span class="badge bg-success">Approved</span>');
             $('#modalApproveBtn').hide();
             $('#modalRejectBtn').hide();
-        } else if (cloth.is_approved === 0 || cloth.is_approved === false) {
+        } else if (cloth.is_approved === -1) {
              $('#detailStatus').html('<span class="badge bg-danger">Rejected</span>');
              $('#modalApproveBtn').show().prop('disabled', true).html('<i class="bi bi-clock-history me-1"></i>Wait for Resubmission');
              $('#modalRejectBtn').hide();

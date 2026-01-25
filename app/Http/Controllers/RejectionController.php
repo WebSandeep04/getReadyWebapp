@@ -22,7 +22,7 @@ class RejectionController extends Controller
     {
         $rejectedClothes = Cloth::where('user_id', Auth::id())
             ->where(function($query) {
-                $query->where('is_approved', 0) // Rejected items
+                $query->where('is_approved', -1) // Rejected items
                       ->orWhere(function($q) {
                           $q->where('is_approved', null)
                             ->where('resubmission_count', '>', 0); // Re-approval items
@@ -30,6 +30,12 @@ class RejectionController extends Controller
             })
             ->with(['images', 'user', 'categoryRef'])
             ->get();
+
+        // Attach latest rejection reason to each cloth
+        foreach ($rejectedClothes as $cloth) {
+            $notification = $this->findRejectionNotification($cloth->id);
+            $cloth->latest_rejection_reason = $notification ? ($notification->data['reject_reason'] ?? 'N/A') : 'No reason found';
+        }
 
         return view('rejections.index', compact('rejectedClothes'));
     }
@@ -41,7 +47,7 @@ class RejectionController extends Controller
     {
         $cloth = Cloth::where('user_id', Auth::id())
             ->where(function($query) {
-                $query->where('is_approved', 0) // Rejected items
+                $query->where('is_approved', -1) // Rejected items
                       ->orWhere(function($q) {
                           $q->where('is_approved', null)
                             ->where('resubmission_count', '>', 0); // Re-approval items
@@ -84,7 +90,7 @@ class RejectionController extends Controller
 
         $cloth = Cloth::where('user_id', Auth::id())
             ->where(function($query) {
-                $query->where('is_approved', 0) // Rejected items
+                $query->where('is_approved', -1) // Rejected items
                       ->orWhere(function($q) {
                           $q->where('is_approved', null)
                             ->where('resubmission_count', '>', 0); // Re-approval items
@@ -201,7 +207,7 @@ class RejectionController extends Controller
     {
         $cloth = Cloth::where('user_id', Auth::id())
             ->where(function($query) {
-                $query->where('is_approved', 0) // Rejected items
+                $query->where('is_approved', -1) // Rejected items
                       ->orWhere(function($q) {
                           $q->where('is_approved', null)
                             ->where('resubmission_count', '>', 0); // Re-approval items

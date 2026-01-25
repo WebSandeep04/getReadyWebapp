@@ -271,7 +271,7 @@ $(function() {
                     approveDisabled = true;
                     rejectDisabled = true; // Disable reject for approved items
                     approvedCount++;
-                } else if (cloth.is_approved === 0 || cloth.is_approved === false) {
+                } else if (cloth.is_approved === -1) {
                     status = '<span class="badge bg-danger">Rejected</span>';
                     approveDisabled = false;
                     rejectDisabled = false; // Allow rejecting rejected items (for re-approval)

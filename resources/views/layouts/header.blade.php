@@ -56,7 +56,7 @@
         @php
             $rejectedCount = Auth::user()->clothes()
                     ->where(function($query) {
-                        $query->where('is_approved', 0) // Rejected items
+                        $query->where('is_approved', -1) // Rejected items
                               ->orWhere(function($q) {
                                   $q->where('is_approved', null)
                                     ->where('resubmission_count', '>', 0); // Re-approval items

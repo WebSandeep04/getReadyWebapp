@@ -59,9 +59,15 @@
                                     <td class="align-middle">{{ $cloth->condition }}</td>
                                     <td class="align-middle">₹{{ $cloth->rent_price }}</td>
                                     <td class="align-middle">
-                                        <span class="badge {{ $cloth->is_approved === 1 ? 'badge-success' : 'badge-warning' }}">
-                                            {{ $cloth->is_approved === 1 ? 'Approved' : 'Pending Approval' }}
-                                        </span>
+                                        @if($cloth->is_approved == 1)
+                                            <span class="badge badge-success">Approved</span>
+                                        @elseif($cloth->is_approved == -1)
+                                            <span class="badge badge-danger">Rejected</span>
+                                        @elseif($cloth->is_approved === null && $cloth->resubmission_count > 0)
+                                            <span class="badge badge-info">Resubmitted</span>
+                                        @else
+                                            <span class="badge badge-warning">Pending Approval</span>
+                                        @endif
                                     </td>
                                     <td class="align-middle">
                                         <a href="{{ route('clothes.show', $cloth->id) }}" 

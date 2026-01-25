@@ -80,8 +80,8 @@
                     <option value="" disabled selected>Select User Type</option>
                     <option value="Men">Men</option>
                     <option value="Women">Women</option>
-                    <option value="Boy">Boy</option>
-                    <option value="Girl">Girl</option>
+                    <!-- <option value="Boy">Boy</option>
+                    <option value="Girl">Girl</option> -->
                 </select>
                 <i class="bi bi-person icon"></i>
             </div>

@@ -66,14 +66,14 @@ html {
 .icon {
     position: absolute;
     left: 10px;
-    top: 32%;
+    top: 50%;
     transform: translateY(-50%);
     color: #fff;
     font-size: 16px;
 }
 
-.bi-telephone {
-    top: 50% !important;
+.bi-shield-check {
+    top: 32% !important;
 }
 
 .form-check-label,

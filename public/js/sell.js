@@ -17,11 +17,11 @@ const maxRentAmount = document.getElementById('max-rent-amount');
 function checkAndShowRentSuggestion() {
   const mrp = parseFloat(purchaseValueInput.value) || 0;
   const rentPrice = parseFloat(rentPriceInput.value) || 0;
-  
+
   if (mrp > 0) {
     const maxRent = mrp * 0.2; // 20% of MRP
     maxRentAmount.textContent = Math.round(maxRent);
-    
+
     // Only show suggestion if entered rent price exceeds the suggested maximum
     if (rentPrice > maxRent) {
       rentPriceSuggestion.style.display = 'block';
@@ -38,9 +38,9 @@ function checkAndShowRentSuggestion() {
 if (purchaseValueInput && rentPriceInput && rentPriceSuggestion && maxRentAmount) {
   // Check when MRP changes
   purchaseValueInput.addEventListener('input', checkAndShowRentSuggestion);
-  
+
   // Check when rent price changes
-  rentPriceInput.addEventListener('input', function() {
+  rentPriceInput.addEventListener('input', function () {
     checkAndShowRentSuggestion();
     // Also update security deposit (existing functionality)
     const rentPrice = parseFloat(this.value) || 0;
@@ -72,15 +72,31 @@ function updateButtons() {
 }
 
 // Next button functionality
+// Next button functionality
 nextBtn.addEventListener("click", () => {
-  if (currentStep < steps.length - 1) {
-    steps[currentStep].classList.remove("active");
-    indicators[currentStep].classList.remove("active");
-    currentStep++;
-    
-    steps[currentStep].classList.add("active");
-    indicators[currentStep].classList.add("active");
-    updateButtons();
+  // Validate current step
+  const currentStepEl = steps[currentStep];
+  const requiredInputs = currentStepEl.querySelectorAll('input[required], select[required], textarea[required]');
+  let isValid = true;
+
+  for (const input of requiredInputs) {
+    if (!input.checkValidity()) {
+      input.reportValidity();
+      isValid = false;
+      break;
+    }
+  }
+
+  if (isValid) {
+    if (currentStep < steps.length - 1) {
+      steps[currentStep].classList.remove("active");
+      indicators[currentStep].classList.remove("active");
+      currentStep++;
+
+      steps[currentStep].classList.add("active");
+      indicators[currentStep].classList.add("active");
+      updateButtons();
+    }
   }
 });
 
@@ -90,7 +106,7 @@ prevBtn.addEventListener("click", () => {
     steps[currentStep].classList.remove("active");
     indicators[currentStep].classList.remove("active");
     currentStep--;
-    
+
     steps[currentStep].classList.add("active");
     indicators[currentStep].classList.add("active");
     updateButtons();
@@ -108,7 +124,7 @@ function addAvailabilityBlock(type) {
   const container = document.getElementById(type === 'available' ? 'available-dates' : 'blocked-dates');
   const counter = type === 'available' ? ++availableCounter : ++blockedCounter;
   const index = type === 'available' ? counter - 1 : counter + 99; // Use different index ranges
-  
+
   const blockHtml = `
     <div class="availability-block" data-type="${type}" data-index="${index}">
       <div class="row">
@@ -149,27 +165,27 @@ function addAvailabilityBlock(type) {
       ` : ''}
     </div>
   `;
-  
+
   container.insertAdjacentHTML('beforeend', blockHtml);
-  
+
   // Add event listeners for available dates
   if (type === 'available') {
     const blockElement = container.querySelector(`[data-index="${index}"]`);
     const startDateInput = blockElement.querySelector('input[name*="[start_date]"]');
     const endDateInput = blockElement.querySelector('input[name*="[end_date]"]');
-    
+
     // Function to handle date changes
     const handleDateChange = () => {
       const startDate = startDateInput.value;
       const endDate = endDateInput.value;
-      
+
       if (startDate && endDate) {
         const start = new Date(startDate);
         const end = new Date(endDate);
         const daysDiff = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
-        
+
         const errorDiv = document.getElementById(`availability-error-${index}`);
-        
+
         // Check minimum 4 days
         if (daysDiff < 4) {
           errorDiv.textContent = `Minimum 4 days rental required. Currently: ${daysDiff} day(s).`;
@@ -180,31 +196,31 @@ function addAvailabilityBlock(type) {
         }
       }
     };
-    
+
     // Auto-select end date when start date is selected (minimum 4 days)
-    startDateInput.addEventListener('change', function() {
+    startDateInput.addEventListener('change', function () {
       const startDate = this.value;
       if (startDate) {
         const start = new Date(startDate);
         // Set end date to 4 days after start (minimum rental period)
         const end = new Date(start);
         end.setDate(end.getDate() + 3); // +3 because we count both start and end days (4 days total)
-        
+
         // Format date as YYYY-MM-DD
         const year = end.getFullYear();
         const month = String(end.getMonth() + 1).padStart(2, '0');
         const day = String(end.getDate()).padStart(2, '0');
         const formattedEndDate = `${year}-${month}-${day}`;
-        
+
         endDateInput.value = formattedEndDate;
-        
+
         // Trigger validation
         handleDateChange();
       }
     });
-    
+
     // Auto-calculate when end date changes
-    endDateInput.addEventListener('change', function() {
+    endDateInput.addEventListener('change', function () {
       // Trigger validation when end date is manually changed
       handleDateChange();
     });
@@ -213,15 +229,15 @@ function addAvailabilityBlock(type) {
 
 // Function to create delivery and pickup blocks automatically
 function createDeliveryPickupBlocks(startDate, endDate, availableIndex) {
-    // Logic removed as per user request
-    return;
+  // Logic removed as per user request
+  return;
 }
 
 function removeAvailabilityBlock(button) {
   const block = button.closest('.availability-block');
   const blockType = block.getAttribute('data-type');
   const availableIndex = block.getAttribute('data-delivery-for') || block.getAttribute('data-pickup-for');
-  
+
   // If removing an available block, also remove associated delivery/pickup blocks
   if (blockType === 'available') {
     const index = block.getAttribute('data-index');
@@ -234,7 +250,7 @@ function removeAvailabilityBlock(button) {
       pickupBlock.remove();
     });
   }
-  
+
   // If removing a delivery/pickup block, check if we need to recreate it
   if (availableIndex) {
     const availableBlock = document.querySelector(`[data-index="${availableIndex}"]`);
@@ -249,6 +265,6 @@ function removeAvailabilityBlock(button) {
       }
     }
   }
-  
+
   block.remove();
 }

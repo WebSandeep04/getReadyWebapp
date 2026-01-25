@@ -364,7 +364,7 @@ class ClothController extends Controller
         // Send notification to user
         \App\Models\Notification::create([
             'user_id' => Auth::id(),
-            'title' => 'Item Listed Successfully',
+            'title' => 'Item Listed Successfully Pending Approval',
             'message' => "Your item '{$cloth->title}' has been listed successfully and is pending approval.",
             'type' => 'success',
             'icon' => 'bi-check2-circle',
@@ -372,7 +372,7 @@ class ClothController extends Controller
             'read' => false
         ]);
 
-        return redirect('/')->with('success', 'Your item has been listed successfully!');
+        return redirect()->route('listed.clothes')->with('success', 'Your item has been listed successfully!');
     }
 
     public function destroyImage($imageId)

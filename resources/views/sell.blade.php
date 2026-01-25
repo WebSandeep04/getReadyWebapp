@@ -93,12 +93,7 @@
       <input type="text" name="title" placeholder="Title" value="{{ old('title') }}" required>
       @error('title')<div class="text-danger small">{{ $message }}</div>@enderror
 
-      <div class="d-flex justify-content-between align-items-center mb-1">
-        <label class="font-weight-bold mb-0">Description <span class="text-danger">*</span></label>
-        <img src="{{ asset('images/icon/gemini_logo.jpeg') }}" alt="Generate with AI" data-toggle="modal" data-target="#aiDescriptionModal" title="Generate with AI" style="cursor: pointer; height: 30px; width: auto;">
-      </div>
-      <textarea name="description" id="description" placeholder="Description" required>{{ old('description') }}</textarea>
-      @error('description')<div class="text-danger small">{{ $message }}</div>@enderror
+
       
       <label class="d-block text-left font-weight-bold mb-1">Category <span class="text-danger">*</span></label>
       <select name="category" required>
@@ -192,7 +187,7 @@
       </div>
       
       <label class="d-block text-left font-weight-bold mb-1">Body Fit Type</label>
-      <select name="body_type_fit" required>
+      <select name="body_type_fit">
         <option value="">Select Body Fit Type</option>
         @foreach($body_type_fits as $body_type_fit)
           <option value="{{ $body_type_fit->id }}" {{ old('body_type_fit') == $body_type_fit->id ? 'selected' : '' }}>
@@ -208,8 +203,8 @@
       <input type="number" name="purchase_value" placeholder="MRP (₹)" value="{{ old('purchase_value') }}" required>
       @error('purchase_value')<div class="text-danger small">{{ $message }}</div>@enderror
 
-      <label class="d-block text-left font-weight-bold mb-1">SKU <span class="text-danger">*</span></label>
-      <input type="number" name="sku" placeholder="SKU" value="{{ old('sku', 1) }}" required>
+      <label class="d-block text-left font-weight-bold mb-1">Quantity <span class="text-danger">*</span></label>
+      <input type="number" name="sku" placeholder="Quantity" value="{{ old('sku', 1) }}" required>
       @error('sku')<div class="text-danger small">{{ $message }}</div>@enderror
       
       <!-- Availability Management Section -->
@@ -252,7 +247,7 @@
       
       <label class="d-block text-left font-weight-bold mb-1">Rent Price <span class="text-danger">*</span></label>
       <input type="number" name="rent_price" placeholder="Rent Price (₹)" value="{{ old('rent_price') }}" required>
-      <small class="text-muted" id="rent-price-suggestion" style="display: none;">Suggested maximum rent: ₹<span id="max-rent-amount">0</span> (20% of MRP)</small>
+      <small class="text-muted" id="rent-price-suggestion" style="display: none;">Suggested maximum rent: ₹<span id="max-rent-amount">0</span></small>
       @error('rent_price')<div class="text-danger small">{{ $message }}</div>@enderror
       
       <label class="d-block text-left font-weight-bold mb-1">Security Deposit <span class="text-danger">*</span></label>
@@ -269,6 +264,13 @@
       <input type="file" name="images[]" accept="image/*">
       <small class="text-muted">You can upload up to 4 images. At least 1 is required.</small>
       @error('images.*')<div class="text-danger small">{{ $message }}</div>@enderror
+
+      <div class="d-flex justify-content-between align-items-center mb-1 mt-3">
+        <label class="font-weight-bold mb-0">Description <span class="text-danger">*</span></label>
+        <img src="{{ asset('images/icon/gemini_logo.jpeg') }}" alt="Generate with AI" data-toggle="modal" data-target="#aiDescriptionModal" title="Generate with AI" style="cursor: pointer; height: 30px; width: auto;">
+      </div>
+      <textarea name="description" id="description" placeholder="Description" required>{{ old('description') }}</textarea>
+      @error('description')<div class="text-danger small">{{ $message }}</div>@enderror
     </div>
 
     <div class="step-navigation">

@@ -311,39 +311,46 @@
             @endif
 
             <!-- Post Review Form (Only for logged in users) -->
-            @auth
-            <div class="card border mb-4">
-              <div class="card-body">
-                <h6 class="card-title">Write a Review</h6>
-                <form id="reviewForm">
-                  @csrf
-                  <div class="mb-3">
-                    <label class="form-label">Rating *</label>
-                    <div class="star-rating-input">
-                      @for($i = 1; $i <= 5; $i++)
-                        <i class="bi bi-star star-rating-star" data-rating="{{ $i }}"></i>
-                      @endfor
-                      <span class="rating-text ms-2 text-muted"></span>
+            <!-- Post Review Form (Only for logged in users who purchased/rented) -->
+            @if(Auth::check())
+              @if($canReview)
+              <div class="card border mb-4">
+                <div class="card-body">
+                  <h6 class="card-title">Write a Review</h6>
+                  <form id="reviewForm">
+                    @csrf
+                    <div class="mb-3">
+                      <label class="form-label">Rating *</label>
+                      <div class="star-rating-input">
+                        @for($i = 1; $i <= 5; $i++)
+                          <i class="bi bi-star star-rating-star" data-rating="{{ $i }}"></i>
+                        @endfor
+                        <span class="rating-text ms-2 text-muted"></span>
+                      </div>
+                      <input type="hidden" name="rating" id="rating" required>
+                      <div id="rating-error" class="text-danger small" style="display:none;"></div>
                     </div>
-                    <input type="hidden" name="rating" id="rating" required>
-                    <div id="rating-error" class="text-danger small" style="display:none;"></div>
-                  </div>
-                  <div class="mb-3">
-                    <label for="review_text" class="form-label">Your Review</label>
-                    <textarea class="form-control" id="review_text" name="review" rows="3" maxlength="1000" placeholder="Share your experience with this product..."></textarea>
-                    <small class="text-muted"><span id="review_char_count">0</span>/1000 characters</small>
-                  </div>
-                  <button type="submit" class="btn btn-warning">
-                    <i class="bi bi-send me-2"></i>Post Review
-                  </button>
-                </form>
+                    <div class="mb-3">
+                      <label for="review_text" class="form-label">Your Review</label>
+                      <textarea class="form-control" id="review_text" name="review" rows="3" maxlength="1000" placeholder="Share your experience with this product..."></textarea>
+                      <small class="text-muted"><span id="review_char_count">0</span>/1000 characters</small>
+                    </div>
+                    <button type="submit" class="btn btn-warning">
+                      <i class="bi bi-send me-2"></i>Post Review
+                    </button>
+                  </form>
+                </div>
               </div>
-            </div>
+              @else
+              <div class="alert alert-light border text-muted mb-4">
+                <i class="bi bi-info-circle me-1"></i> Only users who have rented or purchased this item can leave a review.
+              </div>
+              @endif
             @else
             <div class="alert alert-info">
               <a href="{{ route('login') }}" class="alert-link">Login</a> to post a review and help others make better decisions.
             </div>
-            @endauth
+            @endif
 
             <!-- Existing Reviews -->
             <div id="reviews-list">

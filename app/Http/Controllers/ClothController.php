@@ -70,8 +70,17 @@ class ClothController extends Controller
             $userReview = $cloth->reviews()->where('user_id', Auth::id())->first();
         }
         
+        // Check if user can review (must have purchased/rented the item)
+        $canReview = false;
+        if (Auth::check()) {
+            $canReview = \App\Models\Order::where('buyer_id', Auth::id())
+                ->whereHas('items', function($query) use ($id) {
+                    $query->where('cloth_id', $id);
+                })->exists();
+        }
+        
         $showFilters = false;
-        return view('clothes.show', compact('cloth', 'showFilters', 'userReview'));
+        return view('clothes.show', compact('cloth', 'showFilters', 'userReview', 'canReview'));
     }
 
     public function index()

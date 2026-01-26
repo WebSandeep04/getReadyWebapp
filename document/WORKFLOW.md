@@ -92,16 +92,29 @@ Dual-mode commerce system: **Rent** vs **Buy**.
 4.  **Failure Handling (Edge Case):**
     *   If the Xpressbees API call fails during Checkout, the system **logs the error** but does not block the order.
     *   **Result:** Payment is successful, Order is `'Confirmed'`, but **no Shipment exists**.
-    *   **Action Required:** Admin must manually address orders stuck in `'Confirmed'` state.
+    *   **Resolution:**
+        *   Navigate to **Admin > Orders**.
+        *   Identify orders with the warning icon <i class="bi bi-exclamation-triangle-fill"></i> (indicating missing shipment).
+        *   Click the **Retry Shipment** button <i class="bi bi-arrow-clockwise"></i> to manually trigger creation.
 
 ### 3.3. Order Management (Admin)
 1.  **Overview (`/admin/orders`):**
     *   **Filters:** Status, Payment (Valid/Invalid), Type (Rent/Buy), Return State (Overdue/Due Soon).
-2.  **Return Process:**
+2.  **Manual Return Processing:**
     *   Admin marks order as `Returned`.
     *   System automatically **increments SKU** and resets `is_available` for rented items.
 
-### 3.3. Admin Configuration
+### 3.4. Return & Reminder Process (Automated)
+The system runs a **Scheduled Task** daily at **09:00** to manage rental returns.
+*   **Command:** `php artisan app:send-return-reminders`
+*   **Schedule:** Defined in `routes/console.php`.
+*   **Logic (Class: `App\Console\Commands\SendReturnReminders`):**
+    1.  **Due Tomorrow:** Sends "Upcoming Return Due Date" reminder.
+    2.  **Due Today:** Sends "Urgent: Return Due Today" warning.
+    3.  **Overdue (Yesterday):** Sends "Action Required: Rental Overdue" alert.
+*   **Notification:** Alerts are stored in the database (`type: order_reminder`) and appear in the user's notification center.
+
+### 3.5. Admin Configuration
 *   **Product Attributes:** Admin can fully CRUD Categories, Brands, Colors, etc. via modal-driven AJAX interfaces (no page reloads).
 *   **Frontend Customization:** Admin updates Logo, Hero images, and Footer text directly from the dashboard.
 

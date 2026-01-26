@@ -17,6 +17,9 @@ use App\Models\BottomType;
 use App\Models\BodyTypeFit;
 use App\Models\GarmentCondition;
 use Illuminate\Support\Carbon;
+use App\Models\Shipment;
+use App\Services\XpressbeesService;
+use Illuminate\Support\Facades\Log;
 
 class AdminController extends Controller
 {
@@ -61,7 +64,8 @@ class AdminController extends Controller
             'buyer',
             'payments' => function ($paymentQuery) {
                 $paymentQuery->latest();
-            }
+            },
+            'shipment'
         ]);
 
         if ($status = $request->get('status')) {
@@ -446,29 +450,7 @@ class AdminController extends Controller
         // Increment SKU for rented items
         foreach ($order->items as $item) {
             $cloth = $item->cloth;
-            if ($cloth && $item->price != $cloth->purchase_value) { // Assuming rental if price != purchase_value or strictly rely on order logic
-                // A better check would be if the order has_rental_items true, but items might be mixed.
-                // However, the prompt says "if the item in on rented then 1 sku is minus... after returned sku is added".
-                // We should check if this specific item in the order was a rental.
-                // The OrderItem doesn't explicitly store 'rent' or 'buy' type in a simple column in some versions, 
-                // but we can infer from price vs rent_price or if the order is marked rental.
-                // Re-reading OrderItem model might be useful, but let's assume we can increment all items in a "Return" action 
-                // since "Return" usually applies to rentals. 
-                // Wait, if it's a "Buy" mixed with "Rent", we shouldn't return the "Buy" item stock?
-                // The requirement says "at every purchase 1 sku is minus... if the item in on rented... returned sku is added".
-                // Buying implies permanent ownership, so only RENTALS are returned.
-
-                // Refined logic: check if it's a rental item.
-                // We can heuristic: if (order has rental items) and this item is likely the rental.
-                // Actually, `CheckoutController` saves price. 
-                // A safer bet: if the order is "Returned", it implies the RENTED items are returned.
-                // "Buy" items are technically 'Delivered' and done.
-                // But `Order` status applies to the whole order.
-                // If it's a mixed order, marking "Returned" might be ambiguous.
-                // Ideally we should mark individual items.
-                // But given the constraints, let's assume "Return" action is only valid for Rental orders or the rental part.
-                
-                // Let's increment SKU.
+            if ($cloth && $item->price != $cloth->purchase_value) { 
                 $cloth->sku = $cloth->sku + 1;
                 $cloth->is_available = true; // Make available again
                 $cloth->save();
@@ -476,5 +458,94 @@ class AdminController extends Controller
         }
 
         return response()->json(['success' => true, 'message' => 'Order marked as returned.']);
+    }
+
+    public function retryShipment($id)
+    {
+        $order = Order::with(['items.cloth', 'buyer', 'payments', 'shipment'])->findOrFail($id);
+
+        if ($order->shipment) {
+            return response()->json(['success' => false, 'message' => 'Shipment already exists for this order.'], 400);
+        }
+
+        // Determine Payment Type
+        $latestPayment = $order->payments->sortByDesc('created_at')->first();
+        $paymentType = 'Prepaid';
+        if ($latestPayment && $latestPayment->payment_method === 'cod') {
+            $paymentType = 'COD';
+        }
+
+        try {
+            $courier = new XpressbeesService();
+            
+            $user = $order->buyer;
+            if (!$user) { // Should not happen for valid orders but safety check
+                 return response()->json(['success' => false, 'message' => 'Buyer information missing.'], 400);
+            }
+
+            $addressParts = explode(',', $order->delivery_address);
+            $city = trim($addressParts[count($addressParts)-2] ?? 'Mumbai');
+            $pincode = trim($addressParts[count($addressParts)-1] ?? '400001');
+
+            $orderLoad = [
+                'order_number' => $order->id,
+                'payment_method' => $paymentType,
+                'collectable_amount' => ($paymentType === 'COD') ? $order->total_amount : 0,
+                'consignee_name' => $user->name,
+                'consignee_phone' => $user->phone ?? '9999999999',
+                'consignee_address' => $order->delivery_address,
+                'consignee_pincode' => $pincode,
+                'consignee_city' => $city,
+                'consignee_state' => 'Maharashtra',
+                'products' => [],
+                'total_amount' => $order->total_amount,
+                'weight' => 0.5,
+                'length' => 10,
+                'breadth' => 10,
+                'height' => 10
+            ];
+
+            foreach ($order->items as $item) {
+                 $orderLoad['products'][] = [
+                     'name' => $item->cloth->title ?? 'Item',
+                     'qty' => 1,
+                     'price' => $item->price
+                 ];
+            }
+
+            $response = $courier->createOrder($orderLoad);
+
+            if ($response && isset($response['awb_number'])) {
+                Shipment::create([
+                    'order_id' => $order->id,
+                    'courier_name' => 'Xpressbees',
+                    'waybill_number' => $response['awb_number'],
+                    'reference_id' => $response['order_id'] ?? null,
+                    'tracking_url' => $response['label_url'] ?? null,
+                    'label_url' => $response['label_url'] ?? null,
+                    'status' => 'Booked',
+                ]);
+                
+                $order->update(['status' => 'Order Confirmed & Shipment Created']);
+                
+                return response()->json([
+                    'success' => true, 
+                    'message' => 'Shipment created successfully. AWB: ' . $response['awb_number']
+                ]);
+            } else {
+                Log::error("Admin Retry Shipment Failed: " . json_encode($response));
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'Failed to create shipment with courier. Check logs.'
+                ], 500);
+            }
+
+        } catch (\Exception $e) {
+            Log::error("Admin Retry Shipment Exception: " . $e->getMessage());
+            return response()->json([
+                'success' => false, 
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

@@ -328,6 +328,41 @@ $(function() {
         });
     });
 
+    // Retry Shipment Logic
+    $tableBody.on('click', '.retry-shipment-btn', function(e) {
+        e.preventDefault();
+        const $btn = $(this);
+        const orderId = $btn.data('order-id');
+        
+        if (!confirm('Attempt to create shipment for this order again?')) {
+            return;
+        }
+
+        const originalHtml = $btn.html();
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>');
+        
+        $.ajax({
+            url: `/admin/orders/${orderId}/retry-shipment`,
+            type: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}'
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert(response.message);
+                    fetchOrders();
+                } else {
+                    alert(response.message || 'Action failed');
+                    $btn.prop('disabled', false).html(originalHtml);
+                }
+            },
+            error: function(xhr) {
+                alert('Error: ' + (xhr.responseJSON?.message || 'Something went wrong'));
+                $btn.prop('disabled', false).html(originalHtml);
+            }
+        });
+    });
+
     $form.on('submit', function(e) {
         e.preventDefault();
         fetchOrders();

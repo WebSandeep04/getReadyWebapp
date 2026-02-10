@@ -139,6 +139,20 @@ Route::middleware(['admin.auth'])->group(function () {
     Route::post('/admin/garment-conditions', [App\Http\Controllers\GarmentConditionController::class, 'store'])->name('garment_conditions.store');
     Route::put('/admin/garment-conditions/{id}', [App\Http\Controllers\GarmentConditionController::class, 'update'])->name('garment_conditions.update');
     Route::delete('/admin/garment-conditions/{id}', [App\Http\Controllers\GarmentConditionController::class, 'destroy'])->name('garment_conditions.destroy');
+
+    // Roles Management (Admin)
+    Route::get('/admin/roles', [App\Http\Controllers\RoleController::class, 'index'])->name('roles.index');
+    Route::get('/admin/roles/json', [App\Http\Controllers\RoleController::class, 'json'])->name('roles.json');
+    Route::post('/admin/roles', [App\Http\Controllers\RoleController::class, 'store'])->name('roles.store');
+    Route::put('/admin/roles/{id}', [App\Http\Controllers\RoleController::class, 'update'])->name('roles.update');
+    Route::delete('/admin/roles/{id}', [App\Http\Controllers\RoleController::class, 'destroy'])->name('roles.destroy');
+    
+    // Admin Panel User Management
+    Route::get('/admin/panel-users', [App\Http\Controllers\AdminPanelUserController::class, 'index'])->name('admin_panel_users.index');
+    Route::get('/admin/panel-users/json', [App\Http\Controllers\AdminPanelUserController::class, 'json'])->name('admin_panel_users.json');
+    Route::post('/admin/panel-users', [App\Http\Controllers\AdminPanelUserController::class, 'store'])->name('admin_panel_users.store');
+    Route::put('/admin/panel-users/{id}', [App\Http\Controllers\AdminPanelUserController::class, 'update'])->name('admin_panel_users.update');
+    Route::delete('/admin/panel-users/{id}', [App\Http\Controllers\AdminPanelUserController::class, 'destroy'])->name('admin_panel_users.destroy');
 });
 
 // User (Non-admin route, kept outside)

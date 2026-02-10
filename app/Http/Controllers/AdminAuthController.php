@@ -22,8 +22,13 @@ class AdminAuthController extends Controller
             'password' => 'required',
         ]);
 
-        if ($request->username === 'admin' && $request->password === 'admin@123') {
+        $admin = \App\Models\AdminPanelUser::where('username', $request->username)->first();
+
+        if ($admin && \Illuminate\Support\Facades\Hash::check($request->password, $admin->password)) {
             Session::put('admin_logged_in', true);
+            Session::put('admin_id', $admin->id);
+            Session::put('admin_name', $admin->name);
+            Session::put('admin_role', $admin->role->name);
             return redirect()->route('admin.dashboard')->with('success', 'Logged in successfully');
         }
 

@@ -61,6 +61,7 @@
                                 <th>Tracking</th>
                                 <th>Payment</th>
                                 <th>Placed</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -135,6 +136,19 @@
                                         @endif
                                     </td>
                                     <td>{{ $order->created_at->format('d/m/Y, h:i A') }}</td>
+                                    <td>
+                                        @if($canRate)
+                                            @if($hasRated)
+                                                <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Rated</span>
+                                            @else
+                                                <button type="button" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#rateModal" data-order-id="{{ $order->id }}">
+                                                    <i class="bi bi-star me-1"></i>Rate Seller
+                                                </button>
+                                            @endif
+                                        @else
+                                            <span class="text-muted small">Available after delivery</span>
+                                        @endif
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>

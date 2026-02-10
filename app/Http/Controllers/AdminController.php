@@ -460,6 +460,19 @@ class AdminController extends Controller
         return response()->json(['success' => true, 'message' => 'Order marked as returned.']);
     }
 
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:Pending,Confirmed,Delivered,Returned,Cancelled,Order Confirmed & Shipment Created'
+        ]);
+
+        $order = Order::findOrFail($id);
+        $order->status = $request->status;
+        $order->save();
+
+        return response()->json(['success' => true, 'message' => 'Order status updated to ' . $request->status]);
+    }
+
     public function retryShipment($id)
     {
         $order = Order::with(['items.cloth', 'buyer', 'payments', 'shipment'])->findOrFail($id);

@@ -328,6 +328,42 @@ $(function() {
         });
     });
 
+    // Update Status Logic (General)
+    $tableBody.on('click', '.update-status-btn', function(e) {
+        e.preventDefault();
+        const $btn = $(this);
+        const orderId = $btn.data('order-id');
+        const newStatus = $btn.data('status');
+        
+        if (!confirm(`Are you sure you want to change order status to ${newStatus}?`)) {
+            return;
+        }
+
+        $btn.prop('disabled', true);
+        
+        $.ajax({
+            url: `/admin/orders/${orderId}/status`,
+            type: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                status: newStatus
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert(response.message);
+                    fetchOrders();
+                } else {
+                    alert(response.message || 'Action failed');
+                    $btn.prop('disabled', false);
+                }
+            },
+            error: function(xhr) {
+                alert('Error: ' + (xhr.responseJSON?.message || 'Something went wrong'));
+                $btn.prop('disabled', false);
+            }
+        });
+    });
+
     // Retry Shipment Logic
     $tableBody.on('click', '.retry-shipment-btn', function(e) {
         e.preventDefault();

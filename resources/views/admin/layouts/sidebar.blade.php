@@ -31,7 +31,27 @@
             ],
         ],
     ];
+
+    // Helper to determine if a route or its children are active
+    $isActive = function($route) {
+        if (request()->routeIs($route)) {
+            return true;
+        }
+        // Handle resource.* wildcard (e.g. user.index -> user.* matches user.create, user.edit)
+        if (\Illuminate\Support\Str::endsWith($route, '.index')) {
+            $resource = \Illuminate\Support\Str::beforeLast($route, '.index');
+            if (request()->routeIs($resource . '.*')) {
+                return true;
+            }
+        }
+        // Handle prefix matches (e.g. admin.orders -> admin.orders.*)
+        if (request()->routeIs($route . '.*')) {
+            return true;
+        }
+        return false;
+    };
 @endphp
+
 <aside class="admin-sidebar">
     <!-- Brand -->
     <div class="admin-sidebar__brand">
@@ -41,7 +61,7 @@
     </div>
 
     <!-- Navigation -->
-    <nav class="py-2">
+    <nav class="py-2" id="sidebarAccordion">
         <div class="admin-sidebar__menu-label">Main Menu</div>
         
         <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
@@ -51,10 +71,10 @@
 
         @foreach($adminSidebar as $index => $section)
             @php
-                // Check if any child link is currently active
+                // Check if any child link is currently active to open the parent section
                 $isActiveSection = false;
                 foreach($section['links'] as $link) {
-                    if (request()->routeIs($link['route']) || request()->is($link['route'])) {
+                    if ($isActive($link['route'])) {
                         $isActiveSection = true;
                         break;
                     }
@@ -74,10 +94,10 @@
                     <i class="bi bi-chevron-down rotate-icon small"></i>
                 </div>
                 
-                <div class="collapse {{ $isActiveSection ? 'show' : '' }}" id="menu-{{ $index }}">
+                <div class="collapse {{ $isActiveSection ? 'show' : '' }}" id="menu-{{ $index }}" data-bs-parent="#sidebarAccordion">
                     <div class="submenu-list">
                         @foreach($section['links'] as $link)
-                            <a href="{{ route($link['route']) }}" class="submenu-link {{ request()->routeIs($link['route']) ? 'active' : '' }}">
+                            <a href="{{ route($link['route']) }}" class="submenu-link {{ $isActive($link['route']) ? 'active' : '' }}">
                                 {{ $link['label'] }}
                             </a>
                         @endforeach

@@ -32,37 +32,56 @@
         ],
     ];
 @endphp
-
-<aside class="admin-sidebar d-flex flex-column">
+<aside class="admin-sidebar">
+    <!-- Brand -->
     <div class="admin-sidebar__brand">
-        <button class="admin-sidebar__toggle-btn" id="sidebarToggle">
-            <i class="bi bi-list"></i>
-        </button>
-        <span class="admin-sidebar__logo">GR</span>
-        <div class="admin-sidebar__brand-text">
-            <div class="fw-bold text-dark small">Get Ready</div>
-            <small class="text-muted">Admin Panel</small>
-        </div>
+        <span class="fw-bold fs-4 text-dark">
+            GetReady
+        </span>
     </div>
 
-    <nav class="admin-sidebar__nav flex-grow-1">
-        <a href="{{ route('admin.dashboard') }}" class="admin-sidebar__link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+    <!-- Navigation -->
+    <nav class="py-2">
+        <div class="admin-sidebar__menu-label">Main Menu</div>
+        
+        <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+            <i class="bi bi-grid-fill"></i>
             <span>Dashboard</span>
-            <i class="bi bi-speedometer2"></i>
         </a>
+
         @foreach($adminSidebar as $index => $section)
-            <div class="admin-sidebar__section">
-                <button class="admin-sidebar__toggle" data-bs-toggle="collapse" data-bs-target="#sidebar-section-{{ $index }}" aria-expanded="false">
-                    <span><i class="bi {{ $section['icon'] }} me-2"></i>{{ $section['title'] }}</span>
-                    <i class="bi bi-chevron-down"></i>
-                </button>
-                <div class="collapse" id="sidebar-section-{{ $index }}">
-                    @foreach($section['links'] as $link)
-                        <a href="{{ route($link['route']) }}" class="admin-sidebar__link {{ request()->routeIs($link['route']) ? 'active' : '' }}">
-                            <span>{{ $link['label'] }}</span>
-                            <i class="bi {{ $link['icon'] }}"></i>
-                        </a>
-                    @endforeach
+            @php
+                // Check if any child link is currently active
+                $isActiveSection = false;
+                foreach($section['links'] as $link) {
+                    if (request()->routeIs($link['route']) || request()->is($link['route'])) {
+                        $isActiveSection = true;
+                        break;
+                    }
+                }
+            @endphp
+
+            <!-- Section Header (Collapsible) -->
+            <div class="mt-1">
+                <div class="nav-link submenu-toggle {{ $isActiveSection ? 'active' : '' }}" 
+                     data-bs-toggle="collapse" 
+                     data-bs-target="#menu-{{ $index }}" 
+                     aria-expanded="{{ $isActiveSection ? 'true' : 'false' }}">
+                    <div class="d-flex align-items-center">
+                        <i class="bi {{ $section['icon'] }}"></i>
+                        <span>{{ $section['title'] }}</span>
+                    </div>
+                    <i class="bi bi-chevron-down rotate-icon small"></i>
+                </div>
+                
+                <div class="collapse {{ $isActiveSection ? 'show' : '' }}" id="menu-{{ $index }}">
+                    <div class="submenu-list">
+                        @foreach($section['links'] as $link)
+                            <a href="{{ route($link['route']) }}" class="submenu-link {{ request()->routeIs($link['route']) ? 'active' : '' }}">
+                                {{ $link['label'] }}
+                            </a>
+                        @endforeach
+                    </div>
                 </div>
             </div>
         @endforeach

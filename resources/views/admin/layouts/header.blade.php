@@ -1,18 +1,18 @@
-<div class="header d-flex justify-content-between align-items-center px-3 py-2">
-    <!-- Page Title -->
-    <div>
-        <strong class="text-white">@yield('page_title', 'Dashboard')</strong>
+<header class="admin-header">
+    <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-link link-dark p-0 border-0 text-decoration-none" id="sidebarToggle">
+            <i class="bi bi-list fs-4"></i>
+        </button>
+        <h5 class="mb-0 fw-bold text-dark">@yield('page_title', 'Dashboard')</h5>
     </div>
-
-    <!-- Welcome and Logout Icon -->
-    <div class="d-flex align-items-center">
-        <span class="text-white me-3">Welcome, {{ Auth::user()->name ?? 'User' }}</span>
-
-        <form method="POST" action="{{ route('logout') }}">
+    
+    <div>
+        <!-- Logout Power Button -->
+        <form method="POST" action="{{ route('logout') }}" class="d-inline">
             @csrf
-            <button type="submit" class="btn btn-sm text-light p-2" title="Logout">
+            <button type="submit" class="header-icon-btn text-danger" title="Logout">
                 <i class="bi bi-power"></i>
             </button>
         </form>
     </div>
-</div>
+</header>

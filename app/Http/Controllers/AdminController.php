@@ -36,7 +36,7 @@ class AdminController extends Controller
 
     public function orders(Request $request)
     {
-        $orders = $this->buildOrdersQuery($request)->paginate(15)->appends($request->query());
+        $orders = $this->buildOrdersQuery($request)->paginate(20)->appends($request->query());
         $stats = $this->getOrderStats();
         $filters = $request->all();
         $statuses = ['Pending', 'Confirmed', 'Delivered', 'Returned', 'Cancelled'];
@@ -47,7 +47,7 @@ class AdminController extends Controller
 
     public function ordersData(Request $request)
     {
-        $orders = $this->buildOrdersQuery($request)->paginate(15)->appends($request->query());
+        $orders = $this->buildOrdersQuery($request)->paginate(20)->appends($request->query());
 
         return response()->json([
             'table_html' => view('admin.components.orders-rows', compact('orders'))->render(),

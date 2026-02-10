@@ -5,48 +5,65 @@
 
 @push('styles')
 <style>
+*, ::before, ::after { border-radius: 0 !important; }
 .approve-btn:disabled,
-.reject-btn:disabled { opacity:.6; cursor:not-allowed; }
-.table img { border:2px solid #e2e8f0; border-radius:8px; transition:.2s; }
-.table img:hover { border-color:#3b82f6; transform:scale(1.05); }
-.table th { background:#f8fafc; border-bottom:2px solid #e5e7eb; font-weight:600; text-transform:uppercase; font-size:.75rem; letter-spacing:.08em; }
-.table td { vertical-align:middle; }
-.badge { font-size:.75rem; border-radius:999px; padding:.35rem .75rem; font-weight:600; }
-.badge.bg-success { background:linear-gradient(135deg,#10b981,#059669); }
-.badge.bg-danger { background:linear-gradient(135deg,#fb7185,#dc2626); }
-.badge.bg-warning { background:linear-gradient(135deg,#fcd34d,#f59e0b); color:#78350f; }
-.badge.bg-info { background:linear-gradient(135deg,#60a5fa,#2563eb); }
-.approval-hero { background:linear-gradient(135deg,#0f172a,#312e81); border-radius:20px; padding:1.75rem; color:#fff; margin-bottom:1.75rem; box-shadow:0 25px 40px rgba(15,23,42,.35); }
-.approval-hero__title { font-size:1.35rem; font-weight:600; }
-.approval-hero__subtitle { margin:0; opacity:.9; }
-.stat-card { border-radius:20px; padding:1.35rem; color:#fff; position:relative; overflow:hidden; box-shadow:0 18px 32px rgba(15,23,42,.18); }
-.stat-card__label { text-transform:uppercase; letter-spacing:.08em; font-size:.8rem; opacity:.85; }
-.stat-card__value { font-size:2.15rem; font-weight:600; margin:.35rem 0; }
-.stat-card__icon { position:absolute; top:1rem; right:1rem; font-size:2.4rem; opacity:.2; }
-.stat-pending { background:linear-gradient(135deg,#fcd34d,#f97316); }
-.stat-approved { background:linear-gradient(135deg,#34d399,#059669); }
-.stat-reapproval { background:linear-gradient(135deg,#60a5fa,#2563eb); }
-.stat-rejected { background:linear-gradient(135deg,#fb7185,#dc2626); }
-.status-legend { background:#f8fafc; border-radius:18px; padding:1.25rem; border:1px solid #e5e7eb; box-shadow:inset 0 0 30px rgba(79,70,229,.04); }
-.legend-pill { display:flex; align-items:center; gap:.5rem; padding:.45rem .7rem; border-radius:999px; margin-bottom:.4rem; font-size:.85rem; font-weight:500; }
-.admin-table th,.admin-table td { font-size:.85rem; padding:.45rem .55rem; }
-.admin-table .btn-icon { width:32px; height:32px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin-right:.2rem; }
+.reject-btn:disabled { opacity:.4; cursor:not-allowed; }
+.table img { border:none; transition:.2s; box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+.table img:hover { transform:scale(1.05); box-shadow: 0 8px 16px rgba(0,0,0,0.25); }
+.table th { background:#f8fafc; color: #000; border-bottom:1px solid #ddd; font-weight:700; font-size:.65rem; letter-spacing:normal; text-transform: none; }
+.table td { vertical-align:middle; font-size: .65rem; padding: 0.25rem 0.4rem !important; border-bottom: 1px solid #eee; color: #000; }
+.badge { font-size:.6rem; padding:.15rem .4rem; font-weight:600; border: none; color: #000; background: #fff; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
+.badge.bg-success { background:#fff; color: #000; border: 1px solid #000; }
+.badge.bg-danger { background:#000; color: #fff; border: 1px solid #000; }
+.badge.bg-warning { background:#f1f1f1; color: #000; border: 1px solid #000; }
+.badge.bg-info { background:#e1e1e1; color: #000; border: 1px solid #000; }
+.approval-hero { background:#fff; padding:1.5rem; color:#000; margin-bottom:1.5rem; border: none; box-shadow: 0 15px 45px rgba(0,0,0,0.12); }
+.approval-hero__title { font-size:1.2rem; font-weight:700; color: #000; }
+.approval-hero__subtitle { margin:0; opacity:0.8; font-size: .85rem; color: #000; }
+.stat-card { position:relative; padding:1.25rem; color:#000; background: #fff; border: none; box-shadow: 0 8px 25px rgba(0,0,0,0.1); overflow:hidden; height: 100%; display: flex; flex-direction: column; justify-content: center; min-height: 110px; transition: all 0.3s ease; }
+.stat-card:hover { transform: translateY(-4px); box-shadow: 0 15px 35px rgba(0,0,0,0.15); }
+.stat-card__label { text-transform:none; letter-spacing:normal; font-size:.7rem; font-weight: 700; color: #333; }
+.stat-card__value { font-size:2rem; font-weight:800; margin:.1rem 0; color: #000; }
+.stat-card__icon { position:absolute; top:0.75rem; right:0.75rem; font-size:1.5rem; opacity:1; color: #000; }
+.stat-pending, .stat-approved, .stat-reapproval, .stat-rejected { background:#fff; }
+.status-legend { background:#fff; padding:1.25rem; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+.legend-pill { display:flex; align-items:center; gap:.5rem; padding:.45rem .7rem; margin-bottom:.4rem; font-size:.8rem; font-weight:600; background: #fbfbfb; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+.admin-table th,.admin-table td { font-size:.65rem; padding:.35rem .5rem !important; }
+.admin-table tr:hover { background-color: #fbfbfb !important; }
+.admin-table .btn-icon { width:24px; height:24px; border: none; box-shadow: 0 4px 8px rgba(0,0,0,0.12); background: #fff; color: #000; font-size: 0.75rem; margin-right: 4px; transition: all 0.2s; display:inline-flex; align-items:center; justify-content:center; }
+.admin-table .btn-icon:hover { transform: translateY(-1px); box-shadow: 0 6px 12px rgba(0,0,0,0.18); }
+.admin-table .btn-success { background: #000 !important; color: #fff !important; }
+.admin-table .btn-danger { background: #fff !important; color: #000 !important; border: 1px solid #000 !important; }
+.admin-table .btn-outline-secondary { background: #fff !important; color: #000 !important; border: 1px solid #eee !important; }
+.admin-table .btn-info { background: #f1f1f1 !important; color: #000 !important; border: 1px solid #ddd !important; }
+.card { border: none; box-shadow: 0 20px 50px rgba(0,0,0,0.1); background: #fff; }
+.card-header { padding: 1rem; background: #fff !important; color: #000 !important; border-bottom: 1px solid #eee; }
+.card-header h5 { font-size: 0.95rem; color: #000; font-weight: 700; }
+.form-select, .form-control { border: 1px solid #eee !important; background: #fff !important; box-shadow: 0 2px 4px rgba(0,0,0,0.03); color: #000 !important; font-size: 0.75rem; transition: all 0.2s; }
+.form-select:focus, .form-control:focus { box-shadow: 0 5px 15px rgba(0,0,0,0.08); border-color: #000 !important; outline: none; }
+.btn { border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: all 0.2s; }
+.btn:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(0,0,0,0.15); }
+.modal-content, .modal-header, .btn-close { border-radius: 0 !important; }
+.filter-card {
+    background: #fff;
+    padding: 1rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+.filter-form .form-label { font-weight: 700; color: #000; font-size: 0.65rem; margin-bottom: 0.25rem; }
+.filter-form .form-control, 
+.filter-form .form-select {
+    border: 1px solid #eee !important;
+    background: #fff !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+    color: #000 !important;
+    font-size: 0.75rem;
+    padding: 0.35rem 0.5rem;
+}
 </style>
 @endpush
 
 @section('content')
 <div class="container mt-4">
-    <div class="approval-hero d-flex flex-column flex-lg-row justify-content-between align-items-lg-center">
-        <div class="mb-3 mb-lg-0">
-            <div class="approval-hero__title">Approval Queue</div>
-            <p class="approval-hero__subtitle">Audit listings, capture rejection notes, and publish qualified looks without leaving this workspace.</p>
-        </div>
-        <div class="text-end">
-            <div class="text-uppercase small text-white-50">Reviewer</div>
-            <div class="fs-5 fw-semibold">{{ Auth::user()->name ?? 'Admin' }}</div>
-        </div>
-    </div>
-
     <div class="row g-3 mb-4">
         <div class="col-lg-3 col-sm-6">
             <div class="stat-card stat-pending">
@@ -82,24 +99,57 @@
         </div>
     </div>
 
+    </div>
+
+    <!-- Filter Card -->
+    <div class="card mb-4 filter-card">
+        <div class="card-body">
+            <form class="filter-form">
+                <div class="row g-2 align-items-end">
+                    <div class="col-lg-2 col-md-3 col-6">
+                        <label class="form-label small text-uppercase fw-bold text-dark">Status</label>
+                        <select id="filterStatus" class="form-select">
+                            <option value="">All Statuses</option>
+                            <option value="pending">Pending</option>
+                            <option value="approved">Approved</option>
+                            <option value="re-approval">Re-approval</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-3 col-6">
+                        <label class="form-label small text-uppercase fw-bold text-dark">Category</label>
+                        <select id="filterCategory" class="form-select">
+                            <option value="">All</option>
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-outline-secondary" id="resetFilters" title="Reset Filters">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Search Card -->
+    <div class="card mb-4 border-0 shadow-sm" style="background: #fff;">
+        <div class="card-body p-1">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-0 ps-3"><i class="bi bi-search text-muted small"></i></span>
+                <input type="text" id="clothSearchInput" class="form-control border-0 shadow-none ps-2" 
+                       style="font-size: 0.9rem;"
+                       placeholder="Search Cloth Title, Owner Name, or Category...">
+            </div>
+        </div>
+    </div>
+
     <div class="row g-3 mb-4 align-items-stretch">
-        <div class="col-xl-9">
+        <div class="col-12">
             <div class="card h-100">
                 <div class="card-header bg-primary text-white">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="mb-0"><i class="bi bi-shield-check me-2"></i>Clothes Approval Management</h5>
-                        <div class="d-flex align-items-center">
-                            <select id="statusFilter" class="form-select form-select-sm me-2" style="width:auto;">
-                                <option value="">All Statuses</option>
-                                <option value="pending">Pending</option>
-                                <option value="approved">Approved</option>
-                                <option value="re-approval">Re-approval</option>
-                                <option value="rejected">Rejected</option>
-                            </select>
-                            <button class="btn btn-outline-light btn-sm" onclick="loadClothes()">
-                                <i class="bi bi-arrow-clockwise me-1"></i>Refresh
-                            </button>
-                        </div>
                     </div>
                 </div>
                 <div class="card-body">
@@ -107,7 +157,6 @@
                         <table class="table table-sm table-hover admin-table" id="clothesTable">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Image</th>
                                     <th>Title</th>
                                     <th>Category</th>
                                     <th>Owner</th>
@@ -127,21 +176,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-xl-3">
-            <div class="status-legend h-100">
-                <div class="fw-semibold mb-3">Status legend</div>
-                <div class="legend-pill" style="background:#FEF3C7;"><span class="badge bg-warning">&nbsp;</span> Pending review</div>
-                <div class="legend-pill" style="background:#DCFCE7;"><span class="badge bg-success">&nbsp;</span> Approved</div>
-                <div class="legend-pill" style="background:#DBEAFE;"><span class="badge bg-info">&nbsp;</span> Re-approval</div>
-                <div class="legend-pill" style="background:#FEE2E2;"><span class="badge bg-danger">&nbsp;</span> Rejected</div>
-                <hr>
-                <div class="text-uppercase small text-muted mb-1">Totals</div>
-                <div class="d-flex justify-content-between"><span>Listings</span><strong id="totalCount">0</strong></div>
-                <div class="d-flex justify-content-between"><span>Rent volume</span><strong id="totalRentSum">₹0</strong></div>
-                <div class="d-flex justify-content-between"><span>Security held</span><strong id="totalDepositSum">₹0</strong></div>
-            </div>
-        </div>
-</div>
+    </div>
 
 <!-- Details Modal -->
 <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
@@ -368,11 +403,11 @@ $(function() {
     const approvalState = {
         data: [],
         page: 1,
-        perPage: 5,
+        perPage: 20,
     };
 
     function loadClothes() {
-        let status = $('#statusFilter').val();
+        let status = $('#filterStatus').val();
         let url = "{{ route('clothes.fetch') }}";
         if (status) {
             url += `?status=${status}`;
@@ -382,6 +417,7 @@ $(function() {
             approvalState.data = clothes || [];
             approvalState.page = 1;
             updateApprovalStats(approvalState.data);
+            populateCategories(approvalState.data);
             renderClothes();
         }).fail(function() {
             $('#clothesTable tbody').html('<tr><td colspan="11" class="text-center text-danger">Error loading clothes data</td></tr>');
@@ -390,7 +426,35 @@ $(function() {
     }
     loadClothes();
 
-    $('#statusFilter').on('change', loadClothes);
+    $('#filterStatus').on('change', loadClothes);
+    $('#filterCategory').on('change', function() {
+        approvalState.page = 1;
+        renderClothes();
+    });
+    $('#clothSearchInput').on('input', function() {
+        approvalState.page = 1;
+        renderClothes();
+    });
+    $('#resetFilters').on('click', function() {
+        $('#filterStatus').val('');
+        $('#filterCategory').val('');
+        $('#clothSearchInput').val('');
+        loadClothes();
+    });
+
+    function populateCategories(clothes) {
+        if (!clothes || !clothes.length) return;
+        let categories = [...new Set(clothes.map(item => item.category).filter(Boolean))].sort();
+        let $select = $('#filterCategory');
+        let currentVal = $select.val();
+        $select.html('<option value="">All</option>');
+        categories.forEach(cat => {
+            $select.append(`<option value="${cat}">${cat}</option>`);
+        });
+        if (currentVal && categories.includes(currentVal)) {
+            $select.val(currentVal);
+        }
+    }
 
     function updateApprovalStats(clothes) {
         if (!clothes || !clothes.length) {
@@ -434,7 +498,23 @@ $(function() {
     }
 
     function renderClothes() {
-        const clothes = approvalState.data || [];
+        let clothes = approvalState.data || [];
+
+        // Client-side filtering
+        const catFilter = $('#filterCategory').val();
+        const searchFilter = $('#clothSearchInput').val().toLowerCase().trim();
+
+        if (catFilter) {
+            clothes = clothes.filter(c => c.category === catFilter);
+        }
+        if (searchFilter) {
+            clothes = clothes.filter(c => {
+                const title = (c.title || '').toLowerCase();
+                const owner = (c.user && c.user.name ? c.user.name : '').toLowerCase();
+                const cat = (c.category || '').toLowerCase();
+                return title.includes(searchFilter) || owner.includes(searchFilter) || cat.includes(searchFilter);
+            });
+        }
 
         if (!clothes.length) {
             $('#clothesTable tbody').html('<tr><td colspan="11" class="text-center">No clothes found</td></tr>');
@@ -451,9 +531,7 @@ $(function() {
         const pageItems = clothes.slice(start, start + approvalState.perPage);
 
         const rows = pageItems.map(function(cloth) {
-            let image = cloth.images && cloth.images.length > 0
-                ? `<img src='/storage/${cloth.images[0].image_path}' alt='${cloth.title}' style='width:60px;height:60px;object-fit:cover;border-radius:6px;'>`
-                : `<img src='${defaultImageUrl}' alt='${cloth.title}' style='width:60px;height:60px;object-fit:cover;border-radius:6px;'>`;
+
 
             let statusBadge = '';
             let approveDisabled = false;
@@ -475,7 +553,6 @@ $(function() {
             }
 
             return `<tr>
-                <td>${image}</td>
                 <td>${cloth.title}</td>
                 <td>${cloth.category}</td>
                 <td>${cloth.user ? cloth.user.name : ''}</td>
@@ -508,30 +585,44 @@ $(function() {
 
     function renderClothesPagination(totalPages) {
         const $pager = $('#clothesPagination');
-        if (approvalState.data.length <= approvalState.perPage) {
+        const totalEntries = approvalState.data.length;
+        
+        if (totalEntries === 0) {
             $pager.addClass('d-none').empty();
             return;
         }
 
+        const startEntry = ((approvalState.page - 1) * approvalState.perPage) + 1;
+        const endEntry = Math.min(approvalState.page * approvalState.perPage, totalEntries);
+
         $pager.removeClass('d-none').html(`
-            <button class="btn btn-sm btn-outline-secondary clothes-prev" ${approvalState.page === 1 ? 'disabled' : ''}>
-                <i class="bi bi-chevron-left"></i>
-            </button>
-            <span class="text-muted small">Page ${approvalState.page} of ${totalPages}</span>
-            <button class="btn btn-sm btn-outline-secondary clothes-next" ${approvalState.page === totalPages ? 'disabled' : ''}>
-                <i class="bi bi-chevron-right"></i>
-            </button>
+            <span class="text-muted small fw-bold">
+                Showing ${startEntry}-${endEntry} of ${totalEntries}
+            </span>
+            <div class="btn-group shadow-sm">
+                <button class="btn btn-sm btn-outline-dark border-0 bg-white clothes-prev" ${approvalState.page === 1 ? 'disabled' : ''} style="width: 32px;">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+                <span class="btn btn-sm btn-outline-dark border-0 bg-white disabled px-3 fw-bold">
+                    ${approvalState.page} / ${totalPages}
+                </span>
+                <button class="btn btn-sm btn-outline-dark border-0 bg-white clothes-next" ${approvalState.page === totalPages ? 'disabled' : ''} style="width: 32px;">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
         `);
 
         $pager.off('click').on('click', '.clothes-prev', function() {
             if (approvalState.page > 1) {
                 approvalState.page--;
                 renderClothes();
+                window.scrollTo(0, 0); 
             }
         }).on('click', '.clothes-next', function() {
             if (approvalState.page < totalPages) {
                 approvalState.page++;
                 renderClothes();
+                window.scrollTo(0, 0); 
             }
         });
     }

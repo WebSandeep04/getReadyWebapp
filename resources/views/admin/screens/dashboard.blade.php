@@ -5,35 +5,40 @@
 
 @push('styles')
 <style>
+*, ::before, ::after { border-radius: 0 !important; }
 .approve-btn:disabled,
-.reject-btn:disabled { opacity:.6; cursor:not-allowed; }
-.table img { border:2px solid #e2e8f0; border-radius:8px; transition:.2s; }
-.table img:hover { border-color:#3b82f6; transform:scale(1.05); }
-.table th { background:#f8fafc; border-bottom:2px solid #e5e7eb; font-weight:600; text-transform:uppercase; font-size:.75rem; letter-spacing:.08em; }
-.table td { vertical-align:middle; }
-.badge { font-size:.75rem; border-radius:999px; padding:.35rem .75rem; font-weight:600; }
-.badge.bg-success { background:linear-gradient(135deg,#10b981,#059669); }
-.badge.bg-danger { background:linear-gradient(135deg,#fb7185,#dc2626); }
-.badge.bg-warning { background:linear-gradient(135deg,#fcd34d,#f59e0b); color:#78350f; }
-.badge.bg-info { background:linear-gradient(135deg,#60a5fa,#2563eb); }
-.dashboard-hero { background:linear-gradient(135deg,#4338ca,#6366f1); border-radius:18px; padding:1.5rem; color:#fff; margin-bottom:1.5rem; box-shadow:0 25px 45px rgba(67,56,202,.25); }
-.dashboard-hero__title { font-size:1.25rem; font-weight:600; }
-.dashboard-hero__subtitle { margin:0; opacity:.9; }
-.stat-card { position:relative; border-radius:18px; padding:1.2rem; color:#fff; overflow:hidden; box-shadow:0 18px 30px rgba(15,23,42,.18); }
-.stat-card__label { text-transform:uppercase; letter-spacing:.08em; font-size:.8rem; opacity:.85; }
-.stat-card__value { font-size:2rem; font-weight:600; margin:.35rem 0; }
-.stat-card__icon { position:absolute; top:1rem; right:1rem; font-size:2.5rem; opacity:.25; }
-.stat-pending { background:linear-gradient(135deg,#fcd34d,#f97316); }
-.stat-approved { background:linear-gradient(135deg,#34d399,#059669); }
-.stat-reapproval { background:linear-gradient(135deg,#60a5fa,#2563eb); }
-.stat-rejected { background:linear-gradient(135deg,#fb7185,#dc2626); }
-.quick-action-card { border-radius:14px; background:#fff; border:1px solid #e0e7ff; padding:1rem 1.25rem; box-shadow:0 16px 30px rgba(15,23,42,.08); height:100%; display:flex; flex-direction:column; }
-.quick-action-card .action-title { font-weight:600; font-size:1rem; color:#111827; }
-.quick-action-card p { flex:1; color:#6b7280; font-size:.9rem; margin:.4rem 0 .8rem; }
-.status-legend { background:#f8fafc; border-radius:16px; padding:1rem; border:1px solid #e5e7eb; box-shadow:inset 0 0 30px rgba(79,70,229,.04); }
-.legend-pill { display:flex; align-items:center; gap:.5rem; padding:.4rem .6rem; border-radius:999px; margin-bottom:.4rem; font-size:.85rem; font-weight:500; }
-.admin-table th,.admin-table td { font-size:.85rem; padding:.4rem .5rem; }
-.admin-table .btn-icon { width:30px; height:30px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin-right:.2rem; }
+.reject-btn:disabled { opacity:.4; cursor:not-allowed; }
+.table img { border:none; transition:.2s; box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+.table img:hover { transform:scale(1.05); box-shadow: 0 8px 16px rgba(0,0,0,0.25); }
+.table th { background:#f8fafc; color: #000; border-bottom:1px solid #ddd; font-weight:700; font-size:.65rem; letter-spacing:normal; text-transform: none; }
+.table td { vertical-align:middle; font-size: .65rem; padding: 0.25rem 0.4rem !important; border-bottom: 1px solid #eee; color: #000; }
+.badge { font-size:.6rem; padding:.15rem .4rem; font-weight:600; border: none; color: #000; background: #fff; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
+.badge.bg-success { background:#fff; color: #000; border: 1px solid #000; }
+.badge.bg-danger { background:#000; color: #fff; border: 1px solid #000; }
+.badge.bg-warning { background:#f1f1f1; color: #000; border: 1px solid #000; }
+.badge.bg-info { background:#e1e1e1; color: #000; border: 1px solid #000; }
+.dashboard-hero { background:#fff; padding:1.25rem; color:#000; margin-bottom:1.5rem; border: none; box-shadow: 0 15px 45px rgba(0,0,0,0.12); }
+.dashboard-hero__title { font-size:1.1rem; font-weight:700; color: #000; }
+.dashboard-hero__subtitle { margin:0; opacity:0.8; font-size: .8rem; color: #000; }
+.stat-card { position:relative; padding:1rem; color:#000; background: #fff; border: none; box-shadow: 0 8px 25px rgba(0,0,0,0.1); overflow:hidden; height: 100%; display: flex; flex-direction: column; justify-content: center; min-height: 100px; transition: all 0.3s ease; }
+.stat-card:hover { transform: translateY(-4px); box-shadow: 0 15px 35px rgba(0,0,0,0.15); }
+.stat-card__label { text-transform:none; letter-spacing:normal; font-size:.7rem; font-weight: 600; color: #333; }
+.stat-card__value { font-size:1.75rem; font-weight:800; margin:.1rem 0; color: #000; }
+.stat-card__icon { position:absolute; top:0.75rem; right:0.75rem; font-size:1.5rem; opacity:.08; color: #000; }
+.stat-pending { background:#fff; }
+.stat-approved { background:#fff; }
+.stat-reapproval { background:#fff; }
+.stat-rejected { background:#fff; }
+.admin-table th,.admin-table td { font-size:.65rem; padding:.35rem .5rem !important; }
+.admin-table th,.admin-table td { font-size:.65rem; padding:.35rem .5rem !important; }
+.admin-table tr:hover { background-color: #fbfbfb !important; }
+.admin-table .btn-sm { padding: 0.25rem 0.5rem; font-size: 0.75rem; }
+.card { border: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); background: #fff; }
+.card-header { padding: 1rem; background: #fff !important; color: #000 !important; border-bottom: 1px solid #eee; }
+.card-header h5 { font-size: 0.95rem; color: #000; font-weight: 700; }
+.form-select, .form-control { border: 1px solid #eee !important; background: #fff !important; box-shadow: none; color: #000 !important; font-size: 0.75rem; }
+.btn { border-radius: 4px; }
+.modal-content, .modal-header, .btn-close { border-radius: 0 !important; }
 </style>
 @endpush
 
@@ -94,38 +99,7 @@
         </div>
     </div>
 
-    <div class="row g-3 mb-4">
-        <div class="col-lg-3 col-md-6">
-            <div class="quick-action-card">
-                <div class="action-title">Invite a Seller</div>
-                <p>Grow your inventory by onboarding new verified owners.</p>
-                <a href="{{ route('user.index') }}" class="btn btn-outline-primary btn-sm">Manage Users</a>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="quick-action-card">
-                <div class="action-title">Curate Categories</div>
-                <p>Keep categories and filters fresh for better discovery.</p>
-                <a href="{{ route('categories.index') }}" class="btn btn-outline-secondary btn-sm">Update Categories</a>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="quick-action-card">
-                <div class="action-title">Hero &amp; Banners</div>
-                <p>Refresh homepage visuals for campaigns and seasons.</p>
-                <a href="{{ route('admin.frontend') }}" class="btn btn-outline-success btn-sm">Edit Frontend</a>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="status-legend">
-                <div class="fw-semibold mb-3">Status Legend</div>
-                <div class="legend-pill" style="background:#FEF3C7;"><span class="badge bg-warning">&nbsp;</span> Pending review</div>
-                <div class="legend-pill" style="background:#DCFCE7;"><span class="badge bg-success">&nbsp;</span> Approved</div>
-                <div class="legend-pill" style="background:#DBEAFE;"><span class="badge bg-info">&nbsp;</span> Re-approval</div>
-                <div class="legend-pill" style="background:#FEE2E2;"><span class="badge bg-danger">&nbsp;</span> Rejected</div>
-            </div>
-        </div>
-    </div>
+
 
     <div class="card">
         <div class="card-header bg-primary text-white">
@@ -134,15 +108,15 @@
                     <i class="bi bi-shield-check me-2"></i>Clothes Approval Management
                 </h5>
                 <div class="d-flex align-items-center">
-                    <select id="statusFilter" class="form-select form-select-sm me-2" style="width: auto;">
+                    <select id="statusFilter" class="form-select form-select-sm me-2" style="width: 140px; font-size: 0.75rem; border-radius: 0;">
                         <option value="">All Statuses</option>
                         <option value="pending">Pending</option>
                         <option value="approved">Approved</option>
                         <option value="re-approval">Re-approval</option>
                         <option value="rejected">Rejected</option>
                     </select>
-                    <button class="btn btn-outline-light btn-sm" onclick="loadClothes()">
-                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    <button class="btn btn-outline-light btn-sm" onclick="loadClothes()" title="Refresh" style="border-radius: 0; padding: 0.25rem 0.6rem;">
+                        <i class="bi bi-arrow-clockwise"></i>
                     </button>
                 </div>
             </div>
@@ -151,7 +125,6 @@
             <table class="table table-sm table-hover admin-table" id="clothesTable">
                 <thead class="table-light">
                     <tr>
-                        <th>Image</th>
                         <th>Title</th>
                         <th>Category</th>
                         <th>Owner</th>
@@ -168,6 +141,11 @@
                     <!-- Data loaded by jQuery AJAX -->
                 </tbody>
             </table>
+        <div class="card-footer bg-white border-top-0 text-center py-2">
+            <a href="{{ route('admin.cloth-approval') }}" class="btn btn-sm px-4" 
+               style="background: #000; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+                View More <i class="bi bi-arrow-right ms-1"></i>
+            </a>
         </div>
     </div>
 </div>
@@ -253,65 +231,67 @@ $(function() {
                 return;
             }
             
-            clothes.forEach(function(cloth) {
+            // Ensure sorted by ID DESC for "last 5"
+            clothes.sort((a, b) => b.id - a.id);
+            
+            clothes.forEach(function(cloth, index) {
                 totalRent += parseFloat(cloth.rent_price ?? 0);
                 totalDeposit += parseFloat(cloth.security_deposit ?? 0);
 
-                let image = cloth.images && cloth.images.length > 0
-                    ? `<img src='/storage/${cloth.images[0].image_path}' alt='${cloth.title}' style='width:60px;height:60px;object-fit:cover;border-radius:6px;'>`
-                    : `<img src='${defaultImageUrl}' alt='${cloth.title}' style='width:60px;height:60px;object-fit:cover;border-radius:6px;'>`;
-                
                 // Determine status badge and button states
-                let status = '';
+                let statusBadge = '';
                 let approveDisabled = false;
                 let rejectDisabled = false;
                 
                 if (cloth.is_approved === 1 || cloth.is_approved === true) {
-                    status = '<span class="badge bg-success">Approved</span>';
+                    statusBadge = '<span class="badge bg-success">Approved</span>';
                     approveDisabled = true;
-                    rejectDisabled = true; // Disable reject for approved items
+                    rejectDisabled = true;
                     approvedCount++;
                 } else if (cloth.is_approved === -1) {
-                    status = '<span class="badge bg-danger">Rejected</span>';
+                    statusBadge = '<span class="badge bg-danger">Rejected</span>';
                     approveDisabled = false;
-                    rejectDisabled = false; // Allow rejecting rejected items (for re-approval)
+                    rejectDisabled = false;
                     rejectedCount++;
                 } else if (cloth.is_approved === null) {
-                    // Check if this is a resubmission using resubmission_count
                     if (cloth.resubmission_count > 0) {
-                        status = '<span class="badge bg-info">Re-approval</span>';
+                        statusBadge = '<span class="badge bg-info">Re-approval</span>';
                         reapprovalCount++;
                     } else {
-                        status = '<span class="badge bg-warning text-dark">Pending</span>';
+                        statusBadge = '<span class="badge bg-warning text-dark">Pending</span>';
                         pendingCount++;
                     }
                     approveDisabled = false;
-                    rejectDisabled = false; // Both buttons enabled for pending/re-approval
+                    rejectDisabled = false;
                 }
                 
-                rows += `<tr>
-                    <td>${image}</td>
-                    <td>${cloth.title}</td>
-                    <td>${cloth.category}</td>
-                    <td>${cloth.user ? cloth.user.name : ''}</td>
-                    <td>${cloth.gender}</td>
-                    <td>${cloth.size}</td>
-                    <td>${cloth.condition}</td>
-                    <td>₹${cloth.rent_price}</td>
-                    <td>₹${cloth.security_deposit}</td>
-                    <td>${status}</td>
-                    <td class="text-center">
-                        <button class="btn btn-success btn-icon approve-btn" data-id="${cloth.id}" ${approveDisabled ? 'disabled' : ''} title="${approveDisabled ? 'Approved' : 'Approve'}">
-                            <i class="bi bi-check"></i>
-                        </button>
-                        <button class="btn btn-danger btn-icon reject-btn" data-id="${cloth.id}" ${rejectDisabled ? 'disabled' : ''} title="${rejectDisabled ? 'Rejected' : 'Reject'}">
-                            <i class="bi bi-x"></i>
-                        </button>
-                        <button class="btn btn-outline-secondary btn-icon view-reason-btn" data-id="${cloth.id}" title="View Reason">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                    </td>
-                </tr>`;
+                // Only show first 5 in the table rows
+                if (index < 5) {
+                    rows += `<tr>
+                        <td>${cloth.title}</td>
+                        <td>${cloth.category}</td>
+                        <td>${cloth.user ? cloth.user.name : ''}</td>
+                        <td>${cloth.gender}</td>
+                        <td>${cloth.size}</td>
+                        <td>${cloth.condition}</td>
+                        <td>₹${cloth.rent_price}</td>
+                        <td>₹${cloth.security_deposit}</td>
+                        <td>${statusBadge}</td>
+                        <td class="text-center">
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button class="btn btn-outline-success approve-btn" data-id="${cloth.id}" ${approveDisabled ? 'disabled' : ''} title="${approveDisabled ? 'Approved' : 'Approve'}">
+                                    <i class="bi bi-check-lg"></i>
+                                </button>
+                                <button class="btn btn-outline-danger reject-btn" data-id="${cloth.id}" ${rejectDisabled ? 'disabled' : ''} title="${rejectDisabled ? 'Rejected' : 'Reject'}">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                                <button class="btn btn-outline-secondary view-reason-btn" data-id="${cloth.id}" title="View Reason">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>`;
+                }
             });
             
             $('#clothesTable tbody').html(rows);

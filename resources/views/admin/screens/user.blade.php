@@ -3,183 +3,263 @@
 @section('title', 'Admin Dashboard')
 @section('page_title', 'Manage Users')
 
-@include('admin.components.setup-crud-styles')
-
 @section('content')
-<div class="container-fluid py-4 category-dashboard" id="usersHub">
-    <div class="row g-4">
-        <div class="col-12">
-            <div class="glass-card hero-card d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between p-4 p-lg-5">
-                <div>
-                    <p class="text-uppercase fw-semibold text-white-50 small mb-1">Community · Members</p>
-                    <h2 class="display-6 fw-bold text-white mb-3">Know every renter & stylist by heart</h2>
-                    <p class="text-white-50 mb-4 mb-lg-0">
-                        Search, filter, and action on member profiles with a modern command center. 
-                        Keep data fresh before every drop.
-                    </p>
-                </div>
-                <div class="d-flex flex-column flex-sm-row gap-3">
-                    <button class="btn btn-light btn-lg shadow-sm" id="downloadUsers">
-                        <i class="bi bi-cloud-arrow-down me-2"></i>Download CSV
+<div class="container-fluid p-0">
+    <!-- Stat Cards Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-lg-3 col-sm-6">
+            <div class="stat-card">
+                <div class="stat-card__icon"><i class="bi bi-people"></i></div>
+                <div class="stat-card__label">Total Users</div>
+                <div class="stat-card__value" id="usersTotal">{{ number_format($totalUsers ?? 0) }}</div>
+                <small>Registered members</small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+            <div class="stat-card">
+                <div class="stat-card__icon"><i class="bi bi-person-plus"></i></div>
+                <div class="stat-card__label">New (7 Days)</div>
+                <div class="stat-card__value" id="usersLast7">--</div>
+                <small>Fresh signups</small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+            <div class="stat-card">
+                <div class="stat-card__icon"><i class="bi bi-patch-check"></i></div>
+                <div class="stat-card__label">Verified</div>
+                <div class="stat-card__value" id="usersVerified">--</div>
+                <small>Email confirmed</small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+            <div class="stat-card">
+                <div class="stat-card__icon"><i class="bi bi-phone"></i></div>
+                <div class="stat-card__label">Phone Only</div>
+                <div class="stat-card__value" id="usersPhoneOnly">--</div>
+                <small>Needs follow-up</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Card -->
+    <div class="card h-100">
+        <div class="card-header bg-white text-dark border-bottom py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-table me-2"></i>User Management</h5>
+                <div class="d-flex gap-2">
+                     <div class="input-group input-group-sm" style="width: 250px;">
+                        <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                        <input type="search" id="userSearch" class="form-control border-start-0 ps-0" placeholder="Search users...">
+                    </div>
+                    <button class="btn btn-sm btn-outline-dark" id="downloadUsers" title="Download CSV">
+                        <i class="bi bi-cloud-arrow-down"></i>
                     </button>
-                    <button class="btn btn-outline-light btn-lg shadow-sm" id="refreshUsers">
-                        <i class="bi bi-arrow-repeat me-2"></i>Refresh
+                    <button class="btn btn-sm btn-outline-dark" id="refreshUsers" title="Refresh">
+                        <i class="bi bi-arrow-clockwise"></i>
                     </button>
                 </div>
             </div>
         </div>
-
-        <div class="col-12 col-xl-4">
-            <div class="glass-card p-4 h-100">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <p class="text-uppercase text-muted small mb-0">Community pulse</p>
-                    <span class="badge rounded-pill bg-gradient text-white">Live</span>
-                </div>
-                <h1 class="display-4 fw-bold text-primary mb-3" id="usersTotal">{{ number_format($totalUsers ?? 0) }}</h1>
-                <div class="stat-stack">
-                    <div class="stat-row">
-                        <div>
-                            <p class="text-muted mb-0 small">Joined in last 7 days</p>
-                            <h5 class="fw-semibold mb-0" id="usersLast7">--</h5>
-                        </div>
-                        <span class="badge badge-pill-soft bg-success-subtle text-success" id="usersLast7Badge">Fresh</span>
-                    </div>
-                    <div class="stat-row">
-                        <div>
-                            <p class="text-muted mb-0 small">Verified email</p>
-                            <h5 class="fw-semibold mb-0" id="usersVerified">--</h5>
-                        </div>
-                        <span class="badge badge-pill-soft bg-info-subtle text-info" id="usersVerifiedBadge">Trusted</span>
-                    </div>
-                    <div class="stat-row">
-                        <div>
-                            <p class="text-muted mb-0 small">Phone only</p>
-                            <h5 class="fw-semibold mb-0" id="usersPhoneOnly">--</h5>
-                        </div>
-                        <span class="badge badge-pill-soft bg-warning-subtle text-warning">Needs follow-up</span>
-                    </div>
-                </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle admin-table" id="usersTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">ID</th>
+                            <th>User Name & Email</th>
+                            <th>Phone</th>
+                            <th>Address</th>
+                            <th class="text-center">User Type</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
             </div>
-        </div>
-
-        <div class="col-12 col-xl-8">
-            <div class="glass-card p-4 h-100 d-flex flex-column">
-                <div class="input-group shadow-sm mb-4">
-                    <span class="input-group-text bg-white border-0 text-muted"><i class="bi bi-search"></i></span>
-                    <input type="search" id="userSearch" class="form-control border-0" placeholder="Search by name, email, or phone...">
+            
+            <!-- Pagination -->
+            <div class="card-footer bg-white border-top border-light py-3 px-4 d-none" id="usersPagination"></div>
+            
+            <!-- Empty State -->
+            <div class="text-center py-5 d-none" id="usersEmptyState">
+                <div class="mb-3 text-muted opacity-25">
+                    <i class="bi bi-search" style="font-size: 3rem;"></i>
                 </div>
-                <div class="table-responsive flex-grow-1">
-                    <table class="table table-hover align-middle mb-0 modern-table" id="usersTable">
-                        <thead>
-                            <tr>
-                                <th class="text-uppercase small fw-semibold text-muted">ID</th>
-                                <th class="text-uppercase small fw-semibold text-muted">Profile</th>
-                                <th class="text-uppercase small fw-semibold text-muted">Phone</th>
-                                <th class="text-uppercase small fw-semibold text-muted">Address</th>
-                                <th class="text-uppercase small fw-semibold text-muted text-center">User Type</th>
-                                <th class="text-uppercase small fw-semibold text-muted text-end">Actions</th>
-                    </tr>
-                </thead>
-                        <tbody></tbody>
-            </table>
-                    <div class="d-flex justify-content-between align-items-center mt-3 d-none" id="usersPagination"></div>
-                </div>
-                <div class="text-center mt-4 d-none" id="usersEmptyState">
-                    <img src="https://cdn.jsdelivr.net/gh/ux-illustrations/undraw/void.svg" alt="Empty state" class="empty-illustration mb-3">
-                    <h5 class="fw-semibold">No users match that filter</h5>
-                    <p class="text-muted mb-3">Try switching filters or clearing the search to view everyone again.</p>
-                    <button class="btn btn-gradient" id="clearUserFilters">Reset filters</button>
-                </div>
+                <h6 class="fw-bold">No users match that filter</h6>
+                <p class="text-muted small mb-3">Try clearing the search to view everyone again.</p>
+                <button class="btn btn-sm btn-dark" id="clearUserFilters">Reset filters</button>
             </div>
         </div>
     </div>
 
     <!-- Edit User Modal -->
-    <div class="modal fade modal-modern" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+    <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-                    <h5 class="modal-title" id="editUserModalLabel">Edit Member Profile</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <form id="editUserForm">
-            <div class="modal-body">
-                <input type="hidden" id="editUserId">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="editUserModalLabel">Edit Member Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="editUserForm">
+                    <div class="modal-body pt-4">
+                        <input type="hidden" id="editUserId">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label">Name</label>
+                                <label class="form-label fw-bold small text-uppercase text-muted">Name</label>
                                 <input type="text" class="form-control" id="editName" required>
-                </div>
+                            </div>
                             <div class="col-md-6">
-                                <label class="form-label">Email</label>
+                                <label class="form-label fw-bold small text-uppercase text-muted">Email</label>
                                 <input type="email" class="form-control" id="editEmail" required>
-                </div>
+                            </div>
                             <div class="col-md-6">
-                                <label class="form-label">Phone</label>
+                                <label class="form-label fw-bold small text-uppercase text-muted">Phone</label>
                                 <input type="text" class="form-control" id="editPhone" required>
-                </div>
+                            </div>
                             <div class="col-md-6">
-                                <label class="form-label">User Type</label>
+                                <label class="form-label fw-bold small text-uppercase text-muted">User Type</label>
                                 <select class="form-select" id="editGender" required>
-                        <option value="Boy">Boy</option>
-                        <option value="Girl">Girl</option>
-                        <option value="Men">Men</option>
-                        <option value="Women">Women</option>
-                    </select>
-                </div>
+                                    <option value="Boy">Boy</option>
+                                    <option value="Girl">Girl</option>
+                                    <option value="Men">Men</option>
+                                    <option value="Women">Women</option>
+                                </select>
+                            </div>
                             <div class="col-12">
-                                <label class="form-label">Address</label>
+                                <label class="form-label fw-bold small text-uppercase text-muted">Address</label>
                                 <input type="text" class="form-control" id="editAddress" placeholder="Street, City, State">
                             </div>
                             <div class="col-12">
-                                <label class="form-label">Business Type</label>
+                                <label class="form-label fw-bold small text-uppercase text-muted">Business Type</label>
                                 <select class="form-select" id="editIsGst">
                                     <option value="0">Individual / Non-Business</option>
                                     <option value="1">Business (GST Available)</option>
                                 </select>
                             </div>
                             <div class="col-12">
-                                <label class="form-label">GSTIN</label>
-                                <input type="text" class="form-control" id="editGstin" placeholder="Enter 15-digit GSTIN (e.g., 27AAAAA0000A1Z5)" maxlength="15">
-                                <small class="text-muted">Format: 15 characters (e.g., 27AAAAA0000A1Z5)</small>
+                                <label class="form-label fw-bold small text-uppercase text-muted">GSTIN</label>
+                                <input type="text" class="form-control" id="editGstin" placeholder="Enter 15-digit GSTIN" maxlength="15">
                             </div>
                         </div>
                         <div id="editUserErrors" class="text-danger small mt-2"></div>
+                    </div>
+                    <div class="modal-footer border-top-0">
+                        <button type="button" class="btn btn-sm btn-outline-secondary px-3" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-sm btn-dark px-4">Save Changes</button>
+                    </div>
+                </form>
             </div>
-            <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-gradient text-uppercase fw-semibold px-4">Save changes</button>
-            </div>
-          </form>
         </div>
-      </div>
     </div>
 </div>
 @endsection
 
 @push('styles')
 <style>
-    #usersTable .avatar-circle {
-        width: 42px;
-        height: 42px;
-        border-radius: 50%;
-        background: rgba(47, 87, 239, 0.15);
-        color: #2f57ef;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-    }
-    .stat-stack .stat-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0.85rem 0;
-        border-bottom: 1px solid rgba(15, 23, 42, 0.08);
-    }
-    .stat-stack .stat-row:last-child {
-        border-bottom: none;
-    }
+/* Global Monochrome Overrides for this page */
+*, ::before, ::after { border-radius: 0 !important; }
+
+/* Stat Cards */
+.stat-card {
+    position: relative;
+    padding: 1.25rem;
+    color: #000;
+    background: #fff;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 110px;
+    transition: all 0.3s ease;
+    border: 1px solid #f3f4f6;
+}
+.stat-card:hover { 
+    transform: translateY(-2px); 
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+.stat-card__label {
+    font-size: .7rem;
+    font-weight: 700;
+    color: #4b5563;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+.stat-card__value {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin: 0;
+    color: #111827;
+    line-height: 1.2;
+}
+.stat-card__icon {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 1.5rem;
+    color: #000;
+    opacity: 1;
+}
+.stat-card small { color: #9ca3af; font-weight: 500; font-size: 0.75rem; }
+
+/* Table Styling */
+.card { border: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); background: #fff; }
+.admin-table th {
+    background: #f9fafb;
+    color: #374151;
+    border-bottom: 1px solid #e5e7eb;
+    font-weight: 600;
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+}
+.admin-table td { 
+    vertical-align: middle; 
+    font-size: .8rem; 
+    padding: 0.75rem 0.5rem !important; 
+    border-bottom: 1px solid #f3f4f6; 
+    color: #111827;
+}
+.table-hover tbody tr:hover { background-color: #f9fafb; }
+
+/* Form Controls */
+.form-control, .form-select {
+    border: 1px solid #d1d5db;
+    font-size: 0.85rem;
+    box-shadow: none !important;
+    padding: 0.5rem 0.75rem;
+}
+.form-control:focus, .form-select:focus {
+    border-color: #000;
+    background-color: #fff;
+}
+.input-group-text { border: 1px solid #d1d5db; }
+
+/* Badges */
+.badge-pill-soft {
+    font-size: .7rem;
+    padding: .2rem .6rem;
+    font-weight: 600;
+    border: 1px solid #e5e7eb; 
+    background: #fff;
+    color: #374151;
+}
+
+/* Buttons */
+.btn { font-size: 0.8rem; font-weight: 500; padding: 0.4rem 0.75rem; transition: all 0.2s; }
+.btn-dark { background: #111827; border: 1px solid #111827; color: #fff; }
+.btn-dark:hover { background: #000; border-color: #000; transform: translateY(-1px); }
+.btn-outline-dark { border: 1px solid #d1d5db; color: #374151; background: #fff; }
+.btn-outline-dark:hover { background: #f9fafb; color: #000; border-color: #9ca3af; }
+.btn-outline-secondary { border: 1px solid #e5e7eb; color: #6b7280; background: #fff; }
+.btn-outline-secondary:hover { background: #f3f4f6; color: #111827; border-color: #d1d5db; }
+.btn-outline-danger { border: 1px solid #fca5a5; color: #ef4444; background: #fff; }
+.btn-outline-danger:hover { background: #fef2f2; color: #dc2626; border-color: #f87171; }
+
+.text-muted { color: #6b7280 !important; }
 </style>
 @endpush
 
@@ -190,7 +270,7 @@ $(function() {
         data: [],
         search: '',
         page: 1,
-        perPage: 5,
+        perPage: 20,
     };
 
     const csrf = $('meta[name="csrf-token"]').attr('content');
@@ -207,7 +287,7 @@ $(function() {
 
     function fetchUsers(showSpinner = true) {
         if (showSpinner) {
-            $refresh.addClass('disabled').html('<span class="spinner-border spinner-border-sm me-2"></span>Refreshing');
+            $refresh.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
         }
         $.getJSON(endpoints.fetch)
             .done(users => {
@@ -216,9 +296,12 @@ $(function() {
                 renderUsers();
                 updateStats();
             })
-            .fail(() => alert('Unable to load users right now. Please try again.'))
+            .fail(() => {
+                // Silent fail or simple alert
+                console.error('Failed to load users');
+            })
             .always(() => {
-                $refresh.removeClass('disabled').html('<i class="bi bi-arrow-repeat me-2"></i>Refresh');
+                $refresh.prop('disabled', false).html('<i class="bi bi-arrow-clockwise"></i>');
             });
     }
 
@@ -249,25 +332,6 @@ $(function() {
         $('#usersPhoneOnly').text(phoneOnly);
     }
 
-    function passesFilter(user) {
-        switch (state.filter) {
-            case 'verified':
-                return Boolean(user.email);
-            case 'phone':
-                return !user.email;
-            case 'Girl':
-                return user.gender === 'Girl';
-            case 'Boy':
-                return user.gender === 'Boy';
-            case 'Women':
-                return user.gender === 'Women';
-            case 'Men':
-                return user.gender === 'Men';
-            default:
-                return true;
-        }
-    }
-
     function renderUsers() {
         const term = state.search.toLowerCase();
         let filtered = state.data.filter(user => {
@@ -277,8 +341,8 @@ $(function() {
 
         if (!filtered.length) {
             $('#usersTable').addClass('d-none');
+            $('#usersPagination').addClass('d-none');
             $emptyState.removeClass('d-none');
-            $('#usersPagination').addClass('d-none').empty();
             return;
         }
 
@@ -295,22 +359,34 @@ $(function() {
         renderPagination(filtered.length, totalPages);
     }
 
-    function renderPagination(totalItems, totalPages) {
+    function renderPagination(totalEntries, totalPages) {
         const $pager = $('#usersPagination');
 
-        if (totalItems <= state.perPage) {
+        if (totalEntries === 0) {
             $pager.addClass('d-none').empty();
             return;
         }
 
+        const startEntry = ((state.page - 1) * state.perPage) + 1;
+        const endEntry = Math.min(state.page * state.perPage, totalEntries);
+
         $pager.removeClass('d-none').html(`
-            <button class="btn btn-sm btn-outline-secondary users-prev" ${state.page === 1 ? 'disabled' : ''}>
-                <i class="bi bi-chevron-left"></i>
-            </button>
-            <span class="text-muted small">Page ${state.page} of ${totalPages}</span>
-            <button class="btn btn-sm btn-outline-secondary users-next" ${state.page === totalPages ? 'disabled' : ''}>
-                <i class="bi bi-chevron-right"></i>
-            </button>
+            <div class="d-flex align-items-center justify-content-between">
+                <span class="text-muted small fw-bold">
+                    Showing ${startEntry}-${endEntry} of ${totalEntries}
+                </span>
+                <div class="btn-group shadow-sm">
+                    <button class="btn btn-sm btn-outline-dark border-0 bg-white users-prev" ${state.page === 1 ? 'disabled' : ''} style="width: 32px;">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <span class="btn btn-sm btn-outline-dark border-0 bg-white disabled px-3 fw-bold">
+                        ${state.page} / ${totalPages}
+                    </span>
+                    <button class="btn btn-sm btn-outline-dark border-0 bg-white users-next" ${state.page === totalPages ? 'disabled' : ''} style="width: 32px;">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
         `);
 
         $pager.off('click').on('click', '.users-prev', function() {
@@ -327,47 +403,37 @@ $(function() {
     }
 
     function renderRow(user) {
-        const initials = (user.name || 'Guest')
-            .split(' ').slice(0, 2).map(chunk => chunk.charAt(0).toUpperCase()).join('') || 'GR';
-        const email = user.email || '<span class="text-muted">No email</span>';
-        const address = user.address || '<span class="text-muted">Add address</span>';
-        const phone = user.phone || '<span class="text-muted">No phone</span>';
-        const genderBadgeClass = user.gender === 'Girl' || user.gender === 'Women'
-            ? 'bg-pink-50 text-danger'
-            : user.gender === 'Boy' || user.gender === 'Men'
-                ? 'bg-primary-subtle text-primary'
-                : 'bg-secondary-subtle text-secondary';
-        const genderLabel = user.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : '—';
+        const email = user.email || '<span class="text-muted text-opacity-50">No email</span>';
+        const address = user.address || '<span class="text-muted text-opacity-50">Add address</span>';
+        const phone = user.phone || '<span class="text-muted text-opacity-50">No phone</span>';
+        const genderLabel = user.gender ? user.gender : '—';
+        
+        // Monochrome Badge
+        let genderBadge = `<span class="badge badge-pill-soft">${genderLabel}</span>`;
+
+        // Action Buttons
+        const btns = `
+            <div class="btn-group" role="group">
+                <button class="btn btn-sm btn-outline-secondary edit-user" data-user='${JSON.stringify(user)}' title="Edit">
+                    <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger delete-user" data-id="${user.id}" title="Delete">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        `;
 
         return `
             <tr>
-                <td class="fw-semibold text-muted">#${user.id}</td>
+                <td class="fw-bold text-muted small ps-4">#${user.id}</td>
                 <td>
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="avatar-circle">${initials}</div>
-                        <div>
-                            <div class="fw-semibold text-dark">${user.name ?? 'Guest'}</div>
-                            <small class="text-muted">${email}</small>
-                        </div>
-                    </div>
+                    <div class="fw-bold text-dark">${user.name ?? 'Guest'}</div>
+                    <div class="small text-muted">${email}</div>
                 </td>
                 <td>${phone}</td>
-                <td>${address}</td>
-                <td class="text-center">
-                    <span class="badge badge-pill-soft ${genderBadgeClass}">${genderLabel}</span>
-                </td>
-                <td class="text-end">
-                    <div class="btn-group" role="group">
-                        <button 
-                            class="btn btn-sm btn-outline-secondary edit-user btn-icon" 
-                            data-user='${JSON.stringify(user)}' title="Edit">
-                            <i class="bi bi-pencil-square"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger delete-user btn-icon" data-id="${user.id}" title="Delete">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </div>
-                </td>
+                <td class="text-truncate" style="max-width: 150px;">${address}</td>
+                <td class="text-center">${genderBadge}</td>
+                <td class="text-end pe-4">${btns}</td>
             </tr>
         `;
     }
@@ -385,10 +451,6 @@ $(function() {
         renderUsers();
     });
 
-    $('#usersEmptyState').on('click', '#clearUserFilters', function() {
-        $('#clearUserFilters').trigger('click');
-    });
-
     $refresh.on('click', function() {
         fetchUsers(false);
     });
@@ -404,13 +466,15 @@ $(function() {
         $('#editIsGst').val(user.is_gst ? '1' : '0');
         $('#editGender').val(user.gender || 'Boy');
         $('#editUserErrors').html('');
-        bootstrap.Modal.getOrCreateInstance(document.getElementById('editUserModal')).show();
+        const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
+        modal.show();
     });
 
     $('#editUserForm').on('submit', function(e) {
         e.preventDefault();
         const id = $('#editUserId').val();
         const $submit = $(this).find('button[type="submit"]');
+        const originalText = $submit.text();
         $submit.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Saving');
 
         $.post(`${endpoints.update}/${id}`, {
@@ -424,42 +488,34 @@ $(function() {
             _token: csrf,
         })
         .done(() => {
-            bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
+            const modalEl = document.getElementById('editUserModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
             fetchUsers(false);
         })
         .fail(xhr => {
-            if (xhr.status === 422) {
-                const errors = xhr.responseJSON?.errors || {};
-                const messages = Object.values(errors).map(arr => arr[0]).join('<br>');
-                $('#editUserErrors').html(messages);
-            } else {
-                alert('Unable to update user right now.');
-            }
+             alert('Unable to update user.');
         })
         .always(() => {
-            $submit.prop('disabled', false).text('Save changes');
+            $submit.prop('disabled', false).text(originalText);
         });
     });
 
     $tableBody.on('click', '.delete-user', function() {
         const id = $(this).data('id');
-        if (!confirm('Delete this user? This cannot be undone.')) return;
-        const $btn = $(this);
-        const original = $btn.html();
-        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
-
-            $.ajax({
+        if (!confirm('Delete this user?')) return;
+        
+        $.ajax({
             url: `${endpoints.delete}/${id}`,
-                type: 'DELETE',
+            type: 'DELETE',
             data: { _token: csrf },
         }).done(() => fetchUsers(false))
-          .fail(() => alert('Unable to delete user right now.'))
-          .always(() => $btn.prop('disabled', false).html(original));
+          .fail(() => alert('Unable to delete user.'));
     });
 
     $('#downloadUsers').on('click', function() {
         if (!state.data.length) {
-            alert('No data to export yet. Please refresh first.');
+            alert('No data to export.');
             return;
         }
         const headers = ['ID','Name','Email','Phone','Address','User Type'];

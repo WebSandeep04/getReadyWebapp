@@ -4,326 +4,470 @@
 @section('page_title', 'Manage Brands')
 
 @section('content')
-<div class="container-fluid py-4 category-dashboard setup-crud" id="brands-crud">
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow-sm border-0">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <div>
-                            <h4 class="mb-1 fw-bold">Brands</h4>
-                            <p class="text-muted mb-0">Manage brand logos and information</p>
-                        </div>
-                        <button class="btn btn-gradient" data-bs-toggle="modal" data-bs-target="#brandsAddModal">
-                            <i class="bi bi-plus-circle me-2"></i>New Brand
-                        </button>
-                    </div>
-
-                    <div id="brandsList" class="row">
-                        <div class="col-12 text-center py-5">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+<div class="container-fluid p-0">
+    <!-- Stat Cards Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-lg-3 col-sm-6">
+            <div class="stat-card">
+                <div class="stat-card__icon"><i class="bi bi-award"></i></div>
+                <div class="stat-card__label">Total Brands</div>
+                <div class="stat-card__value" id="totalBrands">{{ number_format($total ?? 0) }}</div>
+                <small>Active partners</small>
             </div>
         </div>
     </div>
 
-    <!-- Add Modal -->
-    <div class="modal fade modal-modern" id="brandsAddModal" tabindex="-1" aria-labelledby="brandsAddLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="brandsAddLabel">Add Brand</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <!-- Main Card -->
+    <div class="card h-100">
+        <div class="card-header bg-white text-dark border-bottom py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-table me-2"></i>Brand Management</h5>
+                <div class="d-flex gap-2">
+                     <div class="input-group input-group-sm" style="width: 250px;">
+                        <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                        <input type="search" id="brandSearch" class="form-control border-start-0 ps-0" placeholder="Search brands...">
+                    </div>
+                    <button class="btn btn-sm btn-dark" data-bs-toggle="modal" data-bs-target="#createBrandModal">
+                        <i class="bi bi-plus-lg me-1"></i>Add New
+                    </button>
+                    <button class="btn btn-sm btn-outline-dark" id="refreshBrands" title="Refresh">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
                 </div>
-                <form id="brandsAddForm" enctype="multipart/form-data">
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="brandsAddInput" class="form-label">Brand Name *</label>
-                            <input type="text" class="form-control" id="brandsAddInput" name="name" placeholder="Enter brand name" required>
-                            <div class="invalid-feedback" id="brandsAddError"></div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="brandsAddLogo" class="form-label">Brand Logo</label>
-                            <input type="file" class="form-control" id="brandsAddLogo" name="logo" accept="image/*">
-                            <small class="text-muted">Max size: 2MB. Supported formats: JPEG, PNG, JPG, GIF, SVG</small>
-                            <div id="brandsAddLogoPreview" class="mt-2" style="display:none;">
-                                <img id="brandsAddLogoPreviewImg" src="" alt="Logo Preview" style="max-width: 150px; max-height: 150px; border-radius: 8px;">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-gradient text-uppercase fw-semibold px-4">Add Brand</button>
-                    </div>
-                </form>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle admin-table" id="brandsTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">ID</th>
+                            <th>Brand Name</th>
+                            <th>Logo</th>
+                            <th>Created At</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="card-footer bg-white border-top border-light py-3 px-4 d-none" id="brandsPagination"></div>
+            
+            <!-- Empty State -->
+            <div class="text-center py-5 d-none" id="brandsEmptyState">
+                <div class="mb-3 text-muted opacity-25">
+                    <i class="bi bi-search" style="font-size: 3rem;"></i>
+                </div>
+                <h6 class="fw-bold">No brands match that filter</h6>
+                <p class="text-muted small mb-3">Try clearing the search to view all brands.</p>
+                <button class="btn btn-sm btn-dark" id="clearBrandFilters">Reset filters</button>
             </div>
         </div>
     </div>
 
-    <!-- Edit Modal -->
-    <div class="modal fade modal-modern" id="brandsEditModal" tabindex="-1" aria-labelledby="brandsEditLabel" aria-hidden="true">
+    <!-- Create/Edit Modal -->
+    <div class="modal fade" id="brandModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="brandsEditLabel">Edit Brand</h5>
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="brandModalLabel">Add Brand</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="brandsEditForm" enctype="multipart/form-data">
-                    <div class="modal-body">
-                        <input type="hidden" id="brandsEditId">
+                <form id="brandForm" enctype="multipart/form-data">
+                    <div class="modal-body pt-4">
+                        <input type="hidden" id="brandId" name="id">
                         <div class="mb-3">
-                            <label for="brandsEditInput" class="form-label">Brand Name *</label>
-                            <input type="text" class="form-control" id="brandsEditInput" name="name" placeholder="Enter brand name" required>
-                            <div class="invalid-feedback" id="brandsEditError"></div>
+                            <label class="form-label fw-bold small text-uppercase text-muted">Name</label>
+                            <input type="text" class="form-control" id="brandName" name="name" required placeholder="e.g. Nike">
                         </div>
                         <div class="mb-3">
-                            <label for="brandsEditLogo" class="form-label">Brand Logo</label>
-                            <input type="file" class="form-control" id="brandsEditLogo" name="logo" accept="image/*">
-                            <small class="text-muted">Max size: 2MB. Supported formats: JPEG, PNG, JPG, GIF, SVG</small>
-                            <div id="brandsEditLogoPreview" class="mt-2">
-                                <img id="brandsEditLogoPreviewImg" src="" alt="Current Logo" style="max-width: 150px; max-height: 150px; border-radius: 8px; display:none;">
+                            <label class="form-label fw-bold small text-uppercase text-muted">Logo</label>
+                            <input type="file" class="form-control" id="brandLogo" name="logo" accept="image/*">
+                            <div id="logoPreview" class="mt-2" style="display:none;">
+                                <img src="" alt="Preview" class="img-thumbnail" style="height: 60px;">
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-gradient text-uppercase fw-semibold px-4">Save Changes</button>
+                    <div class="modal-footer border-top-0">
+                        <button type="button" class="btn btn-sm btn-outline-secondary px-3" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-sm btn-dark px-4">Save Brand</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+@endsection
 
-@include('admin.components.setup-crud-styles')
+@push('styles')
+<style>
+/* Global Monochrome Overrides */
+*, ::before, ::after { border-radius: 0 !important; }
+
+/* Stat Cards */
+.stat-card {
+    position: relative;
+    padding: 1.25rem;
+    color: #000;
+    background: #fff;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 110px;
+    transition: all 0.3s ease;
+    border: 1px solid #f3f4f6;
+}
+.stat-card:hover { 
+    transform: translateY(-2px); 
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+.stat-card__label {
+    font-size: .7rem;
+    font-weight: 700;
+    color: #4b5563;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+.stat-card__value {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin: 0;
+    color: #111827;
+    line-height: 1.2;
+}
+.stat-card__icon {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 1.5rem;
+    color: #000;
+    opacity: 1;
+}
+.stat-card small { color: #9ca3af; font-weight: 500; font-size: 0.75rem; }
+
+/* Table Styling */
+.card { border: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); background: #fff; }
+.admin-table th {
+    background: #f9fafb;
+    color: #374151;
+    border-bottom: 1px solid #e5e7eb;
+    font-weight: 600;
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+}
+.admin-table td { 
+    vertical-align: middle; 
+    font-size: .8rem; 
+    padding: 0.75rem 0.5rem !important; 
+    border-bottom: 1px solid #f3f4f6; 
+    color: #111827;
+}
+.table-hover tbody tr:hover { background-color: #f9fafb; }
+
+/* Form Controls */
+.form-control, .form-select {
+    border: 1px solid #d1d5db;
+    font-size: 0.85rem;
+    box-shadow: none !important;
+    padding: 0.5rem 0.75rem;
+}
+.form-control:focus, .form-select:focus {
+    border-color: #000;
+    background-color: #fff;
+}
+.input-group-text { border: 1px solid #d1d5db; }
+
+/* Buttons */
+.btn { font-size: 0.8rem; font-weight: 500; padding: 0.4rem 0.75rem; transition: all 0.2s; }
+.btn-dark { background: #111827; border: 1px solid #111827; color: #fff; }
+.btn-dark:hover { background: #000; border-color: #000; transform: translateY(-1px); }
+.btn-outline-dark { border: 1px solid #d1d5db; color: #374151; background: #fff; }
+.btn-outline-dark:hover { background: #f9fafb; color: #000; border-color: #9ca3af; }
+.btn-outline-secondary { border: 1px solid #e5e7eb; color: #6b7280; background: #fff; }
+.btn-outline-secondary:hover { background: #f3f4f6; color: #111827; border-color: #d1d5db; }
+.btn-outline-danger { border: 1px solid #fca5a5; color: #ef4444; background: #fff; }
+.btn-outline-danger:hover { background: #fef2f2; color: #dc2626; border-color: #f87171; }
+
+.text-muted { color: #6b7280 !important; }
+</style>
+@endpush
 
 @push('scripts')
 <script>
-$(document).ready(function() {
-    const brandsUrl = {
-        json: "{{ route('brands.json') }}",
+$(function() {
+    const state = {
+        data: [],
+        search: '',
+        page: 1,
+        perPage: 20,
+    };
+
+    const csrf = $('meta[name="csrf-token"]').attr('content');
+    const endpoints = {
+        fetch: "{{ route('brands.json') }}",
         store: "{{ route('brands.store') }}",
         update: "{{ url('/admin/brands') }}",
         delete: "{{ url('/admin/brands') }}",
     };
 
-    // Load brands
-    function loadBrands() {
-        $.ajax({
-            url: brandsUrl.json,
-            method: 'GET',
-            success: function(brands) {
-                const brandsList = $('#brandsList');
-                brandsList.empty();
-                
-                if (brands.length === 0) {
-                    brandsList.html(`
-                        <div class="col-12 text-center py-5">
-                            <i class="bi bi-inbox" style="font-size: 4rem; color: #dee2e6;"></i>
-                            <h5 class="mt-3 text-muted">No brands added</h5>
-                            <p class="text-muted">Click "New Brand" to add your first brand.</p>
-                        </div>
-                    `);
-                    return;
-                }
+    const $tableBody = $('#brandsTable tbody');
+    const $emptyState = $('#brandsEmptyState');
+    const $search = $('#brandSearch');
+    const $refresh = $('#refreshBrands');
+    const brandModal = new bootstrap.Modal(document.getElementById('brandModal'));
 
-                brands.forEach(function(brand) {
-                    const brandCard = `
-                        <div class="col-md-4 col-lg-3 mb-4" data-id="${brand.id}">
-                            <div class="card h-100 shadow-sm">
-                                <div class="card-body text-center">
-                                    ${brand.logo ? `<img src="${brand.logo}" alt="${brand.name}" class="img-fluid mb-3" style="max-height: 100px; object-fit: contain;">` : '<div class="mb-3" style="height: 100px; display: flex; align-items: center; justify-content: center;"><i class="bi bi-image" style="font-size: 3rem; color: #dee2e6;"></i></div>'}
-                                    <h6 class="mb-2">${brand.name}</h6>
-                                    <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary edit-brand" data-id="${brand.id}" data-name="${brand.name}" data-logo="${brand.logo || ''}">
-                                            <i class="bi bi-pencil"></i> Edit
-                                        </button>
-                                        <button class="btn btn-outline-danger delete-brand" data-id="${brand.id}">
-                                            <i class="bi bi-trash"></i> Delete
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    brandsList.append(brandCard);
-                });
-            },
-            error: function() {
-                $('#brandsList').html('<div class="col-12 text-center py-5 text-danger">Error loading brands</div>');
+    // Open Modal for Create
+    $('[data-bs-target="#createBrandModal"]').click(function() {
+        $('#brandModalLabel').text('Add Brand');
+        $('#brandForm')[0].reset();
+        $('#brandId').val('');
+        $('#logoPreview').hide();
+        brandModal.show();
+    });
+
+    $('#brandLogo').on('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                $('#logoPreview img').attr('src', e.target.result);
+                $('#logoPreview').show();
+            }
+            reader.readAsDataURL(file);
+        } else {
+            $('#logoPreview').hide();
+        }
+    });
+
+    function fetchBrands(showSpinner = true) {
+        if (showSpinner) {
+            $refresh.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
+        }
+        $.getJSON(endpoints.fetch)
+            .done(data => {
+                state.data = data || [];
+                state.page = 1;
+                renderBrands();
+                updateStats();
+            })
+            .fail(() => {
+                console.error('Failed to load brands');
+            })
+            .always(() => {
+                $refresh.prop('disabled', false).html('<i class="bi bi-arrow-clockwise"></i>');
+            });
+    }
+
+    function updateStats() {
+        const total = state.data.length;
+        $('#totalBrands').text(new Intl.NumberFormat().format(total));
+    }
+
+    function renderBrands() {
+        const term = state.search.toLowerCase();
+        let filtered = state.data.filter(item => {
+            const haystack = `${item.name ?? ''}`.toLowerCase();
+            return haystack.includes(term);
+        });
+
+        if (!filtered.length) {
+            $('#brandsTable').addClass('d-none');
+            $('#brandsPagination').addClass('d-none');
+            $emptyState.removeClass('d-none');
+            return;
+        }
+
+        $('#brandsTable').removeClass('d-none');
+        $emptyState.addClass('d-none');
+
+        const totalPages = Math.max(1, Math.ceil(filtered.length / state.perPage));
+        if (state.page > totalPages) state.page = totalPages;
+        const start = (state.page - 1) * state.perPage;
+        const pageItems = filtered.slice(start, start + state.perPage);
+
+        const rows = pageItems.map(renderRow).join('');
+        $tableBody.html(rows);
+        renderPagination(filtered.length, totalPages);
+    }
+
+    function renderPagination(totalEntries, totalPages) {
+        const $pager = $('#brandsPagination');
+
+        if (totalEntries === 0) {
+            $pager.addClass('d-none').empty();
+            return;
+        }
+
+        const startEntry = ((state.page - 1) * state.perPage) + 1;
+        const endEntry = Math.min(state.page * state.perPage, totalEntries);
+
+        $pager.removeClass('d-none').html(`
+            <div class="d-flex align-items-center justify-content-between">
+                <span class="text-muted small fw-bold">
+                    Showing ${startEntry}-${endEntry} of ${totalEntries}
+                </span>
+                <div class="btn-group shadow-sm">
+                    <button class="btn btn-sm btn-outline-dark border-0 bg-white prev-page" ${state.page === 1 ? 'disabled' : ''} style="width: 32px;">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <span class="btn btn-sm btn-outline-dark border-0 bg-white disabled px-3 fw-bold">
+                        ${state.page} / ${totalPages}
+                    </span>
+                    <button class="btn btn-sm btn-outline-dark border-0 bg-white next-page" ${state.page === totalPages ? 'disabled' : ''} style="width: 32px;">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        `);
+
+        $pager.off('click').on('click', '.prev-page', function() {
+            if (state.page > 1) {
+                state.page--;
+                renderBrands();
+            }
+        }).on('click', '.next-page', function() {
+            if (state.page < totalPages) {
+                state.page++;
+                renderBrands();
             }
         });
     }
 
-    // Logo preview for add form
-    $('#brandsAddLogo').on('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                $('#brandsAddLogoPreviewImg').attr('src', e.target.result);
-                $('#brandsAddLogoPreview').show();
-            };
-            reader.readAsDataURL(file);
-        } else {
-            $('#brandsAddLogoPreview').hide();
-        }
+    function renderRow(item) {
+        const date = new Date(item.created_at).toLocaleDateString('en-IN', {
+            year: 'numeric', month: 'short', day: 'numeric'
+        });
+
+        // Ensure logo path is correct - assuming it's stored in 'storage'
+        const logoSrc = item.logo ? (item.logo.startsWith('http') ? item.logo : '/storage/' + item.logo) : '';
+        const logoHtml = logoSrc 
+            ? `<img src="${logoSrc}" alt="${item.name}" style="height: 30px; width: auto; max-width: 60px; object-fit: contain;">` 
+            : '<span class="text-muted small">No logo</span>';
+
+        const btns = `
+            <div class="btn-group" role="group">
+                <button class="btn btn-sm btn-outline-secondary edit-brand" data-item='${JSON.stringify(item)}' title="Edit">
+                    <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger delete-brand" data-id="${item.id}" title="Delete">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        `;
+
+        return `
+            <tr>
+                <td class="fw-bold text-muted small ps-4">#${item.id}</td>
+                <td><div class="fw-bold text-dark">${item.name}</div></td>
+                <td>${logoHtml}</td>
+                <td class="small text-muted">${date}</td>
+                <td class="text-end pe-4">${btns}</td>
+            </tr>
+        `;
+    }
+
+    $search.on('input', function() {
+        state.search = $(this).val();
+        state.page = 1;
+        renderBrands();
     });
 
-    // Logo preview for edit form
-    $('#brandsEditLogo').on('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                $('#brandsEditLogoPreviewImg').attr('src', e.target.result).show();
-            };
-            reader.readAsDataURL(file);
-        }
+    $('#clearBrandFilters').on('click', function() {
+        state.search = '';
+        state.page = 1;
+        $search.val('');
+        renderBrands();
     });
 
-    // Add brand form
-    $('#brandsAddForm').on('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        const submitBtn = $(this).find('button[type="submit"]');
+    $refresh.on('click', function() {
+        fetchBrands(false);
+        $('#brandsAddForm')[0].reset();
+                        $('#logoPreview').hide();
+                        brandModal.hide();
+    });
+
+    $tableBody.on('click', '.edit-brand', function() {
+        const item = $(this).data('item');
+        const logoSrc = item.logo ? (item.logo.startsWith('http') ? item.logo : '/storage/' + item.logo) : '';
         
-        submitBtn.prop('disabled', true).text('Adding...');
-        $('#brandsAddError').text('').hide();
+        $('#brandId').val(item.id);
+        $('#brandName').val(item.name);
+        
+        if (logoSrc) {
+            $('#logoPreview img').attr('src', logoSrc);
+            $('#logoPreview').show();
+        } else {
+            $('#logoPreview').hide();
+        }
+        
+        $('#brandModalLabel').text('Edit Brand');
+        brandModal.show();
+    });
+
+    $('#brandForm').on('submit', function(e) {
+        e.preventDefault();
+        const id = $('#brandId').val();
+        const isEdit = !!id;
+        const url = isEdit ? `${endpoints.update}/${id}` : endpoints.store;
+        
+        const formData = new FormData(this);
+        if (isEdit) {
+            formData.append('_method', 'PUT');
+        }
+
+        const $submit = $(this).find('button[type="submit"]');
+        const originalText = $submit.text();
+        $submit.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Saving');
 
         $.ajax({
-            url: brandsUrl.store,
-            method: 'POST',
+            url: url,
+            type: 'POST',
             data: formData,
             processData: false,
             contentType: false,
             headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) {
-                if (response.success) {
-                    $('#brandsAddModal').modal('hide');
-                    $('#brandsAddForm')[0].reset();
-                    $('#brandsAddLogoPreview').hide();
-                    loadBrands();
-                }
-            },
-            error: function(xhr) {
-                const error = xhr.responseJSON;
-                if (error && error.errors) {
-                    const firstError = Object.values(error.errors)[0];
-                    $('#brandsAddError').text(Array.isArray(firstError) ? firstError[0] : firstError).show();
-                } else {
-                    $('#brandsAddError').text(error?.message || 'Failed to add brand').show();
-                }
-            },
-            complete: function() {
-                submitBtn.prop('disabled', false).text('Add Brand');
+                'X-CSRF-TOKEN': csrf
             }
+        })
+        .done(() => {
+            brandModal.hide();
+            fetchBrands(false);
+        })
+        .fail(xhr => {
+            alert('Unable to save brand.');
+        })
+        .always(() => {
+            $submit.prop('disabled', false).text(originalText);
         });
     });
 
-    // Edit brand
-    $(document).on('click', '.edit-brand', function() {
+    $tableBody.on('click', '.delete-brand', function() {
         const id = $(this).data('id');
-        const name = $(this).data('name');
-        const logo = $(this).data('logo');
+        if (!confirm('Delete this brand?')) return;
         
-        $('#brandsEditId').val(id);
-        $('#brandsEditInput').val(name);
-        
-        if (logo) {
-            $('#brandsEditLogoPreviewImg').attr('src', logo).show();
-        } else {
-            $('#brandsEditLogoPreviewImg').hide();
-        }
-        
-        $('#brandsEditModal').modal('show');
-    });
-
-    // Update brand form
-    $('#brandsEditForm').on('submit', function(e) {
-        e.preventDefault();
-        const id = $('#brandsEditId').val();
-        const formData = new FormData(this);
-        const submitBtn = $(this).find('button[type="submit"]');
-        
-        submitBtn.prop('disabled', true).text('Saving...');
-        $('#brandsEditError').text('').hide();
-
-        formData.append('_method', 'PUT');
+        const formData = new FormData();
+        formData.append('_method', 'DELETE');
         
         $.ajax({
-            url: brandsUrl.update + '/' + id,
+            url: `${endpoints.delete}/${id}`,
             method: 'POST',
             data: formData,
             processData: false,
             contentType: false,
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) {
-                if (response.success) {
-                    $('#brandsEditModal').modal('hide');
-                    $('#brandsEditForm')[0].reset();
-                    loadBrands();
-                }
-            },
-            error: function(xhr) {
-                const error = xhr.responseJSON;
-                if (error && error.errors) {
-                    const firstError = Object.values(error.errors)[0];
-                    $('#brandsEditError').text(Array.isArray(firstError) ? firstError[0] : firstError).show();
-                } else {
-                    $('#brandsEditError').text(error?.message || 'Failed to update brand').show();
-                }
-            },
-            complete: function() {
-                submitBtn.prop('disabled', false).text('Save Changes');
-            }
-        });
+            headers: { 'X-CSRF-TOKEN': csrf },
+        }).done(() => fetchBrands(false))
+          .fail(() => alert('Unable to delete brand.'));
     });
 
-    // Delete brand
-    $(document).on('click', '.delete-brand', function() {
-        const id = $(this).data('id');
-        const brandName = $(this).closest('.card').find('h6').text();
-        
-        if (confirm(`Are you sure you want to delete "${brandName}"?`)) {
-            $.ajax({
-                url: brandsUrl.delete + '/' + id,
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
-                    'X-HTTP-Method-Override': 'DELETE'
-                },
-                success: function(response) {
-                    if (response.success) {
-                        loadBrands();
-                    }
-                },
-                error: function() {
-                    alert('Failed to delete brand');
-                }
-            });
-        }
-    });
-
-    // Reset modals on close
-    $('#brandsAddModal, #brandsEditModal').on('hidden.bs.modal', function() {
-        $(this).find('form')[0].reset();
-        $(this).find('.invalid-feedback').text('').hide();
-        $('#brandsAddLogoPreview, #brandsEditLogoPreviewImg').hide();
-    });
-
-    // Initial load
-    loadBrands();
+    fetchBrands();
 });
 </script>
 @endpush
-@endsection
-

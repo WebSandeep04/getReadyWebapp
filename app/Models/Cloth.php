@@ -39,6 +39,7 @@ class Cloth extends Model
         'length',
         'shoulder',
         'sleeve_length',
+        'mrp',
     ];
 
     protected $casts = [
@@ -48,6 +49,7 @@ class Cloth extends Model
         'rent_price' => 'decimal:2',
         'selling_price' => 'decimal:2',
         'security_deposit' => 'decimal:2',
+        'mrp' => 'decimal:2',
     ];
 
     /**

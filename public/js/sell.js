@@ -33,6 +33,27 @@ function checkAndShowRentSuggestion() {
   }
 }
 
+// Toggle Selling Price section based on "Available for Purchase" checkbox
+const isPurchasedCheckbox = document.getElementById('is_purchased');
+const sellingPriceSection = document.getElementById('selling_price_section');
+
+if (isPurchasedCheckbox && sellingPriceSection) {
+  isPurchasedCheckbox.addEventListener('change', function () {
+    if (this.checked) {
+      sellingPriceSection.style.display = 'block';
+      if (purchaseValueInput) purchaseValueInput.required = true;
+    } else {
+      sellingPriceSection.style.display = 'none';
+      if (purchaseValueInput) {
+        purchaseValueInput.required = false;
+        purchaseValueInput.value = ''; // Optional: clear value when hidden
+        // Also hide rent suggestion if it was shown
+        if (rentPriceSuggestion) rentPriceSuggestion.style.display = 'none';
+      }
+    }
+  });
+}
+
 // Calculate and display maximum rent suggestion (20% of Selling Price)
 // Only show when entered rent price exceeds the suggested maximum
 if (purchaseValueInput && rentPriceInput && rentPriceSuggestion && maxRentAmount) {

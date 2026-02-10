@@ -43,6 +43,12 @@
                             <span class="buy-price">₹{{ number_format($cloth->selling_price) }}</span>
                         </div>
                     @endif
+                    @if($cloth->mrp)
+                        <div class="price-row">
+                            <span class="price-label">MRP:</span>
+                            <span class="text-muted small"><del>₹{{ number_format($cloth->mrp) }}</del></span>
+                        </div>
+                    @endif
                 </div>
             </div>
         </a>

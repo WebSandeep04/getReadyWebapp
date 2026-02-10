@@ -315,6 +315,21 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
+                                    <label for="mrp">MRP (Original Price)</label>
+                                    <input type="number" class="form-control" id="mrp" name="mrp" value="{{ $cloth->mrp }}" min="0" step="0.01">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="sku">Quantity *</label>
+                                    <input type="number" class="form-control" id="sku" name="sku" value="{{ $cloth->sku }}" min="1" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
                                     <label for="chest_bust">Chest/Bust (inches)</label>
                                     <input type="text" class="form-control" id="chest_bust" name="chest_bust" value="{{ $cloth->chest_bust }}">
                                 </div>

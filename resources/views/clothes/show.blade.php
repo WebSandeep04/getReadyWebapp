@@ -218,6 +218,9 @@
                 <p class="text-uppercase text-muted small mb-1">Rent for 4 days</p>
                 <h2 class="mb-0 text-primary">₹{{ number_format($cloth->rent_price) }}</h2>
                 <p class="text-muted small mb-1">₹{{ number_format($cloth->rent_price / 4) }} per day (after 4 days)</p>
+                @if($cloth->mrp)
+                  <p class="text-muted small mb-1">MRP: <del>₹{{ number_format($cloth->mrp) }}</del></p>
+                @endif
                 <p class="text-muted small mb-3">Security deposit ₹{{ number_format($cloth->security_deposit) }}</p>
               </div>
               <div class="text-end">

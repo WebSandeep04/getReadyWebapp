@@ -199,9 +199,20 @@
     </div>
 
     <div class="step-content">
-      <label class="d-block text-left font-weight-bold mb-1">Selling Price <span class="text-danger">*</span></label>
-      <input type="number" name="selling_price" placeholder="Selling Price (₹)" value="{{ old('selling_price') }}" required>
-      @error('selling_price')<div class="text-danger small">{{ $message }}</div>@enderror
+      <div class="custom-control custom-checkbox mb-3">
+        <input type="checkbox" class="custom-control-input" id="is_purchased" name="is_purchased" value="1" {{ old('is_purchased') ? 'checked' : '' }}>
+        <label class="custom-control-label font-weight-bold" for="is_purchased">Available for Purchase</label>
+      </div>
+
+      <div id="selling_price_section" style="display: {{ old('is_purchased') ? 'block' : 'none' }};">
+        <label class="d-block text-left font-weight-bold mb-1">Selling Price <span class="text-danger">*</span></label>
+        <input type="number" name="selling_price" placeholder="Selling Price (₹)" value="{{ old('selling_price') }}">
+        @error('selling_price')<div class="text-danger small">{{ $message }}</div>@enderror
+      </div>
+
+      <label class="d-block text-left font-weight-bold mb-1">MRP (Original Price)</label>
+      <input type="number" name="mrp" placeholder="MRP (₹)" value="{{ old('mrp') }}">
+      @error('mrp')<div class="text-danger small">{{ $message }}</div>@enderror
 
       <label class="d-block text-left font-weight-bold mb-1">Quantity <span class="text-danger">*</span></label>
       <input type="number" name="sku" placeholder="Quantity" value="{{ old('sku', 1) }}" required>

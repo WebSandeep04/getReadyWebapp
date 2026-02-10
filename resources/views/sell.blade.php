@@ -261,9 +261,7 @@
       <small class="text-muted" id="rent-price-suggestion" style="display: none;">Suggested maximum rent: ₹<span id="max-rent-amount">0</span></small>
       @error('rent_price')<div class="text-danger small">{{ $message }}</div>@enderror
       
-      <label class="d-block text-left font-weight-bold mb-1">Security Deposit <span class="text-danger">*</span></label>
-      <input type="number" name="security_deposit" placeholder="Security Deposit (₹)" value="{{ old('security_deposit') }}" required>
-      <small class="text-muted">Security deposit will be automatically set equal to the rental price.</small>
+       <input type="hidden" name="security_deposit" id="security_deposit" value="{{ old('security_deposit') }}">
       @error('security_deposit')<div class="text-danger small">{{ $message }}</div>@enderror
     </div>
 

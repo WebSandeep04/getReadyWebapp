@@ -66,10 +66,11 @@
                     <thead class="table-light">
                         <tr>
                             <th class="ps-4">ID</th>
-                            <th>User Name & Email</th>
-                            <th>Phone</th>
-                            <th>Address</th>
-                            <th class="text-center">User Type</th>
+                            <th>Member Profile</th>
+                            <th>Contact Details</th>
+                            <th>Personal Info</th>
+                            <th>Business Info</th>
+                            <th>Activity & Status</th>
                             <th class="text-end pe-4">Actions</th>
                         </tr>
                     </thead>
@@ -94,7 +95,7 @@
 
     <!-- Edit User Modal -->
     <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0 shadow-lg">
                 <div class="modal-header border-bottom-0 pb-0">
                     <h5 class="modal-title fw-bold" id="editUserModalLabel">Edit Member Profile</h5>
@@ -104,10 +105,28 @@
                     <div class="modal-body pt-4">
                         <input type="hidden" id="editUserId">
                         <div class="row g-3">
+                            <!-- Personal Details -->
+                            <div class="col-12"><h6 class="text-uppercase small fw-bold text-muted border-bottom pb-2 mb-0">Personal Details</h6></div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold small text-uppercase text-muted">Name</label>
                                 <input type="text" class="form-control" id="editName" required>
                             </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-uppercase text-muted">Age</label>
+                                <input type="number" class="form-control" id="editAge" min="1" max="120">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-uppercase text-muted">Gender</label>
+                                <select class="form-select" id="editGender" required>
+                                    <option value="Boy">Boy</option>
+                                    <option value="Girl">Girl</option>
+                                    <option value="Men">Men</option>
+                                    <option value="Women">Women</option>
+                                </select>
+                            </div>
+
+                            <!-- Contact Details -->
+                            <div class="col-12 mt-4"><h6 class="text-uppercase small fw-bold text-muted border-bottom pb-2 mb-0">Contact Information</h6></div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold small text-uppercase text-muted">Email</label>
                                 <input type="email" class="form-control" id="editEmail" required>
@@ -117,28 +136,30 @@
                                 <input type="text" class="form-control" id="editPhone" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-bold small text-uppercase text-muted">User Type</label>
-                                <select class="form-select" id="editGender" required>
-                                    <option value="Boy">Boy</option>
-                                    <option value="Girl">Girl</option>
-                                    <option value="Men">Men</option>
-                                    <option value="Women">Women</option>
-                                </select>
+                                <label class="form-label fw-bold small text-uppercase text-muted">City</label>
+                                <input type="text" class="form-control" id="editCity">
                             </div>
                             <div class="col-12">
                                 <label class="form-label fw-bold small text-uppercase text-muted">Address</label>
-                                <input type="text" class="form-control" id="editAddress" placeholder="Street, City, State">
+                                <input type="text" class="form-control" id="editAddress" placeholder="Full Street Address">
                             </div>
-                            <div class="col-12">
+
+                            <!-- Business Details -->
+                            <div class="col-12 mt-4"><h6 class="text-uppercase small fw-bold text-muted border-bottom pb-2 mb-0">Business Information</h6></div>
+                            <div class="col-md-4">
                                 <label class="form-label fw-bold small text-uppercase text-muted">Business Type</label>
                                 <select class="form-select" id="editIsGst">
-                                    <option value="0">Individual / Non-Business</option>
-                                    <option value="1">Business (GST Available)</option>
+                                    <option value="0">Individual</option>
+                                    <option value="1">Business (GST)</option>
                                 </select>
                             </div>
-                            <div class="col-12">
+                            <div class="col-md-4">
                                 <label class="form-label fw-bold small text-uppercase text-muted">GSTIN</label>
-                                <input type="text" class="form-control" id="editGstin" placeholder="Enter 15-digit GSTIN" maxlength="15">
+                                <input type="text" class="form-control" id="editGstin" placeholder="15-digit GSTIN" maxlength="15">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-uppercase text-muted">GST Number (Ref)</label>
+                                <input type="text" class="form-control" id="editGstNumber" placeholder="Reference No.">
                             </div>
                         </div>
                         <div id="editUserErrors" class="text-danger small mt-2"></div>
@@ -148,6 +169,133 @@
                         <button type="submit" class="btn btn-sm btn-dark px-4">Save Changes</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- View User Modal -->
+    <div class="modal fade" id="viewUserModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg overflow-hidden">
+                <div class="modal-header border-bottom px-4 py-3 bg-white">
+                    <h5 class="modal-title fw-bold">Member Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <div class="modal-body p-0">
+                    <!-- Identity Section -->
+                    <div class="p-4 bg-light border-bottom">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0 position-relative">
+                                <img id="viewAvatar" src="" class="rounded-3 shadow-sm border bg-white" width="96" height="96" style="object-fit:cover;">
+                            </div>
+                            <div class="flex-grow-1 ms-4">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h4 class="fw-bold text-dark mb-1" id="viewName"></h4>
+                                        <div class="d-flex align-items-center text-muted mb-2">
+                                            <i class="bi bi-envelope me-2"></i>
+                                            <span id="viewEmail"></span>
+                                        </div>
+                                        <div id="viewBadges"></div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="text-uppercase small fw-bold text-muted mb-1">User ID</div>
+                                        <div class="fs-4 fw-bold font-monospace text-dark lh-1" id="viewId"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Details Grid -->
+                    <div class="p-4">
+                        <div class="row g-4">
+                            <!-- Personal -->
+                            <div class="col-md-6">
+                                <div class="p-3 bg-white border rounded h-100">
+                                    <h6 class="text-uppercase small fw-bold text-muted border-bottom pb-2 mb-3">
+                                        <i class="bi bi-person me-2"></i>Personal Info
+                                    </h6>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted small">Age</span>
+                                        <span class="fw-semibold text-dark" id="viewAge">--</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-0">
+                                        <span class="text-muted small">Gender</span>
+                                        <span class="fw-semibold text-dark" id="viewGender">--</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Contact -->
+                            <div class="col-md-6">
+                                <div class="p-3 bg-white border rounded h-100">
+                                    <h6 class="text-uppercase small fw-bold text-muted border-bottom pb-2 mb-3">
+                                        <i class="bi bi-telephone me-2"></i>Contact Details
+                                    </h6>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted small">Phone</span>
+                                        <span class="fw-semibold text-dark" id="viewPhone">--</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted small">City</span>
+                                        <span class="fw-semibold text-dark" id="viewCity">--</span>
+                                    </div>
+                                    <div class="mb-0">
+                                        <span class="text-muted small d-block mb-1">Address</span>
+                                        <span class="fw-semibold text-dark small text-break lh-sm" id="viewAddress">--</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Business -->
+                            <div class="col-md-6">
+                                <div class="p-3 bg-white border rounded h-100">
+                                    <h6 class="text-uppercase small fw-bold text-muted border-bottom pb-2 mb-3">
+                                        <i class="bi bi-briefcase me-2"></i>Business Info
+                                    </h6>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted small">Type</span>
+                                        <span class="fw-semibold text-dark" id="viewBusinessType">--</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted small">GSTIN</span>
+                                        <span class="font-monospace small text-dark" id="viewGstin">--</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-0">
+                                        <span class="text-muted small">Ref. No</span>
+                                        <span class="font-monospace small text-dark" id="viewGstNumber">--</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- System -->
+                            <div class="col-md-6">
+                                <div class="p-3 bg-white border rounded h-100">
+                                    <h6 class="text-uppercase small fw-bold text-muted border-bottom pb-2 mb-3">
+                                        <i class="bi bi-cpu me-2"></i>System Activity
+                                    </h6>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted small">Joined</span>
+                                        <span class="fw-semibold text-dark" id="viewJoined">--</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted small">Last Login</span>
+                                        <span class="fw-semibold text-dark" id="viewLastLogin">--</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-0">
+                                        <span class="text-muted small">Status</span>
+                                        <span class="fw-semibold" id="viewVerification">--</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-top-0 py-3">
+                    <button type="button" class="btn btn-dark btn-sm px-4 rounded-1" data-bs-dismiss="modal">Close</button>
+                </div>
             </div>
         </div>
     </div>
@@ -215,6 +363,7 @@
     letter-spacing: 0.05em;
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
+    white-space: nowrap;
 }
 .admin-table td { 
     vertical-align: middle; 
@@ -335,7 +484,7 @@ $(function() {
     function renderUsers() {
         const term = state.search.toLowerCase();
         let filtered = state.data.filter(user => {
-            const haystack = `${user.name ?? ''} ${user.email ?? ''} ${user.phone ?? ''}`.toLowerCase();
+            const haystack = `${user.name ?? ''} ${user.email ?? ''} ${user.phone ?? ''} ${user.gstin ?? ''}`.toLowerCase();
             return haystack.includes(term);
         });
 
@@ -403,18 +552,82 @@ $(function() {
     }
 
     function renderRow(user) {
-        const email = user.email || '<span class="text-muted text-opacity-50">No email</span>';
-        const address = user.address || '<span class="text-muted text-opacity-50">Add address</span>';
-        const phone = user.phone || '<span class="text-muted text-opacity-50">No phone</span>';
-        const genderLabel = user.gender ? user.gender : '—';
+        // --- Helpers ---
+        const avatarUrl = user.profile_image 
+            ? `/storage/${user.profile_image}`
+            : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=random&color=fff&size=40`;
         
-        // Monochrome Badge
-        let genderBadge = `<span class="badge badge-pill-soft">${genderLabel}</span>`;
+        const email = user.email || '<span class="text-muted small">No email</span>';
+        const phone = user.phone || '<span class="text-muted small">No phone</span>';
+        const address = user.address || '<span class="text-muted small">--</span>';
+        const city = user.city ? `<span class="fw-semibold text-dark">${user.city}</span>` : '<span class="text-muted small">--</span>';
+        
+        const joinedDate = user.created_at ? new Date(user.created_at).toLocaleDateString('en-GB') : '--';
+        const lastLogin = user.last_login_at ? new Date(user.last_login_at).toLocaleDateString('en-GB') : '<span class="text-muted small">Never</span>';
+        
+        // --- Info Blocks ---
+        // 1. Member Profile
+        const profileHtml = `
+            <div class="d-flex align-items-center">
+                <img src="${avatarUrl}" class="rounded-circle me-3 border" width="36" height="36" style="object-fit:cover;">
+                <div>
+                    <div class="fw-bold text-dark small">${user.name ?? 'Guest'}</div>
+                    <div class="small text-muted" style="font-size:0.7rem;">${email}</div>
+                </div>
+            </div>
+        `;
+
+        // 2. Contact Details
+        const contactHtml = `
+            <div class="d-flex flex-column small">
+                <div class="text-dark"><i class="bi bi-telephone me-1 text-muted"></i>${phone}</div>
+                <div class="text-muted text-truncate" style="max-width:140px;" title="${user.address ?? ''}">
+                    <i class="bi bi-geo-alt me-1"></i>${city}, ${address}
+                </div>
+            </div>
+        `;
+
+        // 3. Personal Info
+        const personalHtml = `
+            <div class="small">
+                <div class="mb-1"><span class="text-muted">Age:</span> <span class="fw-semibold">${user.age || '--'}</span></div>
+                <div><span class="text-muted">Sex:</span> <span class="badge badge-pill-soft">${user.gender || '—'}</span></div>
+            </div>
+        `;
+
+        // 4. Business Info
+        let businessHtml;
+        if (user.is_gst == 1) {
+            businessHtml = `
+                <div class="small">
+                    <span class="badge bg-dark text-white mb-1" style="font-size:0.6rem;">GST Business</span>
+                    <div title="GSTIN" class="font-monospace text-muted" style="font-size:0.7rem;">${user.gstin || '--'}</div>
+                    ${user.gst_number ? `<div title="GST Num" class="font-monospace text-muted" style="font-size:0.7rem;">#${user.gst_number}</div>` : ''}
+                </div>
+            `;
+        } else {
+             businessHtml = `<span class="badge badge-pill-soft text-muted">Individual</span>`;
+        }
+
+        // 5. Activity & Status
+        const isVerified = !!user.email_verified_at;
+        const statusHtml = `
+            <div class="small">
+                <div class="mb-1"><span class="text-muted">Joined:</span> ${joinedDate}</div>
+                <div class="mb-1"><span class="text-muted">Active:</span> ${lastLogin}</div>
+                ${isVerified 
+                    ? '<span class="text-success fw-bold" style="font-size:0.7rem;"><i class="bi bi-patch-check-fill me-1"></i>Verified</span>' 
+                    : '<span class="text-muted" style="font-size:0.7rem;">Unverified</span>'}
+            </div>
+        `;
 
         // Action Buttons
         const btns = `
             <div class="btn-group" role="group">
-                <button class="btn btn-sm btn-outline-secondary edit-user" data-user='${JSON.stringify(user)}' title="Edit">
+                <button class="btn btn-sm btn-outline-dark view-user" data-user='${JSON.stringify(user).replace(/'/g, "&#39;")}' title="View Details">
+                    <i class="bi bi-eye"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-secondary edit-user" data-user='${JSON.stringify(user).replace(/'/g, "&#39;")}' title="Edit">
                     <i class="bi bi-pencil"></i>
                 </button>
                 <button class="btn btn-sm btn-outline-danger delete-user" data-id="${user.id}" title="Delete">
@@ -426,13 +639,11 @@ $(function() {
         return `
             <tr>
                 <td class="fw-bold text-muted small ps-4">#${user.id}</td>
-                <td>
-                    <div class="fw-bold text-dark">${user.name ?? 'Guest'}</div>
-                    <div class="small text-muted">${email}</div>
-                </td>
-                <td>${phone}</td>
-                <td class="text-truncate" style="max-width: 150px;">${address}</td>
-                <td class="text-center">${genderBadge}</td>
+                <td>${profileHtml}</td>
+                <td>${contactHtml}</td>
+                <td>${personalHtml}</td>
+                <td>${businessHtml}</td>
+                <td>${statusHtml}</td>
                 <td class="text-end pe-4">${btns}</td>
             </tr>
         `;
@@ -455,16 +666,75 @@ $(function() {
         fetchUsers(false);
     });
 
+    $tableBody.on('click', '.view-user', function() {
+        const user = $(this).data('user');
+        
+        // Header
+        const avatarUrl = user.profile_image 
+            ? `/storage/${user.profile_image}`
+            : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=random&color=fff&size=80`;
+        $('#viewAvatar').attr('src', avatarUrl);
+        $('#viewName').text(user.name || 'Guest');
+        $('#viewEmail').text(user.email || 'No Email');
+        
+        const isVerified = !!user.email_verified_at;
+        $('#viewBadges').html(
+            isVerified 
+                ? '<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">Verified Member</span>'
+                : '<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill">Unverified</span>'
+        );
+
+        // Personal
+        $('#viewId').text('#' + user.id);
+        $('#viewAge').text(user.age || 'Not set');
+        $('#viewGender').text(user.gender || 'Not set');
+
+        // Contact
+        $('#viewPhone').text(user.phone || 'Not provided');
+        $('#viewCity').text(user.city || 'Not provided');
+        $('#viewAddress').text(user.address || 'No address on file');
+
+        // Business
+        $('#viewBusinessType').html(user.is_gst ? '<span class="badge bg-dark">Business</span>' : 'Individual');
+        $('#viewGstin').text(user.gstin || 'N/A');
+        $('#viewGstNumber').text(user.gst_number || 'N/A');
+
+        // System
+        $('#viewJoined').text(user.created_at ? new Date(user.created_at).toLocaleDateString('en-GB') : '-');
+        $('#viewLastLogin').html(user.last_login_at 
+            ? new Date(user.last_login_at).toLocaleString('en-GB') 
+            : '<span class="text-muted fst-italic">Never</span>'
+        );
+        $('#viewVerification').html(isVerified
+            ? `<span class="text-success"><i class="bi bi-check-circle-fill me-1"></i>${new Date(user.email_verified_at).toLocaleDateString('en-GB')}</span>`
+            : '<span class="text-warning"><i class="bi bi-exclamation-circle me-1"></i>Pending</span>'
+        );
+
+        const modal = new bootstrap.Modal(document.getElementById('viewUserModal'));
+        modal.show();
+    });
+
     $tableBody.on('click', '.edit-user', function() {
         const user = $(this).data('user');
+        
         $('#editUserId').val(user.id);
+        
+        // Personal
         $('#editName').val(user.name);
+        $('#editAge').val(user.age || '');
+        $('#editGender').val(user.gender || 'Boy');
+        
+        // Contact
         $('#editEmail').val(user.email);
         $('#editPhone').val(user.phone);
+        $('#editCity').val(user.city || '');
         $('#editAddress').val(user.address);
-        $('#editGstin').val(user.gstin || '');
+        
+        // Business
         $('#editIsGst').val(user.is_gst ? '1' : '0');
-        $('#editGender').val(user.gender || 'Boy');
+        $('#editGstin').val(user.gstin || '');
+        $('#editGstNumber').val(user.gst_number || '');
+        
         $('#editUserErrors').html('');
         const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
         modal.show();
@@ -479,12 +749,15 @@ $(function() {
 
         $.post(`${endpoints.update}/${id}`, {
             name: $('#editName').val(),
+            age: $('#editAge').val(),
+            gender: $('#editGender').val(),
             email: $('#editEmail').val(),
             phone: $('#editPhone').val(),
+            city: $('#editCity').val(),
             address: $('#editAddress').val(),
-            gstin: $('#editGstin').val(),
             is_gst: $('#editIsGst').val(),
-            gender: $('#editGender').val(),
+            gstin: $('#editGstin').val(),
+            gst_number: $('#editGstNumber').val(),
             _token: csrf,
         })
         .done(() => {
@@ -492,9 +765,12 @@ $(function() {
             const modal = bootstrap.Modal.getInstance(modalEl);
             if (modal) modal.hide();
             fetchUsers(false);
+            if (window.showAlert) window.showAlert('User updated successfully', 'success');
         })
         .fail(xhr => {
-             alert('Unable to update user.');
+             const msg = xhr.responseJSON?.message || 'Unable to update user.';
+             if (window.showAlert) window.showAlert(msg, 'danger');
+             $('#editUserErrors').text(msg);
         })
         .always(() => {
             $submit.prop('disabled', false).text(originalText);
@@ -509,8 +785,13 @@ $(function() {
             url: `${endpoints.delete}/${id}`,
             type: 'DELETE',
             data: { _token: csrf },
-        }).done(() => fetchUsers(false))
-          .fail(() => alert('Unable to delete user.'));
+        }).done(() => {
+            fetchUsers(false);
+            if (window.showAlert) window.showAlert('User deleted successfully', 'success');
+        })
+          .fail(() => {
+              if (window.showAlert) window.showAlert('Unable to delete user', 'danger');
+          });
     });
 
     $('#downloadUsers').on('click', function() {
@@ -518,14 +799,19 @@ $(function() {
             alert('No data to export.');
             return;
         }
-        const headers = ['ID','Name','Email','Phone','Address','User Type'];
+        const headers = ['ID','Name','Email','Phone','City','Address','Age','Gender','Business Type','GSTIN','Joined'];
         const rows = state.data.map(u => [
             u.id,
             `"${(u.name || '').replace(/"/g, '""')}"`,
             `"${(u.email || '').replace(/"/g, '""')}"`,
             `"${(u.phone || '').replace(/"/g, '""')}"`,
+            `"${(u.city || '').replace(/"/g, '""')}"`,
             `"${(u.address || '').replace(/"/g, '""')}"`,
+            u.age || '',
             u.gender || '',
+            u.is_gst ? 'Business' : 'Individual',
+            `"${(u.gstin || '').replace(/"/g, '""')}"`,
+            u.created_at ? new Date(u.created_at).toISOString().slice(0,10) : ''
         ]);
         const csv = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -542,4 +828,5 @@ $(function() {
     fetchUsers();
 });
 </script>
+
 @endpush

@@ -35,16 +35,19 @@ class UserController extends Controller
             'email' => 'required|email|max:255|unique:users,email,' . $id,
             'phone' => 'required|string|max:20|unique:users,phone,' . $id,
             'address' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:100',
+            'age' => 'nullable|integer|min:1|max:120',
             'is_gst' => 'required|boolean',
-            'gstin' => 'required_if:is_gst,1|nullable|string|max:15|regex:/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/',
+            'gstin' => 'nullable|string|max:15',
+            'gst_number' => 'nullable|string|max:50',
             'gender' => 'required|in:Boy,Girl,Men,Women',
         ]);
+
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
         
-        $data = $request->only(['name', 'email', 'phone', 'address', 'gstin', 'gender', 'is_gst']);
-        $data['gst_number'] = $data['gstin'] ?? null;
+        $data = $request->only(['name', 'email', 'phone', 'address', 'city', 'age', 'gstin', 'gst_number', 'gender', 'is_gst']);
         
         $user->update($data);
         return response()->json(['success' => true, 'user' => $user]);

@@ -9,13 +9,17 @@
         <!-- Roles List Sidebar -->
         <div class="col-lg-4">
             <div class="card h-100 shadow-sm border-0">
-                <div class="card-header bg-white py-3 border-bottom">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
                     <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-shield-lock me-2"></i>Select Role</h6>
+                    <button class="btn btn-sm btn-dark px-2 py-0" style="font-size: 1.2rem; line-height: 1;" data-bs-toggle="modal" data-bs-target="#addNewRoleModal" title="Add New Role">
+                        <i class="bi bi-plus"></i>
+                    </button>
                 </div>
                 <div class="list-group list-group-flush" id="roleSelectorList">
                     @foreach($roles as $role)
                         <button type="button" 
                                 class="list-group-item list-group-item-action border-0 py-3 role-item" 
+                                id="role-item-{{ $role->id }}"
                                 data-id="{{ $role->id }}" 
                                 data-name="{{ $role->name }}">
                             <div class="d-flex justify-content-between align-items-center">
@@ -96,6 +100,31 @@
             </div>
         </div>
     </div>
+
+    <!-- Add New Role Modal -->
+    <div class="modal fade" id="addNewRoleModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 0 !important;">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold">Create New Role</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-4">
+                    <form id="addNewRoleForm">
+                        @csrf
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-uppercase text-muted">Role Name</label>
+                            <input type="text" class="form-control" name="name" required placeholder="e.g. editor" style="border-radius: 0 !important;">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-sm btn-outline-secondary px-3" data-bs-dismiss="modal" style="border-radius: 0 !important;">Cancel</button>
+                    <button type="button" class="btn btn-sm btn-dark px-4" id="submitNewRole" style="border-radius: 0 !important;">Create Role</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 
@@ -161,11 +190,11 @@ $(function() {
     const $selectAll = $('#selectAllPermissions');
 
     // Select Role
-    $roleList.click(function() {
+    $(document).on('click', '.role-item', function() {
         const id = $(this).data('id');
         const name = $(this).data('name');
 
-        $roleList.removeClass('active');
+        $('.role-item').removeClass('active');
         $(this).addClass('active');
 
         $placeholder.addClass('d-none');
@@ -189,6 +218,61 @@ $(function() {
             .always(() => {
                 $permissionsCard.removeClass('opacity-50 pointer-events-none');
             });
+    });
+
+    // Handle New Role Creation
+    $('#submitNewRole').click(function() {
+        const $btn = $(this);
+        const originalText = $btn.text();
+        const roleName = $('#addNewRoleForm input[name="name"]').val();
+
+        if (!roleName) {
+            if (window.showAlert) window.showAlert('Please enter a role name', 'danger');
+            return;
+        }
+
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
+
+        $.ajax({
+            url: "{{ route('role_master.store') }}",
+            type: "POST",
+            data: {
+                _token: csrf,
+                name: roleName
+            }
+        })
+        .done(response => {
+            if (response.success) {
+                const role = response.role;
+                // Add to list
+                $('#roleSelectorList').append(`
+                    <button type="button" 
+                            class="list-group-item list-group-item-action border-0 py-3 role-item" 
+                            id="role-item-${role.id}"
+                            data-id="${role.id}" 
+                            data-name="${role.name}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-capitalize fw-semibold">${role.name}</span>
+                            <i class="bi bi-chevron-right small text-muted"></i>
+                        </div>
+                    </button>
+                `);
+                
+                $('#addNewRoleModal').modal('hide');
+                $('#addNewRoleForm')[0].reset();
+                if (window.showAlert) window.showAlert('Role created successfully', 'success');
+                
+                // Automatically click the new role
+                $(`#role-item-${role.id}`).click();
+            }
+        })
+        .fail(xhr => {
+            const error = xhr.responseJSON?.message || 'Failed to create role';
+            if (window.showAlert) window.showAlert(error, 'danger');
+        })
+        .always(() => {
+            $btn.prop('disabled', false).text(originalText);
+        });
     });
 
     // Select All

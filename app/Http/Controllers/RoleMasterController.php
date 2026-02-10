@@ -35,4 +35,20 @@ class RoleMasterController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|unique:roles,name',
+        ]);
+
+        $role = Role::create([
+            'name' => strtolower($request->name),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'role' => $role
+        ]);
+    }
 }

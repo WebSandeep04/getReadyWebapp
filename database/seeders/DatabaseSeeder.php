@@ -21,71 +21,74 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create test user
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'phone' => '1234567890',
-            'gender' => 'Male',
-        ]);
+        // Create test user if not exists
+        User::firstOrCreate(
+            ['email' => 'test@example.com'],
+            [
+                'name' => 'Test User',
+                'phone' => '1234567890',
+                'gender' => 'Male',
+                'password' => \Illuminate\Support\Facades\Hash::make('password'),
+            ]
+        );
 
         // Create categories
-        Category::create(['name' => 'Wedding Wear']);
-        Category::create(['name' => 'Festive Wear']);
-        Category::create(['name' => 'Formal Wear']);
-        Category::create(['name' => 'Ethnic Wear']);
-        Category::create(['name' => 'Traditional Wear']);
-        Category::create(['name' => 'Pre-Wedding Shoot Outfits']);
-        Category::create(['name' => 'Indo-Western']);
-        Category::create(['name' => 'Western Wear']);
-        Category::create(['name' => 'Premium Wear']);
+        $categories = [
+            'Wedding Wear', 'Festive Wear', 'Formal Wear', 'Ethnic Wear', 
+            'Traditional Wear', 'Pre-Wedding Shoot Outfits', 'Indo-Western', 
+            'Western Wear', 'Premium Wear'
+        ];
+        foreach ($categories as $name) {
+            Category::updateOrCreate(['name' => $name]);
+        }
 
         // Create sample fabric types
-        FabricType::create(['name' => 'Silk']);
-        FabricType::create(['name' => 'Cotton']);
-        FabricType::create(['name' => 'Polyester']);
-        FabricType::create(['name' => 'Linen']);
+        $fabrics = ['Silk', 'Cotton', 'Polyester', 'Linen'];
+        foreach ($fabrics as $name) {
+            FabricType::updateOrCreate(['name' => $name]);
+        }
 
         // Create sample colors
-        Color::create(['name' => 'Red']);
-        Color::create(['name' => 'Blue']);
-        Color::create(['name' => 'Green']);
-        Color::create(['name' => 'Black']);
-        Color::create(['name' => 'White']);
+        $colors = ['Red', 'Blue', 'Green', 'Black', 'White'];
+        foreach ($colors as $name) {
+            Color::updateOrCreate(['name' => $name]);
+        }
 
         // Create sample sizes
-        Size::create(['name' => 'XS']);
-        Size::create(['name' => 'S']);
-        Size::create(['name' => 'M']);
-        Size::create(['name' => 'L']);
-        Size::create(['name' => 'XL']);
-        Size::create(['name' => 'XXL']);
+        $sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+        foreach ($sizes as $name) {
+            Size::updateOrCreate(['name' => $name]);
+        }
 
         // Create sample bottom types
-        BottomType::create(['name' => 'Straight']);
-        BottomType::create(['name' => 'Skinny']);
-        BottomType::create(['name' => 'Wide Leg']);
-        BottomType::create(['name' => 'Palazzo']);
+        $bottoms = ['Straight', 'Skinny', 'Wide Leg', 'Palazzo'];
+        foreach ($bottoms as $name) {
+            BottomType::updateOrCreate(['name' => $name]);
+        }
 
         // Create sample body type fits
-        BodyTypeFit::create(['name' => 'Regular']);
-        BodyTypeFit::create(['name' => 'Slim']);
-        BodyTypeFit::create(['name' => 'Loose']);
-        BodyTypeFit::create(['name' => 'Oversized']);
+        $fits = ['Regular', 'Slim', 'Loose', 'Oversized'];
+        foreach ($fits as $name) {
+            BodyTypeFit::updateOrCreate(['name' => $name]);
+        }
 
         // Create outfit conditions
-        GarmentCondition::create(['name' => 'Brand New']);
-        GarmentCondition::create(['name' => 'Like New']);
-        GarmentCondition::create(['name' => 'Excellent']);
-        GarmentCondition::create(['name' => 'Good']);
-        GarmentCondition::create(['name' => 'Fair']);
+        $conditions = ['Brand New', 'Like New', 'Excellent', 'Good', 'Fair'];
+        foreach ($conditions as $name) {
+            GarmentCondition::updateOrCreate(['name' => $name]);
+        }
 
         // Create sample brands
-        Brand::create(['name' => 'Zara']);
-        Brand::create(['name' => 'H&M']);
-        Brand::create(['name' => 'Manyavar']);
-        Brand::create(['name' => 'Sabyasachi']);
-        Brand::create(['name' => 'FabIndia']);
-        Brand::create(['name' => 'Biba']);
+        $brands = ['Zara', 'H&M', 'Manyavar', 'Sabyasachi', 'FabIndia', 'Biba'];
+        foreach ($brands as $name) {
+            Brand::updateOrCreate(['name' => $name]);
+        }
+
+        // Admin System Seeders
+        $this->call([
+            FrontendSettingsSeeder::class,
+            PermissionSeeder::class,
+            AdminPermissionSeeder::class,
+        ]);
     }
 }

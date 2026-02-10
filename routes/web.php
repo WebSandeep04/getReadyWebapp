@@ -153,6 +153,11 @@ Route::middleware(['admin.auth'])->group(function () {
     Route::post('/admin/panel-users', [App\Http\Controllers\AdminPanelUserController::class, 'store'])->name('admin_panel_users.store');
     Route::put('/admin/panel-users/{id}', [App\Http\Controllers\AdminPanelUserController::class, 'update'])->name('admin_panel_users.update');
     Route::delete('/admin/panel-users/{id}', [App\Http\Controllers\AdminPanelUserController::class, 'destroy'])->name('admin_panel_users.destroy');
+
+    // Role Master
+    Route::get('/admin/role-master', [App\Http\Controllers\RoleMasterController::class, 'index'])->name('role_master.index');
+    Route::get('/admin/role-master/permissions/{id}', [App\Http\Controllers\RoleMasterController::class, 'getRolePermissions'])->name('role_master.permissions');
+    Route::post('/admin/role-master/save', [App\Http\Controllers\RoleMasterController::class, 'saveRolePermissions'])->name('role_master.save');
 });
 
 // User (Non-admin route, kept outside)

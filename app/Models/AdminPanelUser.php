@@ -22,4 +22,14 @@ class AdminPanelUser extends Model
     {
         return $this->belongsTo(Role::class);
     }
+
+    public function permissions()
+    {
+        return $this->belongsToMany(Permission::class, 'admin_user_permissions');
+    }
+
+    public function hasPermission($permissionName)
+    {
+        return $this->permissions()->where('name', $permissionName)->exists();
+    }
 }

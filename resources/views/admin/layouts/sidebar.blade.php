@@ -14,6 +14,7 @@
                 ['label' => 'Body Type Fits', 'route' => 'body_type_fits.index', 'icon' => 'bi-person-bounding-box'],
                 ['label' => 'Outfit Conditions', 'route' => 'garment_conditions.index', 'icon' => 'bi-shield-check'],
                 ['label' => 'Roles', 'route' => 'roles.index', 'icon' => 'bi-shield-lock'],
+                ['label' => 'Role Master', 'route' => 'role_master.index', 'icon' => 'bi-shield-shaded'],
                 ['label' => 'Admin Users', 'route' => 'admin_panel_users.index', 'icon' => 'bi-person-badge'],
                 ['label' => 'Frontend Settings', 'route' => 'admin.frontend', 'icon' => 'bi-globe'],
             ],

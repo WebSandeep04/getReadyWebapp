@@ -296,9 +296,9 @@
                                         <label class="custom-control-label" for="is_purchased">Available for Purchase</label>
                                     </div>
                                 </div>
-                                <div class="form-group" id="purchase_value_section" style="display: {{ $cloth->is_purchased ? 'block' : 'none' }};">
-                                    <label for="purchase_value">Purchase Value (₹)</label>
-                                    <input type="number" class="form-control" id="purchase_value" name="purchase_value" value="{{ $cloth->purchase_value }}" min="0" step="0.01">
+                                <div class="form-group" id="selling_price_section" style="display: {{ $cloth->is_purchased ? 'block' : 'none' }};">
+                                    <label for="selling_price">Selling Price (₹)</label>
+                                    <input type="number" class="form-control" id="selling_price" name="selling_price" value="{{ $cloth->selling_price }}" min="0" step="0.01">
                                 </div>
                             </div>
                         </div>

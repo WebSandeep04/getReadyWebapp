@@ -450,7 +450,7 @@ class AdminController extends Controller
         // Increment SKU for rented items
         foreach ($order->items as $item) {
             $cloth = $item->cloth;
-            if ($cloth && $item->price != $cloth->purchase_value) { 
+            if ($cloth && $item->price != $cloth->selling_price) { 
                 $cloth->sku = $cloth->sku + 1;
                 $cloth->is_available = true; // Make available again
                 $cloth->save();

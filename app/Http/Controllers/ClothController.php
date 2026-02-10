@@ -144,7 +144,7 @@ class ClothController extends Controller
             'is_cleaned' => 'boolean',
             'rent_price' => 'required|numeric|min:0',
             'is_purchased' => 'boolean',
-            'purchase_value' => 'required_if:is_purchased,1|nullable|numeric|min:0',
+            'selling_price' => 'required_if:is_purchased,1|nullable|numeric|min:0',
             'security_deposit' => 'required|numeric|min:0',
         ]);
 
@@ -153,7 +153,7 @@ class ClothController extends Controller
             'title', 'description', 'category', 'gender', 'brand', 'fabric', 'color', 
             'chest_bust', 'waist', 'length', 'shoulder', 
             'sleeve_length', 'size', 'fit_type', 'condition', 'defects', 
-            'rent_price', 'is_purchased', 'purchase_value', 'security_deposit'
+            'rent_price', 'is_purchased', 'selling_price', 'security_deposit'
         ]);
 
         // Map request fields to database column names with _id suffix if they don't match
@@ -248,17 +248,17 @@ class ClothController extends Controller
             'body_type_fit' => 'nullable|exists:body_type_fits,id',
             'condition' => 'required|exists:garment_conditions,id',
             'defects' => 'nullable|string',
-            'purchase_value' => 'required|numeric|min:0',
+            'selling_price' => 'required|numeric|min:0',
             'sku' => 'required|integer|min:1',
             'rent_price' => [
                 'required',
                 'numeric',
                 'min:0',
                 function ($attribute, $value, $fail) use ($request) {
-                    $mrp = $request->input('purchase_value');
-                    if ($mrp && $value > ($mrp * 0.2)) {
-                        $maxRent = $mrp * 0.2;
-                        $fail("Rent price should not exceed 20% of MRP. Maximum suggested rent: ₹" . number_format($maxRent, 2));
+                    $sellingPrice = $request->input('selling_price');
+                    if ($sellingPrice && $value > ($sellingPrice * 0.2)) {
+                        $maxRent = $sellingPrice * 0.2;
+                        $fail("Rent price should not exceed 20% of Selling Price. Maximum suggested rent: ₹" . number_format($maxRent, 2));
                     }
                 },
             ],
@@ -290,7 +290,7 @@ class ClothController extends Controller
             'fit_type_id' => $request->input('body_type_fit'),
             'condition_id' => $request->input('condition'),
             'defects' => $request->input('defects'),
-            'purchase_value' => $request->input('purchase_value'),
+            'selling_price' => $request->input('selling_price'),
             'sku' => $request->input('sku', 1),
             'rent_price' => $request->input('rent_price'),
             'is_purchased' => 1, // Always set to 1

@@ -17,7 +17,7 @@ class CartItem extends Model
         'rental_start_date',
         'rental_end_date',
         'total_rental_cost',
-        'total_purchase_cost',
+        'total_selling_price',
         'rental_days',
     ];
 
@@ -25,7 +25,7 @@ class CartItem extends Model
         'rental_start_date' => 'date',
         'rental_end_date' => 'date',
         'total_rental_cost' => 'decimal:2',
-        'total_purchase_cost' => 'decimal:2',
+        'total_selling_price' => 'decimal:2',
     ];
 
     /**

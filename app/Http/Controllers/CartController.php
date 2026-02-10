@@ -45,7 +45,7 @@ class CartController extends Controller
             $request->validate([
                 'cloth_id' => 'required|exists:clothes,id',
                 'purchase_type' => 'required|in:buy',
-                'total_purchase_cost' => 'required|numeric|min:0',
+                'total_selling_price' => 'required|numeric|min:0',
             ]);
             
             // Check if item is available for purchase
@@ -65,7 +65,7 @@ class CartController extends Controller
                 'cloth_id' => $request->cloth_id,
                 'quantity' => 1,
                 'purchase_type' => 'buy',
-                'total_purchase_cost' => $request->total_purchase_cost,
+                'total_selling_price' => $request->total_selling_price,
             ]);
             
             $message = 'Item added to cart for purchase';

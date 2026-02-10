@@ -29,7 +29,7 @@ class Cloth extends Model
         'is_approved',
         'resubmission_count',
         'rent_price',
-        'purchase_value',
+        'selling_price',
         'is_purchased',
         'security_deposit',
         'is_available',
@@ -46,7 +46,7 @@ class Cloth extends Model
         'is_available' => 'boolean',
         'is_purchased' => 'boolean',
         'rent_price' => 'decimal:2',
-        'purchase_value' => 'decimal:2',
+        'selling_price' => 'decimal:2',
         'security_deposit' => 'decimal:2',
     ];
 

@@ -267,7 +267,7 @@
                                 <span class="fw-bold text-primary" id="detailDeposit">-</span>
                             </div>
                              <div class="col-4">
-                                <small class="text-muted d-block">Purchase Value</small>
+                                <small class="text-muted d-block">Selling Price</small>
                                 <span class="fw-bold" id="detailPurchase">-</span>
                             </div>
                         </div>
@@ -664,7 +664,7 @@ $(function() {
         // Populate Financials
         $('#detailRent').text(cloth.rent_price ? '₹' + cloth.rent_price : '-');
         $('#detailDeposit').text(cloth.security_deposit ? '₹' + cloth.security_deposit : '-');
-        $('#detailPurchase').text(cloth.purchase_value ? '₹' + cloth.purchase_value : 'Not for sale');
+        $('#detailPurchase').text(cloth.selling_price ? '₹' + cloth.selling_price : 'Not for sale');
         
         // Defects
         $('#detailDefects').text(cloth.defects || 'None');

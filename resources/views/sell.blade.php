@@ -66,7 +66,7 @@
     border-color: #ffc107;
   }
   
-  #purchase_value_section {
+  #selling_price_section {
     margin-bottom: 15px;
   }
 </style>
@@ -199,9 +199,9 @@
     </div>
 
     <div class="step-content">
-      <label class="d-block text-left font-weight-bold mb-1">MRP <span class="text-danger">*</span></label>
-      <input type="number" name="purchase_value" placeholder="MRP (₹)" value="{{ old('purchase_value') }}" required>
-      @error('purchase_value')<div class="text-danger small">{{ $message }}</div>@enderror
+      <label class="d-block text-left font-weight-bold mb-1">Selling Price <span class="text-danger">*</span></label>
+      <input type="number" name="selling_price" placeholder="Selling Price (₹)" value="{{ old('selling_price') }}" required>
+      @error('selling_price')<div class="text-danger small">{{ $message }}</div>@enderror
 
       <label class="d-block text-left font-weight-bold mb-1">Quantity <span class="text-danger">*</span></label>
       <input type="number" name="sku" placeholder="Quantity" value="{{ old('sku', 1) }}" required>

@@ -46,7 +46,7 @@
                                             <div class="purchase-info">
                                                 <p class="text-success fw-bold item-price">
                                                     <i class="bi bi-bag-check me-1"></i>
-                                                    Purchase Price: ₹{{ number_format($cartItem->total_purchase_cost) }}
+                                                    Selling Price: ₹{{ number_format($cartItem->total_selling_price) }}
                                                 </p>
                                                 <div class="alert alert-success">
                                                     <i class="bi bi-info-circle me-1"></i>
@@ -91,14 +91,14 @@
                                             </div>
                                                                                          <p class="fw-bold item-total">
                                                  @if($cartItem->purchase_type === 'buy')
-                                                     ₹{{ number_format($cartItem->total_purchase_cost) }}
+                                                     ₹{{ number_format($cartItem->total_selling_price) }}
                                                  @else
                                                      ₹{{ number_format($cartItem->total_rental_cost ?? ($cartItem->cloth->rent_price * $cartItem->quantity)) }}
                                                  @endif
                                              </p>
                                              <small class="text-muted">
                                                  @if($cartItem->purchase_type === 'buy')
-                                                     (Purchase)
+                                                     (Selling Price)
                                                  @elseif($cartItem->rental_days)
                                                      ({{ $cartItem->rental_days }} days)
                                                  @else
@@ -131,7 +131,7 @@
                                 $rentalSubtotal = $rentalItems->sum(function($item) {
                                     return $item->total_rental_cost ?? ($item->cloth->rent_price * $item->quantity);
                                 });
-                                $buySubtotal = $buyItems->sum('total_purchase_cost');
+                                $buySubtotal = $buyItems->sum('total_selling_price');
                                 $total = $rentalSubtotal + $buySubtotal;
                                 $securityDeposit = $rentalItems->sum(function($item) { 
                                     return $item->cloth->security_deposit * $item->quantity; 
@@ -173,7 +173,7 @@
                             
                             @if($buyItems->count() > 0)
                                 <div class="d-flex justify-content-between mb-2">
-                                    <span>Purchase Cost:</span>
+                                    <span>Selling Price:</span>
                                     <span class="fw-bold text-success">₹{{ number_format($buySubtotal) }}</span>
                                 </div>
                             @endif

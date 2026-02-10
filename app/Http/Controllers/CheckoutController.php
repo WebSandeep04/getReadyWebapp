@@ -39,7 +39,7 @@ class CheckoutController extends Controller
 
         foreach ($cartItems as $item) {
             if ($item->purchase_type === 'buy') {
-                $buySubtotal += (float) ($item->total_purchase_cost ?? 0);
+                $buySubtotal += (float) ($item->total_selling_price ?? 0);
             } else {
                 $daily = (float) ($item->cloth->rent_price ?? 0);
                 $rentalSubtotal += (float) ($item->total_rental_cost ?? ($daily * $item->quantity));
@@ -75,7 +75,7 @@ class CheckoutController extends Controller
                 'order_id' => $order->id,
                 'cloth_id' => $item->cloth_id,
                 'price' => $item->purchase_type === 'buy' 
-                    ? ($item->total_purchase_cost ?? $item->cloth->purchase_value ?? 0)
+                    ? ($item->total_selling_price ?? $item->cloth->selling_price ?? 0)
                     : ($item->total_rental_cost ?? ($item->cloth->rent_price * $item->quantity)),
             ]);
         }

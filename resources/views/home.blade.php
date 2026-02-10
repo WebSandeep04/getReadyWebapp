@@ -147,7 +147,7 @@
                   </button>
                   @if($cloth->is_purchased)
                     <button class="btn btn-success btn-sm add-to-cart-buy-btn" data-cloth-id="{{ $cloth->id }}" style="cursor: pointer; background-color: #28a745; border-color: #28a745;">
-                      <i class="bi bi-bag-check me-1"></i>Buy - ₹{{ number_format($cloth->purchase_value) }}
+                      <i class="bi bi-bag-check me-1"></i>Buy - ₹{{ number_format($cloth->selling_price) }}
                     </button>
                   @endif -->
                 </div>
@@ -188,7 +188,7 @@ $(document).ready(function() {
         const requestData = {
             cloth_id: clothId,
             purchase_type: 'buy',
-            total_purchase_cost: purchaseValue,
+            total_selling_price: purchaseValue,
             _token: $('meta[name="csrf-token"]').attr('content')
         };
         

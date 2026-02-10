@@ -7,7 +7,7 @@ const submitBtn = document.getElementById("submitBtn");
 let currentStep = 0;
 
 // Auto-set security deposit equal to rental price and show rent price suggestion
-const purchaseValueInput = document.querySelector('input[name="purchase_value"]');
+const purchaseValueInput = document.querySelector('input[name="selling_price"]');
 const rentPriceInput = document.querySelector('input[name="rent_price"]');
 const securityDepositInput = document.querySelector('input[name="security_deposit"]');
 const rentPriceSuggestion = document.getElementById('rent-price-suggestion');
@@ -15,11 +15,11 @@ const maxRentAmount = document.getElementById('max-rent-amount');
 
 // Function to check if rent price exceeds suggested maximum and show/hide suggestion
 function checkAndShowRentSuggestion() {
-  const mrp = parseFloat(purchaseValueInput.value) || 0;
+  const sellingPrice = parseFloat(purchaseValueInput.value) || 0;
   const rentPrice = parseFloat(rentPriceInput.value) || 0;
 
-  if (mrp > 0) {
-    const maxRent = mrp * 0.2; // 20% of MRP
+  if (sellingPrice > 0) {
+    const maxRent = sellingPrice * 0.2; // 20% of Selling Price
     maxRentAmount.textContent = Math.round(maxRent);
 
     // Only show suggestion if entered rent price exceeds the suggested maximum
@@ -33,10 +33,10 @@ function checkAndShowRentSuggestion() {
   }
 }
 
-// Calculate and display maximum rent suggestion (20% of MRP)
+// Calculate and display maximum rent suggestion (20% of Selling Price)
 // Only show when entered rent price exceeds the suggested maximum
 if (purchaseValueInput && rentPriceInput && rentPriceSuggestion && maxRentAmount) {
-  // Check when MRP changes
+  // Check when Selling Price changes
   purchaseValueInput.addEventListener('input', checkAndShowRentSuggestion);
 
   // Check when rent price changes

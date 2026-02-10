@@ -240,7 +240,7 @@
 
               @if($cloth->is_purchased)
                 <button class="buy-button add-to-cart-buy-btn w-100 mt-2" data-cloth-id="{{ $cloth->id }}" id="productBuyBtn">
-                  <i class="bi bi-bag-check me-2"></i>Buy once - ₹{{ number_format($cloth->purchase_value) }}
+                  <i class="bi bi-bag-check me-2"></i>Buy once - ₹{{ number_format($cloth->selling_price) }}
                 </button>
               @endif
             @else
@@ -873,7 +873,7 @@ $(document).ready(function() {
          const requestData = {
              cloth_id: clothId,
              purchase_type: 'buy',
-             total_purchase_cost: {{ $cloth->purchase_value }},
+             total_selling_price: {{ $cloth->selling_price }},
              _token: $('meta[name="csrf-token"]').attr('content')
          };
          
@@ -899,7 +899,7 @@ $(document).ready(function() {
                      $btn.prop('disabled', true).html('<i class="bi bi-check me-2"></i>PURCHASED');
                  } else {
                      showAlert('danger', response.message);
-                     $btn.prop('disabled', false).html('<i class="bi bi-bag-check me-2"></i>BUY NOW - ₹{{ number_format($cloth->purchase_value) }}');
+                     $btn.prop('disabled', false).html('<i class="bi bi-bag-check me-2"></i>BUY NOW - ₹{{ number_format($cloth->selling_price) }}');
                  }
              },
              error: function(xhr, status, error) {
@@ -922,7 +922,7 @@ $(document).ready(function() {
                  } else {
                      showAlert('danger', 'An error occurred. Please try again.');
                  }
-                 $btn.prop('disabled', false).html('<i class="bi bi-bag-check me-2"></i>BUY NOW - ₹{{ number_format($cloth->purchase_value) }}');
+                 $btn.prop('disabled', false).html('<i class="bi bi-bag-check me-2"></i>BUY NOW - ₹{{ number_format($cloth->selling_price) }}');
              }
          });
      });
@@ -1145,7 +1145,7 @@ function updateAllBuyButtons(clothId, isPurchased) {
             const $rentBtn = $(`.add-to-cart-btn[data-cloth-id="${clothId}"]`);
             $rentBtn.prop('disabled', true).text('RENTED');
         } else {
-            $btn.html('<i class="bi bi-bag-check me-2"></i>BUY NOW - ₹{{ number_format($cloth->purchase_value) }}')
+            $btn.html('<i class="bi bi-bag-check me-2"></i>BUY NOW - ₹{{ number_format($cloth->selling_price) }}')
                 .removeClass('btn-success')
                 .addClass('btn-primary')
                 .prop('disabled', false)

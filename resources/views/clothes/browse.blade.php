@@ -141,7 +141,7 @@
                                        {{ request('deal_type') === 'purchase' ? 'checked' : '' }} 
                                        class="deal-type-filter">
                                 <span class="radio-mark"></span>
-                                <span class="filter-label">Purchase</span>
+                                <span class="filter-label">Buy</span>
                             </label>
                         </div>
                         

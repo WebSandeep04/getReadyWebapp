@@ -25,7 +25,7 @@ class CartItemFactory extends Factory
             'rental_end_date' => null,
             'total_rental_cost' => null,
             'rental_days' => null,
-            'total_purchase_cost' => fake()->randomFloat(2, 50, 500),
+            'total_selling_price' => fake()->randomFloat(2, 50, 500),
         ];
     }
 }

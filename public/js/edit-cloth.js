@@ -8,16 +8,16 @@ function showAlert(message, type) {
             </button>
         </div>
     `;
-    
+
     // Remove any existing alerts
     $('.alert').remove();
-    
+
     // Add new alert at the top
     $('.container').prepend(alertHtml);
-    
+
     // Auto-dismiss after 5 seconds
-    setTimeout(function() {
-        $('.alert').fadeOut(300, function() {
+    setTimeout(function () {
+        $('.alert').fadeOut(300, function () {
             $(this).remove();
         });
     }, 5000);
@@ -27,24 +27,24 @@ function uploadImages(files) {
     const formData = new FormData();
     formData.append('_token', $('meta[name="csrf-token"]').attr('content'));
     formData.append('_method', 'PUT');
-    
+
     for (let i = 0; i < files.length; i++) {
         formData.append('images[]', files[i]);
     }
-    
+
     $.ajax({
         url: window.editClothUpdateUrl,
         type: 'POST',
         data: formData,
         processData: false,
         contentType: false,
-        success: function(response) {
+        success: function (response) {
             if (response.success) {
                 showAlert('Images uploaded successfully!', 'success');
                 location.reload();
             }
         },
-        error: function(xhr, status, error) {
+        error: function (xhr, status, error) {
             showAlert('An error occurred while uploading images.', 'danger');
         }
     });
@@ -58,13 +58,13 @@ function removeImage(imageId) {
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
-            success: function(response) {
+            success: function (response) {
                 if (response.success) {
                     $(`.image-container[data-image-id="${imageId}"]`).remove();
                     showAlert('Image removed successfully!', 'success');
                 }
             },
-            error: function(xhr, status, error) {
+            error: function (xhr, status, error) {
                 showAlert('An error occurred while removing the image.', 'danger');
             }
         });
@@ -76,10 +76,10 @@ let availableCounter = window.availableCounter || 0;
 let blockedCounter = window.blockedCounter || 0;
 
 // Handle purchase checkbox functionality
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const isPurchasedCheckbox = document.getElementById('is_purchased');
-    const purchaseValueSection = document.getElementById('purchase_value_section');
-    const purchaseValueInput = document.querySelector('input[name="purchase_value"]');
+    const purchaseValueSection = document.getElementById('selling_price_section');
+    const purchaseValueInput = document.querySelector('input[name="selling_price"]');
 
     if (isPurchasedCheckbox && purchaseValueSection) {
         // Show/hide purchase value section based on checkbox state
@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         }
-        
+
         // Add event listener
         isPurchasedCheckbox.addEventListener('change', togglePurchaseValueSection);
     }
@@ -107,7 +107,7 @@ function addAvailabilityBlock(type) {
     const container = document.getElementById(type === 'available' ? 'available-dates' : 'blocked-dates');
     const counter = type === 'available' ? availableCounter++ : blockedCounter++;
     const index = type === 'available' ? counter : counter + 100;
-    
+
     const blockHtml = `
         <div class="availability-block mb-3" data-type="${type}">
             <div class="row">
@@ -137,7 +137,7 @@ function addAvailabilityBlock(type) {
             <input type="hidden" name="availability_blocks[${index}][type]" value="${type}">
         </div>
     `;
-    
+
     container.insertAdjacentHTML('beforeend', blockHtml);
 }
 
@@ -154,17 +154,17 @@ window.removeImage = removeImage;
 window.addAvailabilityBlock = addAvailabilityBlock;
 window.removeAvailabilityBlock = removeAvailabilityBlock;
 
-$(document).ready(function() {
+$(document).ready(function () {
     // Handle form submission
-    $('#editClothForm').submit(function(e) {
+    $('#editClothForm').submit(function (e) {
         e.preventDefault();
-        
+
         const formData = new FormData(this);
         const submitBtn = $(this).find('button[type="submit"]');
-        
+
         // Disable submit button and show loading
         submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Updating...');
-        
+
         $.ajax({
             url: window.editClothUpdateUrl,
             type: 'POST',
@@ -174,34 +174,34 @@ $(document).ready(function() {
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
-            success: function(response) {
+            success: function (response) {
                 if (response.success) {
                     showAlert('Cloth updated successfully!', 'success');
-                    setTimeout(function() {
+                    setTimeout(function () {
                         window.location.href = window.listedClothesUrl;
                     }, 1500);
                 }
             },
-            error: function(xhr, status, error) {
+            error: function (xhr, status, error) {
                 let errorMessage = 'An error occurred while updating the cloth.';
-                
+
                 if (xhr.responseJSON && xhr.responseJSON.errors) {
                     const errors = xhr.responseJSON.errors;
                     errorMessage = Object.values(errors).flat().join('\n');
                 } else if (xhr.responseText) {
                     errorMessage = xhr.responseText;
                 }
-                
+
                 showAlert(errorMessage, 'danger');
             },
-            complete: function() {
+            complete: function () {
                 submitBtn.prop('disabled', false).html('<i class="fas fa-save"></i> Update Cloth');
             }
         });
     });
 
     // Handle image upload
-    $('#image-upload').change(function() {
+    $('#image-upload').change(function () {
         const files = this.files;
         if (files.length > 0) {
             uploadImages(files);
@@ -210,18 +210,18 @@ $(document).ready(function() {
 
     // Drag and drop functionality
     const uploadArea = document.getElementById('upload-area');
-    
-    uploadArea.addEventListener('dragover', function(e) {
+
+    uploadArea.addEventListener('dragover', function (e) {
         e.preventDefault();
         this.classList.add('dragover');
     });
-    
-    uploadArea.addEventListener('dragleave', function(e) {
+
+    uploadArea.addEventListener('dragleave', function (e) {
         e.preventDefault();
         this.classList.remove('dragover');
     });
-    
-    uploadArea.addEventListener('drop', function(e) {
+
+    uploadArea.addEventListener('drop', function (e) {
         e.preventDefault();
         this.classList.remove('dragover');
         const files = e.dataTransfer.files;

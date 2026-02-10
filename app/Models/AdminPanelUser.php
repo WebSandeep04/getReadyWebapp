@@ -30,6 +30,16 @@ class AdminPanelUser extends Model
 
     public function hasPermission($permissionName)
     {
-        return $this->permissions()->where('name', $permissionName)->exists();
+        // Check direct permissions
+        if ($this->permissions()->where('name', $permissionName)->exists()) {
+            return true;
+        }
+
+        // Check role-based permissions
+        if ($this->role && $this->role->permissions()->where('name', $permissionName)->exists()) {
+            return true;
+        }
+
+        return false;
     }
 }

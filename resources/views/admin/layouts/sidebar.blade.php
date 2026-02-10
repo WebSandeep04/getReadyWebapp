@@ -34,6 +34,27 @@
         ],
     ];
 
+    // Fetch authenticated admin
+    $admin = \App\Models\AdminPanelUser::find(Session::get('admin_id'));
+
+    // Filter sidebar links based on permissions
+    foreach ($adminSidebar as $sKey => $section) {
+        $filteredLinks = [];
+        foreach ($section['links'] as $link) {
+            // Check if admin has permission for this route
+            // The permission name in DB matches the route name
+            if ($admin && $admin->hasPermission($link['route'])) {
+                $filteredLinks[] = $link;
+            }
+        }
+        
+        if (empty($filteredLinks)) {
+            unset($adminSidebar[$sKey]);
+        } else {
+            $adminSidebar[$sKey]['links'] = $filteredLinks;
+        }
+    }
+
     // Helper to determine if a route or its children are active
     $isActive = function($route) {
         if (request()->routeIs($route)) {
@@ -66,10 +87,12 @@
     <nav class="py-2" id="sidebarAccordion">
         <div class="admin-sidebar__menu-label">Main Menu</div>
         
+        @if($admin && $admin->hasPermission('admin.dashboard'))
         <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
             <i class="bi bi-grid-fill"></i>
             <span>Dashboard</span>
         </a>
+        @endif
 
         @foreach($adminSidebar as $index => $section)
             @php

@@ -21,6 +21,7 @@ class PermissionSeeder extends Seeder
 
         $permissions = [
             // Setup
+            ['name' => 'admin.dashboard', 'label' => 'Dashboard', 'module' => 'Setup'],
             ['name' => 'user.index', 'label' => 'Users', 'module' => 'Setup'],
             ['name' => 'categories.index', 'label' => 'Categories', 'module' => 'Setup'],
             ['name' => 'brands.index', 'label' => 'Brands', 'module' => 'Setup'],

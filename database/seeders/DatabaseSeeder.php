@@ -88,6 +88,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             FrontendSettingsSeeder::class,
             PermissionSeeder::class,
+            RolePermissionSeeder::class,
             AdminPermissionSeeder::class,
         ]);
     }

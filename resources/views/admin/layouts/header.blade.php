@@ -10,7 +10,7 @@
         <!-- Logout Power Button -->
         <form method="POST" action="{{ route('logout') }}" class="d-inline">
             @csrf
-            <button type="submit" class="header-icon-btn text-danger" title="Logout">
+            <button type="submit" class="header-icon-btn text-dark" title="Logout">
                 <i class="bi bi-power"></i>
             </button>
         </form>

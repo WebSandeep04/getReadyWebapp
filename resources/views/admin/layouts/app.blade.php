@@ -180,6 +180,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1060" id="toastContainer"></div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const toggle = document.getElementById('sidebarToggle');
@@ -194,6 +196,38 @@
                 });
             }
         });
+
+        // Global Toast Notification
+        window.showAlert = function(message, type = 'success') {
+            const toastContainer = document.getElementById('toastContainer');
+            const bgClass = type === 'success' ? 'text-bg-dark' : (type === 'danger' ? 'text-bg-danger' : 'text-bg-secondary');
+            const icon = type === 'success' ? 'bi-check-circle-fill' : (type === 'danger' ? 'bi-exclamation-triangle-fill' : 'bi-info-circle-fill');
+            
+            const toastHtml = `
+                <div class="toast align-items-center ${bgClass} border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body d-flex align-items-center gap-2">
+                            <i class="bi ${icon}"></i>
+                            <div>${message}</div>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
+            
+            const toastEl = document.createElement('div');
+            toastEl.innerHTML = toastHtml;
+            const toastNode = toastEl.firstElementChild;
+            
+            toastContainer.appendChild(toastNode);
+            
+            const toast = new bootstrap.Toast(toastNode, { delay: 4000 });
+            toast.show();
+            
+            toastNode.addEventListener('hidden.bs.toast', () => {
+                toastNode.remove();
+            });
+        };
     </script>
     
     @stack('scripts')

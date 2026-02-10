@@ -314,13 +314,13 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer justify-content-between">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <div class="modal-footer justify-content-between border-top-0">
+                <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Close</button>
                 <div>
-                     <button type="button" class="btn btn-danger reject-btn me-2" id="modalRejectBtn">
+                     <button type="button" class="btn btn-outline-danger reject-btn me-2" id="modalRejectBtn">
                         <i class="bi bi-x-circle me-1"></i>Reject
                     </button>
-                    <button type="button" class="btn btn-success approve-btn" id="modalApproveBtn">
+                    <button type="button" class="btn btn-dark approve-btn" id="modalApproveBtn">
                         <i class="bi bi-check-circle me-1"></i>Approve
                     </button>
                 </div>
@@ -333,19 +333,21 @@
 
 <!-- Approve Confirmation Modal -->
 <div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title" id="approveModalLabel"><i class="bi bi-check-circle me-2"></i>Confirm Approval</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold" id="approveModalLabel">Confirm Approval</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <p class="mb-0">Are you sure you want to approve this item? This will make it live on the storefront immediately.</p>
+            <div class="modal-body pt-2">
+                <p class="text-muted mb-0">Are you sure you want to approve this item? This will make it live on the storefront immediately.</p>
                 <input type="hidden" id="approveClothId">
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success" id="confirmApprove"><i class="bi bi-check-lg me-1"></i>Confirm Approve</button>
+            <div class="modal-footer border-top-0 pt-0">
+                <button type="button" class="btn btn-link text-decoration-none text-muted" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-dark px-4" id="confirmApprove">
+                    Confirm Approve
+                </button>
             </div>
         </div>
     </div>
@@ -353,25 +355,27 @@
 
 <!-- Reject Modal -->
 <div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="rejectModalLabel"><i class="bi bi-exclamation-triangle me-2"></i>Reject Item</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold text-danger" id="rejectModalLabel">Reject Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body pt-2">
                 <form id="rejectForm">
                     <div class="mb-3">
-                        <label for="rejectReason" class="form-label fw-bold">Rejection Reason *</label>
-                        <textarea class="form-control" id="rejectReason" name="reject_reason" rows="4" required placeholder="Please provide a detailed reason for rejection..."></textarea>
-                        <div class="form-text">This reason will be sent to the item owner.</div>
+                        <label for="rejectReason" class="form-label fw-bold small text-uppercase">Rejection Reason</label>
+                        <textarea class="form-control" id="rejectReason" name="reject_reason" rows="4" required placeholder="Describe why this item is being rejected..."></textarea>
+                        <div class="form-text small">This feedback will be sent to the owner.</div>
                     </div>
                     <input type="hidden" id="rejectClothId" name="cloth_id">
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle me-1"></i>Cancel</button>
-                <button type="button" class="btn btn-danger" id="confirmReject"><i class="bi bi-check-circle me-1"></i>Reject Item</button>
+            <div class="modal-footer border-top-0 pt-0">
+                <button type="button" class="btn btn-link text-decoration-none text-muted" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger px-4" id="confirmReject">
+                    Reject Item
+                </button>
             </div>
         </div>
     </div>
@@ -379,17 +383,17 @@
 
 <!-- View Reason Modal -->
 <div class="modal fade" id="reasonModal" tabindex="-1" aria-labelledby="reasonModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="reasonModalLabel"><i class="bi bi-eye me-2"></i>Rejection Reason</h5>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold" id="reasonModalLabel">Rejection History</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <div id="reasonList"></div>
+            <div class="modal-body pt-2">
+                <div id="reasonList" class="small text-muted"></div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <div class="modal-footer border-top-0 pt-0">
+                <button type="button" class="btn btn-dark btn-sm px-3" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>

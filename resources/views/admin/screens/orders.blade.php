@@ -241,6 +241,26 @@
             @include('admin.components.orders-pagination', ['orders' => $orders])
         </div>
     </div>
+    <!-- Action Confirmation Modal -->
+    <div class="modal fade" id="actionConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="actionConfirmTitle">Confirm Action</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-2">
+                    <p class="text-muted mb-0" id="actionConfirmMsg">Are you sure you want to proceed?</p>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-link text-decoration-none text-muted" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-dark px-4" id="confirmActionBtn">
+                        Confirm
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 
@@ -261,6 +281,7 @@ $(function() {
     const endpoint = "{{ route('admin.orders.data') }}";
 
     let activeRequest = null;
+    let pendingAction = null; // Store the action to be confirmed
 
     function serializeFilters(extra = {}) {
         const data = {};
@@ -319,38 +340,64 @@ $(function() {
         searchTimer = setTimeout(fetchOrders, 500);
     });
 
+    // --- GENERIC MODAL CONFIRMATION HANDLER ---
+    
+    function showConfirmModal(title, message, actionCallback) {
+        $('#actionConfirmTitle').text(title);
+        $('#actionConfirmMsg').text(message);
+        pendingAction = actionCallback;
+        $('#actionConfirmModal').modal('show');
+    }
+
+    $('#confirmActionBtn').on('click', function() {
+        if (pendingAction) {
+            const $btn = $(this);
+            const originalHtml = $btn.html();
+            $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status"></span>');
+            
+            // Execute the stored action
+            // We pass a 'done' callback to the action so it can reset the modal state
+            Promise.resolve(pendingAction()).finally(() => {
+                $('#actionConfirmModal').modal('hide');
+                $btn.prop('disabled', false).html(originalHtml);
+                pendingAction = null;
+            });
+        }
+    });
+
     // Mark as Returned Logic
     $tableBody.on('click', '.mark-returned-btn', function(e) {
         e.preventDefault();
         const $btn = $(this);
         const orderId = $btn.data('order-id');
         
-        if (!confirm('Are you sure you want to mark this order as Returned? This will increment the stock (SKU) for rented items.')) {
-            return;
-        }
-
-        $btn.prop('disabled', true);
-        
-        $.ajax({
-            url: `/admin/orders/${orderId}/return`,
-            type: 'POST',
-            data: {
-                _token: '{{ csrf_token() }}'
-            },
-            success: function(response) {
-                if (response.success) {
-                    alert(response.message);
-                    fetchOrders();
-                } else {
-                    alert(response.message || 'Action failed');
-                    $btn.prop('disabled', false);
-                }
-            },
-            error: function(xhr) {
-                alert('Error: ' + (xhr.responseJSON?.message || 'Something went wrong'));
-                $btn.prop('disabled', false);
+        showConfirmModal(
+            'Confirm Return',
+            'Are you sure you want to mark this order as Returned? This will increment stock for rented items.',
+            () => {
+                return new Promise((resolve) => {
+                    $.ajax({
+                        url: `/admin/orders/${orderId}/return`,
+                        type: 'POST',
+                        data: { _token: '{{ csrf_token() }}' },
+                        success: function(response) {
+                            if (response.success) {
+                                fetchOrders();
+                                // Optional: Replace generic alerts with toasts later?
+                                window.showAlert(response.message || 'Order marked as returned.', 'success'); 
+                            } else {
+                                window.showAlert(response.message || 'Action failed', 'danger');
+                            }
+                            resolve();
+                        },
+                        error: function(xhr) {
+                            window.showAlert('Error: ' + (xhr.responseJSON?.message || 'Something went wrong'), 'danger');
+                            resolve();
+                        }
+                    });
+                });
             }
-        });
+        );
     });
 
     // Update Status Logic (General)
@@ -360,33 +407,35 @@ $(function() {
         const orderId = $btn.data('order-id');
         const newStatus = $btn.data('status');
         
-        if (!confirm(`Are you sure you want to change order status to ${newStatus}?`)) {
-            return;
-        }
-
-        $btn.prop('disabled', true);
-        
-        $.ajax({
-            url: `/admin/orders/${orderId}/status`,
-            type: 'POST',
-            data: {
-                _token: '{{ csrf_token() }}',
-                status: newStatus
-            },
-            success: function(response) {
-                if (response.success) {
-                    alert(response.message);
-                    fetchOrders();
-                } else {
-                    alert(response.message || 'Action failed');
-                    $btn.prop('disabled', false);
-                }
-            },
-            error: function(xhr) {
-                alert('Error: ' + (xhr.responseJSON?.message || 'Something went wrong'));
-                $btn.prop('disabled', false);
+        showConfirmModal(
+            'Update Status',
+            `Are you sure you want to change order status to ${newStatus}?`,
+            () => {
+                return new Promise((resolve) => {
+                    $.ajax({
+                        url: `/admin/orders/${orderId}/status`,
+                        type: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            status: newStatus
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                fetchOrders();
+                                window.showAlert(response.message || 'Status updated successfully.', 'success');
+                            } else {
+                                window.showAlert(response.message || 'Action failed', 'danger');
+                            }
+                            resolve();
+                        },
+                        error: function(xhr) {
+                            window.showAlert('Error: ' + (xhr.responseJSON?.message || 'Something went wrong'), 'danger');
+                            resolve();
+                        }
+                    });
+                });
             }
-        });
+        );
     });
 
     // Retry Shipment Logic
@@ -395,33 +444,32 @@ $(function() {
         const $btn = $(this);
         const orderId = $btn.data('order-id');
         
-        if (!confirm('Attempt to create shipment for this order again?')) {
-            return;
-        }
-
-        const originalHtml = $btn.html();
-        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>');
-        
-        $.ajax({
-            url: `/admin/orders/${orderId}/retry-shipment`,
-            type: 'POST',
-            data: {
-                _token: '{{ csrf_token() }}'
-            },
-            success: function(response) {
-                if (response.success) {
-                    alert(response.message);
-                    fetchOrders();
-                } else {
-                    alert(response.message || 'Action failed');
-                    $btn.prop('disabled', false).html(originalHtml);
-                }
-            },
-            error: function(xhr) {
-                alert('Error: ' + (xhr.responseJSON?.message || 'Something went wrong'));
-                $btn.prop('disabled', false).html(originalHtml);
+        showConfirmModal(
+            'Retry Shipment',
+            'Attempt to create shipment for this order again?',
+            () => {
+                return new Promise((resolve) => {
+                    $.ajax({
+                        url: `/admin/orders/${orderId}/retry-shipment`,
+                        type: 'POST',
+                        data: { _token: '{{ csrf_token() }}' },
+                        success: function(response) {
+                            if (response.success) {
+                                fetchOrders();
+                                window.showAlert(response.message || 'Shipment retry initiated.', 'success');
+                            } else {
+                                window.showAlert(response.message || 'Action failed', 'danger');
+                            }
+                            resolve();
+                        },
+                        error: function(xhr) {
+                            window.showAlert('Error: ' + (xhr.responseJSON?.message || 'Something went wrong'), 'danger');
+                            resolve();
+                        }
+                    });
+                });
             }
-        });
+        );
     });
 
     $form.on('submit', function(e) {

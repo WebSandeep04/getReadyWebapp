@@ -78,6 +78,8 @@ Route::middleware(['admin.auth'])->group(function () {
 
     // Dashboard stats (Admin)
     Route::get('/admin/dashboard/stats', [AdminController::class, 'dashboardStats']);
+    Route::get('/admin/dashboard/orders/fetch', [AdminController::class, 'fetchOrders'])->name('admin.dashboard.orders.fetch');
+    Route::get('/admin/dashboard/payments/fetch', [AdminController::class, 'fetchPayments'])->name('admin.dashboard.payments.fetch');
 
     // Frontend Management (Admin)
     Route::get('/admin/frontend', [AdminController::class, 'frontend'])->name('admin.frontend');

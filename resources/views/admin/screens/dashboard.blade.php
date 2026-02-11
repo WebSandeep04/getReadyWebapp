@@ -144,11 +144,175 @@
         <div class="card-footer bg-white border-top-0 text-center py-2">
             <a href="{{ route('admin.cloth-approval') }}" class="btn btn-sm px-4" 
                style="background: #000; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
-                View More <i class="bi bi-arrow-right ms-1"></i>
+                View All Approvals <i class="bi bi-arrow-right ms-1"></i>
             </a>
         </div>
     </div>
 </div>
+
+    <!-- Orders Section -->
+    <div class="row g-3 mb-4 mt-5">
+        <h5 class="fw-bold mb-0">Order Summary</h5>
+        <div class="col-lg-3 col-sm-6">
+            <div class="stat-card stat-pending">
+                <div class="stat-icon"><i class="bi bi-box-seam"></i></div>
+                <div class="stat-card__label">Processing</div>
+                <div class="stat-card__value" id="processingOrderCount">-</div>
+                <small>New orders</small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+            <div class="stat-card stat-approved">
+                <div class="stat-icon"><i class="bi bi-truck"></i></div>
+                <div class="stat-card__label">Shipped</div>
+                <div class="stat-card__value" id="shippedOrderCount">-</div>
+                <small>Out for delivery</small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+            <div class="stat-card stat-reapproval">
+                <div class="stat-card__icon"><i class="bi bi-check-circle"></i></div>
+                <div class="stat-card__label">Delivered</div>
+                <div class="stat-card__value" id="deliveredOrderCount">-</div>
+                <small>Completed orders</small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+            <div class="stat-card stat-rejected">
+                <div class="stat-card__label">Returned</div>
+                <div class="stat-card__value" id="returnedOrderCount">-</div>
+                <small>Items returned</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-5">
+        <div class="card-header bg-dark text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-bag-check me-2"></i>Order Management
+                </h5>
+                <div class="d-flex align-items-center">
+                    <select id="orderStatusFilter" class="form-select form-select-sm me-2" style="width: 140px; font-size: 0.75rem; border-radius: 0;">
+                        <option value="">All Statuses</option>
+                        <option value="Processing">Processing</option>
+                        <option value="Shipped">Shipped</option>
+                        <option value="Delivered">Delivered</option>
+                        <option value="Returned">Returned</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                    <button class="btn btn-outline-light btn-sm" onclick="loadOrders()" title="Refresh" style="border-radius: 0; padding: 0.25rem 0.6rem;">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <table class="table table-sm table-hover admin-table" id="ordersTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Date</th>
+                        <th>Items</th>
+                        <th>Total (₹)</th>
+                        <th>Status</th>
+                        <!-- <th class="text-center">Actions</th> -->
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data loaded by jQuery AJAX -->
+                </tbody>
+            </table>
+            <div class="card-footer bg-white border-top-0 text-center py-2">
+                <a href="{{ route('admin.orders') }}" class="btn btn-sm px-4" 
+                   style="background: #000; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+                    View All Orders <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    </div>
+
+    <!-- Payments Section -->
+    <div class="row g-3 mb-4 mt-5">
+        <h5 class="fw-bold mb-0">Payment Summary</h5>
+        <div class="col-lg-3 col-sm-6">
+            <div class="stat-card stat-approved">
+                <div class="stat-icon"><i class="bi bi-check-circle-fill"></i></div>
+                <div class="stat-card__label">Paid</div>
+                <div class="stat-card__value" id="paidPaymentCount">-</div>
+                <small>Confirmed payments</small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+            <div class="stat-card stat-pending">
+                <div class="stat-icon"><i class="bi bi-clock-history"></i></div>
+                <div class="stat-card__label">Pending</div>
+                <div class="stat-card__value" id="pendingPaymentCount">-</div>
+                <small>Awaiting confirmation</small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+            <div class="stat-card stat-rejected">
+                <div class="stat-card__icon"><i class="bi bi-x-circle-fill"></i></div>
+                <div class="stat-card__label">Failed</div>
+                <div class="stat-card__value" id="failedPaymentCount">-</div>
+                <small>Transaction failures</small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+            <div class="stat-card stat-reapproval">
+                <div class="stat-card__label">Total Revenue</div>
+                <div class="stat-card__value" id="totalRevenue">₹0</div>
+                <small>All time</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-5">
+        <div class="card-header bg-dark text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-credit-card me-2"></i>Payment Management
+                </h5>
+                <div class="d-flex align-items-center">
+                    <select id="paymentStatusFilter" class="form-select form-select-sm me-2" style="width: 140px; font-size: 0.75rem; border-radius: 0;">
+                        <option value="">All Statuses</option>
+                        <option value="Paid">Paid</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Failed">Failed</option>
+                    </select>
+                    <button class="btn btn-outline-light btn-sm" onclick="loadPayments()" title="Refresh" style="border-radius: 0; padding: 0.25rem 0.6rem;">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <table class="table table-sm table-hover admin-table" id="paymentsTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Order ID</th>
+                        <th>Payer</th>
+                        <th>Amount (₹)</th>
+                        <th>Method</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data loaded by jQuery AJAX -->
+                </tbody>
+            </table>
+            <!-- Optional footer for consistency -->
+             <div class="card-footer bg-white border-top-0 text-center py-2">
+                <small class="text-muted">Showing latest 5 payments</small>
+            </div>
+        </div>
+    </div>
 
 <!-- Rejection Reason Modal -->
 <div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
@@ -287,7 +451,7 @@ $(function() {
                                 </button>
                                 <button class="btn btn-outline-secondary view-reason-btn" data-id="${cloth.id}" title="View Reason">
                                     <i class="bi bi-eye"></i>
-                                </button>
+                                </button>   
                             </div>
                         </td>
                     </tr>`;
@@ -426,6 +590,164 @@ $(function() {
             $('.alert').fadeOut();
         }, 5000);
     }
+
+    // Orders Logic
+    function loadOrders() {
+        let status = $('#orderStatusFilter').val();
+        let url = "{{ route('admin.dashboard.orders.fetch') }}";
+        if (status) {
+            url += `?status=${status}`;
+        }
+        
+        $.get(url, function(orders) {
+            let rows = '';
+            let processingCount = 0;
+            let shippedCount = 0;
+            let deliveredCount = 0;
+            let returnedCount = 0;
+            const totalCount = orders ? orders.length : 0;
+            
+            if (!orders || orders.length === 0) {
+                $('#ordersTable tbody').html('<tr><td colspan="7" class="text-center">No orders found</td></tr>');
+                $('#processingOrderCount').text('0');
+                $('#shippedOrderCount').text('0');
+                $('#deliveredOrderCount').text('0');
+                $('#returnedOrderCount').text('0');
+                return;
+            }
+            
+            orders.forEach(function(order, index) {
+                const statusLower = (order.status || '').toLowerCase();
+                
+                if (statusLower === 'processing' || statusLower === 'pending' || statusLower === 'confirmed') processingCount++;
+                else if (statusLower === 'shipped') shippedCount++;
+                else if (statusLower === 'delivered') deliveredCount++;
+                else if (statusLower === 'returned') returnedCount++;
+                else if (statusLower !== 'cancelled') processingCount++; // Catch-all for other statuses as Processing (except Cancelled)
+
+                // Only show first 5
+                if (index < 5) {
+                    let statusBadge = '';
+                    if (statusLower === 'delivered') statusBadge = '<span class="badge bg-success">Delivered</span>';
+                    else if (statusLower === 'shipped') statusBadge = '<span class="badge bg-info">Shipped</span>';
+                    else if (statusLower === 'returned') statusBadge = '<span class="badge bg-danger">Returned</span>';
+                    else if (statusLower === 'cancelled') statusBadge = '<span class="badge bg-secondary">Cancelled</span>';
+                    else statusBadge = '<span class="badge bg-warning text-dark">Processing</span>';
+
+                    // Using url() helper explicitly for details link if route naming is complex
+                    // Trying to link to admin.orders with filter or similar. Assuming admin.orders is the list page.
+                    rows += `<tr>
+                        <td>#${order.id}</td>
+                        <td>${order.user_name}</td>
+                        <td>${order.created_at_formatted}</td>
+                        <td>${order.items_count} Item(s)</td>
+                        <td>₹${order.total_amount}</td>
+                        <td>${statusBadge}</td>
+                     
+                    </tr>`;
+                }
+            });
+            
+            $('#ordersTable tbody').html(rows);
+            
+            $('#processingOrderCount').text(processingCount);
+            $('#shippedOrderCount').text(shippedCount);
+            $('#deliveredOrderCount').text(deliveredCount);
+            $('#returnedOrderCount').text(returnedCount);
+
+        }).fail(function(xhr, status, error) {
+            console.error("Error loading orders:", error);
+            $('#ordersTable tbody').html('<tr><td colspan="7" class="text-center text-danger">Error loading orders data</td></tr>');
+        });
+    }
+
+    // Expose to global scope for onclick attributes
+    window.loadOrders = loadOrders;
+    
+    // Initial Load
+    loadOrders();
+
+    // Filter change
+    $('#orderStatusFilter').on('change', function() {
+        loadOrders();
+    });
+    // Payments Logic
+    function loadPayments() {
+        let status = $('#paymentStatusFilter').val();
+        let url = "{{ route('admin.dashboard.payments.fetch') }}";
+        if (status) {
+            url += `?status=${status}`;
+        }
+        
+        $.get(url, function(payments) {
+            let rows = '';
+            let paidCount = 0;
+            let pendingCount = 0;
+            let failedCount = 0;
+            let totalRevenue = 0;
+            
+            if (!payments || payments.length === 0) {
+                $('#paymentsTable tbody').html('<tr><td colspan="7" class="text-center">No payments found</td></tr>');
+                $('#paidPaymentCount').text('0');
+                $('#pendingPaymentCount').text('0');
+                $('#failedPaymentCount').text('0');
+                $('#totalRevenue').text('₹0');
+                return;
+            }
+            
+            payments.forEach(function(payment, index) {
+                const statusLower = (payment.payment_status || '').toLowerCase();
+                const amount = parseFloat(payment.amount || 0);
+                
+                if (statusLower === 'paid' || statusLower === 'success') {
+                    paidCount++;
+                    totalRevenue += amount;
+                }
+                else if (statusLower === 'pending') pendingCount++;
+                else if (statusLower === 'failed' || statusLower === 'cancelled') failedCount++;
+                
+                // Only show first 5
+                if (index < 5) {
+                    let statusBadge = '';
+                    if (statusLower === 'paid' || statusLower === 'success') statusBadge = '<span class="badge bg-success">Paid</span>';
+                    else if (statusLower === 'pending') statusBadge = '<span class="badge bg-warning text-dark">Pending</span>';
+                    else statusBadge = '<span class="badge bg-danger">Failed</span>';
+
+                    rows += `<tr>
+                        <td>#${payment.id}</td>
+                        <td><a href="{{ route('admin.orders') }}?search=${payment.order_id}" target="_blank">#${payment.order_id}</a></td>
+                        <td>${payment.payer_name}</td>
+                        <td>₹${amount}</td>
+                        <td>${payment.payment_method || '-'}</td>
+                        <td>${payment.paid_at_formatted}</td>
+                        <td>${statusBadge}</td>
+                    </tr>`;
+                }
+            });
+            
+            $('#paymentsTable tbody').html(rows);
+            
+            $('#paidPaymentCount').text(paidCount);
+            $('#pendingPaymentCount').text(pendingCount);
+            $('#failedPaymentCount').text(failedCount);
+            $('#totalRevenue').text(`₹${Math.round(totalRevenue).toLocaleString('en-IN')}`);
+
+        }).fail(function(xhr, status, error) {
+            console.error("Error loading payments:", error);
+            $('#paymentsTable tbody').html('<tr><td colspan="7" class="text-center text-danger">Error loading payments data</td></tr>');
+        });
+    }
+
+    // Expose to global scope
+    window.loadPayments = loadPayments;
+    
+    // Initial Load
+    loadPayments();
+
+    // Filter change
+    $('#paymentStatusFilter').on('change', function() {
+        loadPayments();
+    });
 });
 </script>
 @endpush

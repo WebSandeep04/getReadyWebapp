@@ -18,6 +18,7 @@ use App\Models\BodyTypeFit;
 use App\Models\GarmentCondition;
 use Illuminate\Support\Carbon;
 use App\Models\Shipment;
+use App\Models\Payment;
 use App\Services\XpressbeesService;
 use Illuminate\Support\Facades\Log;
 
@@ -316,6 +317,62 @@ class AdminController extends Controller
         });
         
         return response()->json($formattedClothes);
+    }
+
+    public function fetchOrders(Request $request)
+    {
+        $query = Order::with(['buyer', 'items']);
+
+        if ($request->has('status') && $request->status) {
+            $status = $request->status;
+            if ($status !== 'all') {
+                $query->where('status', $status);
+            }
+        }
+
+        $orders = $query->latest()->get();
+
+        $formattedOrders = $orders->map(function ($order) {
+            // Check if created_at is a Carbon instance, simple check
+            $createdAt = $order->created_at;
+            if (!($createdAt instanceof \Carbon\Carbon)) {
+                $createdAt = \Carbon\Carbon::parse($createdAt);
+            }
+            
+            $data = $order->toArray();
+            // Use 'buyer' relationship
+            $data['user_name'] = $order->buyer ? $order->buyer->name : 'Guest';
+            $data['items_count'] = $order->items->count();
+            $data['created_at_formatted'] = $createdAt ? $createdAt->format('d M Y, h:i A') : '-';
+            return $data;
+        });
+
+    return response()->json($formattedOrders);
+    }
+
+    public function fetchPayments(Request $request)
+    {
+        $query = Payment::with(['order.buyer']);
+
+        if ($request->has('status') && $request->status) {
+            $status = $request->status;
+            if ($status !== 'all') {
+                $query->where('payment_status', $status);
+            }
+        }
+
+        $payments = $query->latest()->get();
+
+        $formattedPayments = $payments->map(function ($payment) {
+            $data = $payment->toArray();
+            $data['payer_name'] = $payment->order && $payment->order->buyer ? $payment->order->buyer->name : 'Unknown';
+            $data['order_id'] = $payment->order_id;
+            $data['paid_at_formatted'] = $payment->paid_at ? $payment->paid_at->format('d M Y, h:i A') : 
+                                         ($payment->created_at ? $payment->created_at->format('d M Y, h:i A') : '-');
+            return $data;
+        });
+
+        return response()->json($formattedPayments);
     }
 
     // Approve a cloth (AJAX)

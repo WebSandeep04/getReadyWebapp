@@ -11,7 +11,7 @@ class OrderController extends Controller
     {
         $showFilters = false;
 
-        $orders = Order::with(['payments', 'shipment'])
+        $orders = Order::with(['payments', 'shipments'])
             ->where('buyer_id', Auth::id())
             ->latest()
             ->paginate(10);

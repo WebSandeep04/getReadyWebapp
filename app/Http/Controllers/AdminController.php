@@ -66,7 +66,7 @@ class AdminController extends Controller
             'payments' => function ($paymentQuery) {
                 $paymentQuery->latest();
             },
-            'shipment'
+            'shipments'
         ]);
 
         if ($status = $request->get('status')) {
@@ -611,10 +611,10 @@ class AdminController extends Controller
 
     public function retryShipment($id)
     {
-        $order = Order::with(['items.cloth', 'buyer', 'payments', 'shipment'])->findOrFail($id);
+        $order = Order::with(['items.cloth', 'buyer', 'payments', 'shipments'])->findOrFail($id);
 
-        if ($order->shipment) {
-            return response()->json(['success' => false, 'message' => 'Shipment already exists for this order.'], 400);
+        if ($order->shipments->where('type', 'forward')->isNotEmpty()) {
+            return response()->json(['success' => false, 'message' => 'Forward shipment already exists for this order.'], 400);
         }
 
         // Determine Payment Type
@@ -667,6 +667,7 @@ class AdminController extends Controller
             if ($response && isset($response['awb_number'])) {
                 Shipment::create([
                     'order_id' => $order->id,
+                    'type' => 'forward',
                     'courier_name' => 'Xpressbees',
                     'waybill_number' => $response['awb_number'],
                     'reference_id' => $response['order_id'] ?? null,

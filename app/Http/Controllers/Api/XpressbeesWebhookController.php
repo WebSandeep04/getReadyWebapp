@@ -47,12 +47,14 @@ class XpressbeesWebhookController extends Controller
         // 5. Update Order Status
         $order = $shipment->order;
         if ($order) {
-            // Map Courier "Delivered" to System "Delivered"
+            // Map Courier "Delivered" to System "Delivered" or "Returned"
             if (stripos($status, 'Delivered') !== false) {
-                if ($order->status !== 'Delivered') {
-                    $order->status = 'Delivered';
+                $newStatus = ($shipment->type === 'reverse') ? 'Returned' : 'Delivered';
+                
+                if ($order->status !== $newStatus) {
+                    $order->status = $newStatus;
                     $order->save();
-                    Log::info("Webhook: Order #{$order->id} marked as Delivered via Webhook.");
+                    Log::info("Webhook: Order #{$order->id} marked as {$newStatus} via {$shipment->type} Webhook.");
                 }
             }
             // You can map other statuses here (e.g., RTO -> Returned)

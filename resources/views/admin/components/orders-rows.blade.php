@@ -10,7 +10,7 @@
         $orderType = $order->has_rental_items && $order->has_purchase_items
             ? 'Mixed'
             : ($order->has_rental_items ? 'Rental' : 'Purchase');
-        $shipmentMissing = !$order->shipment && $order->status === 'Confirmed';
+        $shipmentMissing = !$order->shipments->where('type', 'forward')->first() && $order->status === 'Confirmed';
     @endphp
     <tr class="{{ $isOverdue ? 'overdue-row' : '' }}">
         <td class="fw-semibold">GR-{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}</td>
@@ -110,4 +110,3 @@
         </td>
     </tr>
 @endforelse
-

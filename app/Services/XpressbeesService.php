@@ -53,7 +53,7 @@ class XpressbeesService
 
         // MOCK MODE
         if ($token === 'MOCK_TOKEN') {
-            Log::info("Xpressbees [MOCK]: Creating Order #" . ($orderData['order_number'] ?? 'unknown'));
+            Log::info("Xpressbees [MOCK]: Creating Forward Order #" . ($orderData['order_number'] ?? 'unknown'));
             // Simulate random processing time
             sleep(1); 
             
@@ -73,6 +73,38 @@ class XpressbeesService
         }
         
         Log::error('Xpressbees Create Order Failed: ' . $response->body());
+        return null;
+    }
+
+    public function createReturnOrder($orderData)
+    {
+        // For many couriers, reverse pickup is a different API or has a specific flag.
+        // For now, we use the same createOrder but Log it specifically as Return.
+        // In a real integration, we might change the endpoint to /reverse-pickup
+        
+        $token = $this->login();
+        if (!$token) return null;
+
+        if ($token === 'MOCK_TOKEN') {
+            Log::info("Xpressbees [MOCK]: Creating Return Order #" . ($orderData['order_number'] ?? 'unknown'));
+            sleep(1);
+            return [
+                'status' => true,
+                'message' => 'Return Order created successfully (Mock)',
+                'awb_number' => 'RXB' . rand(100000999, 999999999),
+                'order_id' => 'R-' . $orderData['order_number'],
+                'label_url' => 'https://www.xpressbees.com/track',
+            ];
+        }
+
+        // Potential different endpoint for reverse
+        $response = Http::withToken($token)->post($this->baseUrl . '/reverse-pickup', $orderData);
+
+        if ($response->successful()) {
+            return $response->json();
+        }
+
+        Log::error('Xpressbees Create Return Order Failed: ' . $response->body());
         return null;
     }
 

@@ -15,10 +15,12 @@ class RetryPendingShipments extends Command
     {
         // Find orders that are 'Confirmed' (Paid) but have NO Shipment record
         $pendingOrders = Order::where('status', 'Confirmed')
-            ->whereDoesntHave('shipment') // Check relationship
+            ->whereDoesntHave('shipments', function($query) {
+                $query->where('type', 'forward');
+            })
             ->get();
 
-        $this->info("Found {$pendingOrders->count()} pending orders requiring shipment generation.");
+        $this->info("Found {$pendingOrders->count()} pending orders requiring forward shipment generation.");
 
         foreach ($pendingOrders as $order) {
             $this->info("Processing Order #{$order->id}...");
@@ -67,6 +69,7 @@ class RetryPendingShipments extends Command
                     // Success: Create Shipment Record
                     \App\Models\Shipment::create([
                         'order_id' => $order->id,
+                        'type' => 'forward',
                         'courier_name' => 'Xpressbees',
                         'waybill_number' => $response['awb_number'],
                         'reference_id' => $response['order_id'] ?? null,

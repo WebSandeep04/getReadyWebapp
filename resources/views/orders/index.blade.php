@@ -110,17 +110,24 @@
                                         </span>
                                     </td>
                                     <td>
-                                        @if($order->shipment)
-                                            <div class="small">
-                                                <span class="fw-bold d-block">{{ $order->shipment->courier_name }}</span>
-                                                <span class="text-muted d-block" style="font-size: 0.8em">AWB: {{ $order->shipment->waybill_number }}</span>
-                                                @if($order->shipment->status)
-                                                    <span class="badge bg-secondary mb-1">{{ $order->shipment->status }}</span>
-                                                @endif
-                                                @if($order->shipment->tracking_url)
-                                                    <a href="{{ $order->shipment->tracking_url }}" target="_blank" class="btn btn-xs btn-outline-info p-0 px-1" style="font-size: 0.75rem;">Track</a>
-                                                @endif
-                                            </div>
+                                        @php
+                                            $orderShipments = $order->shipments;
+                                        @endphp
+                                        @if($orderShipments->isNotEmpty())
+                                            @foreach($orderShipments as $shipment)
+                                                <div class="small {{ !$loop->first ? 'mt-2 pt-2 border-top' : '' }}">
+                                                    <span class="fw-bold d-block text-{{ $shipment->type === 'reverse' ? 'info' : 'success' }}">
+                                                        {{ $shipment->type === 'reverse' ? 'Returning' : 'Outgoing' }}
+                                                    </span>
+                                                    <span class="text-muted d-block" style="font-size: 0.8em">AWB: {{ $shipment->waybill_number }}</span>
+                                                    @if($shipment->status)
+                                                        <span class="badge bg-secondary mb-1">{{ $shipment->status }}</span>
+                                                    @endif
+                                                    @if($shipment->tracking_url)
+                                                        <a href="{{ $shipment->tracking_url }}" target="_blank" class="btn btn-xs btn-outline-info p-0 px-1" style="font-size: 0.75rem;">Track</a>
+                                                    @endif
+                                                </div>
+                                            @endforeach
                                         @else
                                             <span class="text-muted small">—</span>
                                         @endif
@@ -310,4 +317,3 @@
     }
 </style>
 @endsection
-

@@ -257,30 +257,31 @@ class CheckoutController extends Controller
                  $orderLoad['products'][] = [
                      'name' => $item->cloth->title ?? 'Item',
                      'qty' => 1,
-                     'price' => $item->price
-                 ];
-            }
+                        'price' => $item->price
+                    ];
+                }
 
-            $response = $courier->createOrder($orderLoad);
+                $response = $courier->createOrder($orderLoad);
 
-            if ($response && isset($response['awb_number'])) {
-                \App\Models\Shipment::create([
-                    'order_id' => $order->id,
-                    'courier_name' => 'Xpressbees',
-                    'waybill_number' => $response['awb_number'],
-                    'reference_id' => $response['order_id'] ?? null,
-                    'tracking_url' => $response['label_url'] ?? null,
-                    'label_url' => $response['label_url'] ?? null,
-                    'status' => 'Booked',
-                ]);
-                
-                $order->update(['status' => 'Order Confirmed & Shipment Created']);
-                \Illuminate\Support\Facades\Log::info("Checkout: Shipment created. AWB: {$response['awb_number']}");
-            } else {
-                \Illuminate\Support\Facades\Log::error("Checkout: Failed to create shipment. Response: " . json_encode($response));
-            }
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error("Checkout: Shipment Exception: " . $e->getMessage());
+                if ($response && isset($response['awb_number'])) {
+                    \App\Models\Shipment::create([
+                        'order_id' => $order->id,
+                        'type' => 'forward',
+                        'courier_name' => 'Xpressbees',
+                        'waybill_number' => $response['awb_number'],
+                        'reference_id' => $response['order_id'] ?? null,
+                        'tracking_url' => $response['label_url'] ?? null,
+                        'label_url' => $response['label_url'] ?? null,
+                        'status' => 'Booked',
+                    ]);
+                    
+                    $order->update(['status' => 'Order Confirmed & Shipment Created']);
+                    \Illuminate\Support\Facades\Log::info("Checkout: Shipment created. AWB: {$response['awb_number']}");
+                } else {
+                    \Illuminate\Support\Facades\Log::error("Checkout: Failed to create shipment. Response: " . json_encode($response));
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Checkout: Shipment Exception: " . $e->getMessage());
         }
     }
 

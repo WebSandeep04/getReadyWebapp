@@ -38,9 +38,14 @@ Once an item is live, the marketplace facilitates discovery:
 
 ### Rental & Security Flow
 *   **Security Deposit**: Rental items require a security amount which is held by the platform.
-*   **Tracking**: Managed via the Admin Dashboard.
-*   **Return Process**: Once the renter returns the item, the Admin verifies the condition.
-*   **Security Refund**: After verification, the Admin marks the security as "Returned," triggering the refund tracking process.
+*   **Dispute / Early Return**: If a buyer is unhappy with a delivered item, they can click "Report Issue" to submit photos and details.
+*   **Admin Review**: Admins review disputes. Approving a dispute immediately triggers a **Reverse Pickup** regardless of the rental end date.
+*   **Automated Return**: For standard rentals, when the `rental_to` date arrives, the system automatically books a **Reverse Pickup**.
+*   **Tracking**: Users and Admins can track both "Outgoing" (Forward) and "Returning" (Reverse) shipments.
+*   **Return Verification**: When the reverse shipment is delivered back to the seller, the order status moves to "Returned."
+*   **Inventory Recovery**: The system automatically puts the items back in stock (updates SKU and availability) upon return delivery.
+*   **Security Refund**: After verification, the Admin marks the security as "Returned," finalizing the refund status in the dashboard.
+
 
 ---
 

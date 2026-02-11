@@ -144,14 +144,24 @@
                                     </td>
                                     <td>{{ $order->created_at->format('d/m/Y, h:i A') }}</td>
                                     <td>
-                                        @if($canRate)
-                                            @if($hasRated)
-                                                <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Rated</span>
-                                            @else
-                                                <button type="button" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#rateModal" data-order-id="{{ $order->id }}">
-                                                    <i class="bi bi-star me-1"></i>Rate Seller
-                                                </button>
-                                            @endif
+                                        @if($canRate || $order->status === 'Delivered')
+                                            <div class="d-flex flex-column gap-2">
+                                                @if($hasRated)
+                                                    <span class="badge bg-success mb-2"><i class="bi bi-check-circle me-1"></i>Rated</span>
+                                                @elseif($canRate)
+                                                    <button type="button" class="btn btn-sm btn-warning mb-2" data-toggle="modal" data-target="#rateModal" data-order-id="{{ $order->id }}">
+                                                        <i class="bi bi-star me-1"></i>Rate Seller
+                                                    </button>
+                                                @endif
+
+                                                @if($order->status === 'Delivered')
+                                                    <button type="button" class="btn btn-sm btn-outline-danger" data-toggle="modal" data-target="#returnModal" data-order-id="{{ $order->id }}">
+                                                        <i class="bi bi-exclamation-triangle me-1"></i>Report Issue
+                                                    </button>
+                                                @elseif($order->status === 'Return Requested')
+                                                     <span class="badge bg-warning text-dark">Return Requested</span>
+                                                @endif
+                                            </div>
                                         @else
                                             <span class="text-muted small">Available after delivery</span>
                                         @endif
@@ -170,7 +180,50 @@
     @endif
 </div>
 
-<!-- Rating Modal -->
+<!-- Return Request Modal -->
+<div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="" method="POST" id="returnForm" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title" id="returnModalLabel">Report an Issue / Request Return</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="return_reason" class="form-label">Issue Category</label>
+                        <select class="form-control" name="return_reason" id="return_reason" required>
+                            <option value="">Select a reason</option>
+                            <option value="Damaged Item">Damaged Item</option>
+                            <option value="Wrong Item Received">Wrong Item Received</option>
+                            <option value="Inaccurate Description">Inaccurate Description</option>
+                            <option value="Size/Fit Issue">Size/Fit Issue</option>
+                            <option value="Quality Issue">Quality/Condition Issue</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="return_details" class="form-label">Provide more details</label>
+                        <textarea class="form-control" id="return_details" name="return_details" rows="4" placeholder="Describe the problem in detail..." required></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="return_images" class="form-label">Upload Evidence Images (Max 3)</label>
+                        <input type="file" class="form-control-file" name="return_images[]" id="return_images" multiple accept="image/*">
+                        <small class="text-muted">Max file size: 2MB per image.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Submit Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <div class="modal fade" id="rateModal" tabindex="-1" aria-labelledby="rateModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -308,6 +361,17 @@
             });
             ratingInput.value = '';
         }
+        // Return Modal Logic
+        $('#returnModal').on('show.bs.modal', function (event) {
+            const button = $(event.relatedTarget);
+            const orderId = button.data('order-id');
+            const modal = $(this);
+            const form = modal.find('form');
+            
+            // Dynamically set action URL
+            form.attr('action', `/orders/${orderId}/return-request`);
+            form[0].reset();
+        });
     });
 </script>
 

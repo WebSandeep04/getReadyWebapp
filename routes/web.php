@@ -64,6 +64,8 @@ Route::middleware(['admin.auth'])->group(function () {
     Route::post('/admin/orders/{id}/return', [AdminController::class, 'markAsReturned'])->name('admin.orders.return');
     Route::post('/admin/orders/{id}/status', [AdminController::class, 'updateStatus'])->name('admin.orders.status');
     Route::post('/admin/orders/{id}/retry-shipment', [AdminController::class, 'retryShipment'])->name('admin.orders.retry-shipment');
+    Route::post('/admin/orders/{id}/approve-return', [AdminController::class, 'approveOrderReturn'])->name('admin.orders.approve-return');
+    Route::post('/admin/orders/{id}/reject-return', [AdminController::class, 'rejectOrderReturn'])->name('admin.orders.reject-return');
 
     // User
     Route::get('/admin/user/fetch', [UserController::class, 'fetch'])->name('user.fetch');
@@ -204,6 +206,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/my-sales', [OrderController::class, 'sales'])->name('orders.sales');
     Route::post('/ratings', [App\Http\Controllers\RatingController::class, 'store'])->name('ratings.store');
+    Route::post('/orders/{id}/return-request', [App\Http\Controllers\OrderReturnController::class, 'store'])->name('orders.return-request');
 });
 
 // Get cart count (for header)

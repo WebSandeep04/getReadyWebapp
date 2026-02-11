@@ -12,8 +12,17 @@
     </td>
     <td>
         {{ $order->items->where('purchase_type', 'rent')->count() }} Item(s)
+        @if($order->return_reason)
+            <div class="small text-danger fw-bold"><i class="bi bi-exclamation-circle me-1"></i>Dispute Return</div>
+        @endif
     </td>
-    <td class="fw-bold">₹{{ number_format($order->security_amount) }}</td>
+    <td class="fw-bold">
+        <div>₹{{ number_format($order->security_amount) }} <small class="text-muted fw-normal">(Deposit)</small></div>
+        @if($order->return_reason)
+            <div class="text-danger">+ ₹{{ number_format($order->total_amount - $order->security_amount) }} <small class="fw-normal">(Rental)</small></div>
+            <div class="border-top mt-1 pt-1">Total: ₹{{ number_format($order->total_amount) }}</div>
+        @endif
+    </td>
     <td>
         @if($order->is_security_returned)
             <span class="badge badge-returned">Refunded</span>

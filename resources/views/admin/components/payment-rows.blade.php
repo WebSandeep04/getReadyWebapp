@@ -25,7 +25,11 @@
             @endif
         @elseif(strtolower($payment->payment_status) == 'pending')
             <span class="badge bg-warning text-dark">Pending</span>
-        @elseif(strtolower($payment->payment_status) == 'failed' || strtolower($payment->payment_status) == 'cancelled')
+        @elseif(strtolower($payment->payment_status) == 'refunded')
+            <span class="badge bg-info text-dark">Refunded</span>
+        @elseif(strtolower($payment->payment_status) == 'cancelled')
+            <span class="badge bg-secondary">Cancelled</span>
+        @elseif(strtolower($payment->payment_status) == 'failed')
             <span class="badge bg-danger">Failed</span>
         @else
             <span class="badge bg-secondary">{{ $payment->payment_status }}</span>

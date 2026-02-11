@@ -100,6 +100,17 @@
                         <i class="bi bi-arrow-clockwise"></i>
                     </button>
                 @endif
+
+                @if($order->status === 'Return Requested')
+                    <button class="btn btn-sm btn-danger review-return-btn" 
+                            data-order-id="{{ $order->id }}" 
+                            data-reason="{{ $order->return_reason }}"
+                            data-details="{{ $order->return_details }}"
+                            data-images="{{ json_encode($order->return_images) }}"
+                            title="Review Return Request">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                @endif
             </div>
         </td>
     </tr>

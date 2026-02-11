@@ -698,4 +698,149 @@ class AdminController extends Controller
             ], 500);
         }
     }
+
+    public function approveOrderReturn($id)
+    {
+        $order = Order::with(['buyer', 'items.cloth.user', 'shipments'])->findOrFail($id);
+
+        if ($order->status !== 'Return Requested') {
+            return response()->json(['success' => false, 'message' => 'Order is not in return requested state.'], 400);
+        }
+
+        $itemsBySeller = $order->items->groupBy(function ($item) {
+            return $item->cloth->user_id;
+        });
+
+        $errors = [];
+        $shipmentsCreated = 0;
+
+        foreach ($itemsBySeller as $sellerId => $items) {
+            $seller = $items->first()->cloth->user;
+            
+            if (!$seller) {
+                $errors[] = "Seller #{$sellerId} not found.";
+                continue;
+            }
+
+            try {
+                $courier = new XpressbeesService();
+                
+                // Addresses for early return
+                $buyer = $order->buyer;
+                $deliveryAddress = $order->delivery_address ?? '';
+                $buyerAddressParts = explode(',', $deliveryAddress);
+                $buyerCity = trim($buyerAddressParts[count($buyerAddressParts)-2] ?? 'Mumbai');
+                $buyerPincode = trim($buyerAddressParts[count($buyerAddressParts)-1] ?? '400001');
+
+                $sellerAddress = $seller->address ?? '';
+                $sellerAddressParts = explode(',', $sellerAddress);
+                $sellerCity = trim($sellerAddressParts[count($sellerAddressParts)-2] ?? 'Mumbai');
+                $sellerPincode = trim($sellerAddressParts[count($sellerAddressParts)-1] ?? '400001');
+
+                Log::info("Attempting return shipment for Order #{$id}, Seller #{$sellerId}.");
+
+                $orderLoad = [
+                    'order_number' => $order->id . '-R' . $sellerId,
+                    'payment_method' => 'Prepaid', 
+                    'consignee_name' => $seller->name,
+                    'consignee_phone' => $seller->phone ?? '9999999999',
+                    'consignee_address' => $sellerAddress,
+                    'consignee_pincode' => $sellerPincode,
+                    'consignee_city' => $sellerCity,
+                    'consignee_state' => 'Maharashtra',
+                    'pickup_name' => $buyer->name,
+                    'pickup_phone' => $buyer->phone ?? '9999999999',
+                    'pickup_address' => $order->delivery_address,
+                    'pickup_pincode' => $buyerPincode,
+                    'pickup_city' => $buyerCity,
+                    'products' => [],
+                    'total_amount' => 0, 
+                    'weight' => 0.5,
+                ];
+
+                foreach ($items as $item) {
+                    $orderLoad['products'][] = [
+                        'name' => $item->cloth->title,
+                        'qty' => 1,
+                        'price' => 0,
+                    ];
+                }
+
+                $response = $courier->createReturnOrder($orderLoad);
+                Log::info("Courier response for Order #{$id}, Seller #{$sellerId}: " . json_encode($response));
+
+                if ($response && isset($response['awb_number'])) {
+                    Shipment::create([
+                        'order_id' => $order->id,
+                        'type' => 'reverse',
+                        'courier_name' => 'Xpressbees',
+                        'waybill_number' => $response['awb_number'],
+                        'reference_id' => $response['order_id'] ?? null,
+                        'tracking_url' => $response['label_url'] ?? null,
+                        'label_url' => $response['label_url'] ?? null,
+                        'status' => 'Booked',
+                    ]);
+                    $shipmentsCreated++;
+                } else {
+                    $errors[] = "Courier API failed for seller #{$sellerId}";
+                    Log::error("Courier API failed for Order #{$id}, Seller #{$sellerId}");
+                }
+
+            } catch (\Exception $e) {
+                $errors[] = "Exception for seller #{$sellerId}: " . $e->getMessage();
+            }
+        }
+
+        if ($shipmentsCreated > 0) {
+            $order->update(['status' => 'Return In Progress']);
+            
+            // Send Notification to Buyer
+            Notification::create([
+                'user_id' => $order->buyer_id,
+                'title' => 'Return Request Approved',
+                'message' => "Your return request for Order #{$order->id} has been approved. A reverse pickup has been scheduled.",
+                'type' => 'success',
+                'icon' => 'bi-truck'
+            ]);
+
+            return response()->json([
+                'success' => true, 
+                'message' => "Return approved. {$shipmentsCreated} reverse shipments created.",
+                'errors' => $errors
+            ]);
+        }
+
+        return response()->json([
+            'success' => false, 
+            'message' => 'Failed to create any return shipments.',
+            'errors' => $errors
+        ], 500);
+    }
+
+    public function rejectOrderReturn(Request $request, $id)
+    {
+        $request->validate(['reason' => 'required|string']);
+        
+        $order = Order::findOrFail($id);
+        
+        if ($order->status !== 'Return Requested') {
+            return response()->json(['success' => false, 'message' => 'Order is not in return requested state.'], 400);
+        }
+
+        $order->update([
+            'status' => 'Delivered', // Revert back to delivered
+            'admin_rejection_reason' => $request->reason
+        ]);
+
+        // Notify Buyer
+        Notification::create([
+            'user_id' => $order->buyer_id,
+            'title' => 'Return Request Rejected',
+            'message' => "Your return request for Order #{$order->id} was rejected. Reason: {$request->reason}",
+            'type' => 'danger',
+            'icon' => 'bi-x-circle'
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Return request rejected.']);
+    }
 }

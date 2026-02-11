@@ -261,6 +261,38 @@
             </div>
         </div>
     </div>
+
+    <!-- Return Review Modal -->
+    <div class="modal fade" id="returnReviewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-bottom-0">
+                    <h6 class="modal-title fw-bold">Review Return Request</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-0">
+                    <div class="alert alert-light border small">
+                        <strong>Reason:</strong> <span id="rr_reason"></span><br>
+                        <strong>Details:</strong> <span id="rr_details"></span>
+                    </div>
+                    <h6>Evidence Images:</h6>
+                    <div id="rr_images" class="d-flex flex-wrap gap-2 mb-3"></div>
+
+                    <div id="rejectionSection" style="display:none;" class="mt-3 p-3 border-top bg-light">
+                        <label class="form-label small fw-bold">Rejection Reason</label>
+                        <textarea id="rejectionReasonText" class="form-control mb-2" rows="2" placeholder="Tell the buyer why the request was rejected..."></textarea>
+                        <button class="btn btn-sm btn-dark" id="submitRejectBtn">Confirm Rejection</button>
+                        <button class="btn btn-sm btn-link text-muted" onclick="$('#rejectionSection').hide();">Cancel</button>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-link text-decoration-none text-muted" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-outline-danger btn-sm" id="rejectReturnBtn">Reject Request</button>
+                    <button type="button" class="btn btn-success btn-sm" id="approveReturnBtn">Approve & Generate AWB</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 
@@ -480,6 +512,104 @@ $(function() {
     $resetBtn.on('click', function() {
         $form[0].reset();
         fetchOrders();
+    });
+
+    // --- RETURN REVIEW HANDLERS ---
+    let reviewingOrderId = null;
+
+    $tableBody.on('click', '.review-return-btn', function() {
+        const $btn = $(this);
+        reviewingOrderId = $btn.data('order-id');
+        $('#rr_reason').text($btn.data('reason'));
+        $('#rr_details').text($btn.data('details'));
+        
+        let imagesHtml = '';
+        const images = $btn.data('images');
+        if (images && images.length > 0) {
+            images.forEach(path => {
+                imagesHtml += `<img src="/storage/${path}" style="width:120px; height:120px; object-fit:cover; border:1px solid #eee; cursor:pointer;" onclick="window.open(this.src)">`;
+            });
+        } else {
+            imagesHtml = '<span class="text-muted italic">No images provided.</span>';
+        }
+        $('#rr_images').html(imagesHtml);
+        $('#rejectionSection').hide();
+        $('#returnReviewModal').modal('show');
+    });
+
+    $('#approveReturnBtn').on('click', function() {
+        const $btn = $(this);
+        $btn.prop('disabled', true).html('Processing...');
+        
+        $.ajax({
+            url: `/admin/orders/${reviewingOrderId}/approve-return`,
+            type: 'POST',
+            data: { _token: '{{ csrf_token() }}' },
+            success: function(response) {
+                if (response.success) {
+                    fetchOrders();
+                    $('#returnReviewModal').modal('hide');
+                    window.showAlert(response.message, 'success');
+                } else {
+                    let errMsg = response.message;
+                    if (response.errors && response.errors.length > 0) {
+                        errMsg += ' Details: ' + response.errors.join(', ');
+                    }
+                    window.showAlert(errMsg, 'danger');
+                }
+            },
+            error: function(xhr) {
+                let errMsg = xhr.responseJSON?.message || 'Something went wrong';
+                if (xhr.responseJSON?.errors) {
+                    const detailedErrors = Array.isArray(xhr.responseJSON.errors) 
+                        ? xhr.responseJSON.errors 
+                        : Object.values(xhr.responseJSON.errors).flat();
+                    if (detailedErrors.length > 0) {
+                        errMsg += ': ' + detailedErrors.join(', ');
+                    }
+                }
+                window.showAlert('Error: ' + errMsg, 'danger');
+            },
+            complete: function() {
+                $btn.prop('disabled', false).html('Approve & Generate AWB');
+            }
+        });
+    });
+
+    $('#rejectReturnBtn').on('click', function() {
+        $('#rejectionSection').slideDown();
+    });
+
+    $('#submitRejectBtn').on('click', function() {
+        const reason = $('#rejectionReasonText').val();
+        if (!reason) return alert('Please provide a reason for rejection.');
+        
+        const $btn = $(this);
+        $btn.prop('disabled', true).html('Rejecting...');
+
+        $.ajax({
+            url: `/admin/orders/${reviewingOrderId}/reject-return`,
+            type: 'POST',
+            data: { 
+                _token: '{{ csrf_token() }}',
+                reason: reason
+            },
+            success: function(response) {
+                if (response.success) {
+                    fetchOrders();
+                    $('#returnReviewModal').modal('hide');
+                    window.showAlert(response.message, 'success');
+                } else {
+                    window.showAlert(response.message, 'danger');
+                }
+            },
+            error: function(xhr) {
+                window.showAlert('Error: ' + (xhr.responseJSON?.message || 'Something went wrong'), 'danger');
+            },
+            complete: function() {
+                $btn.prop('disabled', false).html('Confirm Rejection');
+            }
+        });
     });
 
     $(document).on('click', '#ordersPagination a', function(e) {

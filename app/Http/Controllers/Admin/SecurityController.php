@@ -82,6 +82,14 @@ class SecurityController extends Controller
         $order->security_returned_at = now();
         $order->is_security_returned = true;
         $order->save();
+
+        // If it's a dispute return, mark the whole payment as Refunded 
+        // to remove it from revenue stats.
+        if ($order->return_reason) {
+            Payment::where('order_id', $order->id)
+                ->where('payment_status', 'Paid')
+                ->update(['payment_status' => 'Refunded']);
+        }
         
         return response()->json(['success' => true, 'message' => 'Security marked as returned.']);
     }

@@ -57,13 +57,15 @@ This is the central entity of the marketplace.
 *   **Cart:** Managed by `CartController`. Supports adding items and rental dates (`cart_items` table includes `rental_start_date`, `rental_end_date`).
 *   **Checkout:** `CheckoutController` handles order creation.
 *   **Orders:** Stored in `orders` and `order_items`.
-    *   Status workflow: Pending -> Processing -> Shipped -> Delivered -> Returned.
-    *   Admins manage orders via `AdminController@orders`.
+    *   Status workflow: Pending -> Delivered -> Return Requested (Disputed) -> Return In Progress -> Returned.
+    *   **Management**: `OrderController` (Buyer dashboard), `OrderReturnController` (Buyer dispute), `AdminController` (Admin processing).
 
 ### 3.4 Shipping & Logistics
 *   Integration with **Xpressbees** for shipment tracking and updates.
-*   `Shipments` table stores tracking info.
-*   Webhooks handled by `Api/XpressbeesWebhookController`.
+*   **Shipments Type**: Supports `forward` (Seller -> Buyer) and `reverse` (Buyer -> Seller) shipments.
+*   **Automated Returns**: An Artisan command `orders:process-returns` automatically generates reverse shipments when a rental period ends.
+*   **Relationship**: `Order` has a `hasMany` relationship with `Shipments` to track both legs of the journey.
+*   **Webhooks**: Multi-type status mapping handled by `Api/XpressbeesWebhookController`.
 
 ### 3.6 Security & Payments
 *   **Payment Management:** Dedicated module (`PaymentController`) to track all transaction statuses.
@@ -118,6 +120,8 @@ This is the central entity of the marketplace.
 *   **`clothes`**: Stores product info. Key columns: `is_approved` (status), `selling_price`, `mrp`, `brand_id`, `category_id`.
 *   **`cart_items`**: Links `user` and `cloth`. Includes `rental_start/end_date`.
 *   **`orders`**: Master order record.
+    *   **Status Management**: Tracks lifecycle from `Pending` → `Delivered` → `Return Requested` (Buyer Disputed) → `Return In Progress` → `Returned`.
+    *   **Dispute Metadata**: Stores `return_reason`, `return_details`, `return_images` (array), and `admin_rejection_reason`.
 *   **`order_items`**: Line items for orders.
 *   **`rejections`**: Stores reason/details for rejected cloth listings.
 *   **`admin_panel_users`, `roles`, `permissions`**: Internal Admin RBAC.
@@ -158,7 +162,18 @@ This is the central entity of the marketplace.
     npm run build # for production
     ```
 
-6.  **Run Server:**
+6.  **Schedule & Background Jobs:**
+    *   The platform handles automated returns via a scheduled task.
+    *   Ensure your server's cron runs the Laravel scheduler:
+    ```bash
+    * * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1
+    ```
+    *   **Manual Trigger**: You can manually process pending returns using:
+    ```bash
+    php artisan orders:process-returns
+    ```
+
+7.  **Run Server:**
     ```bash
     php artisan serve
     ```

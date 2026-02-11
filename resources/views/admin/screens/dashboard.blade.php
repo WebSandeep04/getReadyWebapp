@@ -774,12 +774,24 @@ $(function() {
             data: { status: status }, 
             success: function(response) {
                 tbody.empty();
-                if (response.length === 0) {
+                
+                // Handle new response structure { orders: [], stats: {} }
+                const orders = response.orders || [];
+                const stats = response.stats || {};
+
+                // Update Stats
+                if (stats) {
+                    $('#totalSecurityHeld').text('₹' + Number(stats.total_held || 0).toLocaleString('en-IN'));
+                    $('#needToReturnSecurity').text('₹' + Number(stats.need_to_return || 0).toLocaleString('en-IN'));
+                    $('#returnedSecurity').text('₹' + Number(stats.returned || 0).toLocaleString('en-IN'));
+                }
+
+                if (orders.length === 0) {
                     tbody.html('<tr><td colspan="6" class="text-center py-3 text-muted">No security deposits found.</td></tr>');
                     return;
                 }
 
-                response.forEach(function(item) {
+                orders.forEach(function(item) {
                     let statusBadge = '';
                     if (item.is_security_returned) {
                          statusBadge = '<span class="badge bg-success">Refunded</span>';
@@ -887,9 +899,6 @@ $(function() {
             let pendingCount = 0;
             let failedCount = 0;
             let totalRevenue = 0;
-            let totalSecurityHeld = 0;
-            let returnedSecurity = 0;
-            let needToReturnSecurity = 0;
             
             if (!payments || payments.length === 0) {
                 $('#paymentsTable tbody').html('<tr><td colspan="7" class="text-center">No payments found</td></tr>');
@@ -897,48 +906,16 @@ $(function() {
                 $('#pendingPaymentCount').text('0');
                 $('#failedPaymentCount').text('0');
                 $('#totalRevenue').text('₹0');
-                $('#totalSecurityHeld').text('₹0');
-                $('#returnedSecurity').text('₹0');
-                $('#needToReturnSecurity').text('₹0');
                 return;
             }
             
             payments.forEach(function(payment, index) {
                 const statusLower = (payment.payment_status || '').toLowerCase();
                 const amount = parseFloat(payment.amount || 0);
-                const securityAmount = parseFloat(payment.security_amount || 0);
-                const orderStatus = (payment.order_status || '').toLowerCase();
                 
                 if (statusLower === 'paid' || statusLower === 'success') {
                     paidCount++;
-                    // Revenue normally doesn't include security deposit if it's refundable, 
-                    // but usually 'amount' is total paid. 
-                    // Assuming 'amount' includes security deposit for now.
                     totalRevenue += amount;
-
-                    // Security Logic
-                    if (securityAmount > 0) {
-                        if (orderStatus === 'returned') {
-                             // Assuming if order is 'Returned', we treat security as 'Need to Return' 
-                             // unless we have specific flag for refund status.
-                             // For this simple logic: 
-                             // If order is complete/returned, maybe security is refunded? 
-                             // Let's assume 'Returned' status means item is back, so we NEED to return/have returned security.
-                             // Without a dedicated refund table, this is an estimation.
-                             
-                             // Let's refine based on typical flow:
-                             // Order Returned -> Start Refund Process.
-                             // For now, let's say 'Returned' status = Need To Return (or Returned).
-                             // We'll mark it as 'Need to Return' if it's just 'Returned'.
-                             // If we had a 'Refunded' status, it would go there.
-                             // Since we don't have refund status in payment fetch key, 
-                             // let's put it in 'Need to Return' if Order Status is Returned.
-                             needToReturnSecurity += securityAmount;
-                        } else {
-                            // Order is Active/Delivered/etc -> Security is Held
-                            totalSecurityHeld += securityAmount;
-                        }
-                    }
                 }
                 else if (statusLower === 'pending') pendingCount++;
                 else if (statusLower === 'failed' || statusLower === 'cancelled') failedCount++;
@@ -968,11 +945,6 @@ $(function() {
             $('#pendingPaymentCount').text(pendingCount);
             $('#failedPaymentCount').text(failedCount);
             $('#totalRevenue').text(`₹${Math.round(totalRevenue).toLocaleString('en-IN')}`);
-            
-            // Security Stats Update
-            $('#totalSecurityHeld').text(`₹${Math.round(totalSecurityHeld).toLocaleString('en-IN')}`);
-            $('#returnedSecurity').text(`₹${Math.round(returnedSecurity).toLocaleString('en-IN')}`);
-            $('#needToReturnSecurity').text(`₹${Math.round(needToReturnSecurity).toLocaleString('en-IN')}`);
 
         }).fail(function(xhr, status, error) {
             console.error("Error loading payments:", error);

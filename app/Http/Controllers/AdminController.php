@@ -412,7 +412,24 @@ class AdminController extends Controller
             ];
         });
 
-        return response()->json($formatted);
+        $stats = [
+            'total_held' => Order::where('has_rental_items', true)
+                            ->where('status', '!=', 'Returned')
+                            ->where('is_security_returned', false)
+                            ->sum('security_amount'),
+            'need_to_return' => Order::where('has_rental_items', true)
+                                ->where('status', 'Returned')
+                                ->where('is_security_returned', false)
+                                ->sum('security_amount'),
+            'returned' => Order::where('has_rental_items', true)
+                                ->where('is_security_returned', true)
+                                ->sum('security_amount'),
+        ];
+
+        return response()->json([
+            'orders' => $formatted,
+            'stats' => $stats
+        ]);
     }
 
     // Approve a cloth (AJAX)

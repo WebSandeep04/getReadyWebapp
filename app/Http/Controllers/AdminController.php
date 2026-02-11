@@ -367,12 +367,52 @@ class AdminController extends Controller
             $data = $payment->toArray();
             $data['payer_name'] = $payment->order && $payment->order->buyer ? $payment->order->buyer->name : 'Unknown';
             $data['order_id'] = $payment->order_id;
+            
+            // Add security amount from order if available
+            $data['security_amount'] = $payment->order ? ($payment->order->security_amount ?? 0) : 0;
+            $data['order_status'] = $payment->order ? $payment->order->status : 'Draft';
+            
             $data['paid_at_formatted'] = $payment->paid_at ? $payment->paid_at->format('d M Y, h:i A') : 
                                          ($payment->created_at ? $payment->created_at->format('d M Y, h:i A') : '-');
             return $data;
         });
 
         return response()->json($formattedPayments);
+    }
+
+    public function fetchSecurityDeposits(Request $request)
+    {
+        $query = Order::with('buyer')
+            ->where('has_rental_items', true)
+            ->whereNotNull('security_amount')
+            ->where('security_amount', '>', 0);
+        
+        if ($request->has('status') && $request->status) {
+            $status = $request->status;
+            if ($status === 'returned') {
+                $query->where('status', 'Returned')->where('is_security_returned', false);
+            } elseif ($status === 'held') {
+                $query->where('status', '!=', 'Returned')->where('is_security_returned', false);
+            } elseif ($status === 'completed') {
+                $query->where('is_security_returned', true);
+            }
+        }
+
+        $orders = $query->latest()->limit(5)->get();
+
+        $formatted = $orders->map(function ($order) {
+            return [
+                'id' => $order->id,
+                'buyer_name' => $order->buyer ? $order->buyer->name : 'Unknown',
+                'amount' => $order->security_amount,
+                'status' => $order->status,
+                'is_security_returned' => $order->is_security_returned,
+                'security_returned_at' => $order->security_returned_at ? $order->security_returned_at->format('d M Y') : null,
+                'created_at' => $order->created_at->format('d M Y'),
+            ];
+        });
+
+        return response()->json($formatted);
     }
 
     // Approve a cloth (AJAX)

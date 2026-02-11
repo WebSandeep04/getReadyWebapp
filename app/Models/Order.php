@@ -19,6 +19,7 @@ class Order extends Model
         'rental_to',
         'has_rental_items',
         'has_purchase_items',
+        'is_security_returned',
     ];
 
     protected $casts = [
@@ -26,6 +27,8 @@ class Order extends Model
         'rental_to' => 'date',
         'has_rental_items' => 'boolean',
         'has_purchase_items' => 'boolean',
+        'security_returned_at' => 'datetime',
+        'is_security_returned' => 'boolean',
     ];
 
     public function buyer()

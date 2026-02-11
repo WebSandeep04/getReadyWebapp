@@ -230,7 +230,6 @@
                     View All Orders <i class="bi bi-arrow-right ms-1"></i>
                 </a>
             </div>
-        </div>
     </div>
 
     </div>
@@ -271,10 +270,12 @@
         </div>
     </div>
 
+
+
     <div class="card mb-5">
-        <div class="card-header bg-dark text-white">
+        <div class="card-header bg-white">
             <div class="d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">
+                <h5 class="mb-0 fw-bold">
                     <i class="bi bi-credit-card me-2"></i>Payment Management
                 </h5>
                 <div class="d-flex align-items-center">
@@ -284,7 +285,7 @@
                         <option value="Pending">Pending</option>
                         <option value="Failed">Failed</option>
                     </select>
-                    <button class="btn btn-outline-light btn-sm" onclick="loadPayments()" title="Refresh" style="border-radius: 0; padding: 0.25rem 0.6rem;">
+                    <button class="btn btn-outline-light btn-sm text-dark border-0" onclick="loadPayments()" title="Refresh" style="border-radius: 0; padding: 0.25rem 0.6rem;">
                         <i class="bi bi-arrow-clockwise"></i>
                     </button>
                 </div>
@@ -307,9 +308,105 @@
                     <!-- Data loaded by jQuery AJAX -->
                 </tbody>
             </table>
-            <!-- Optional footer for consistency -->
-             <div class="card-footer bg-white border-top-0 text-center py-2">
-                <small class="text-muted">Showing latest 5 payments</small>
+            <div class="card-footer bg-white border-top-0 text-center py-2">
+                <a href="{{ route('admin.payments') }}" class="btn btn-sm px-4" 
+                   style="background: #000; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+                    View All Payments <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Deposit Section -->
+    <div class="row g-3 mb-4">
+        <div class="col-lg-4 col-sm-6">
+            <div class="stat-card stat-pending">
+                <div class="stat-icon"><i class="bi bi-shield-lock-fill"></i></div>
+                <div class="stat-card__label">Total Security Held</div>
+                <div class="stat-card__value" id="totalSecurityHeld">₹0</div>
+                <small>Currently with platform</small>
+            </div>
+        </div>
+        <div class="col-lg-4 col-sm-6">
+            <div class="stat-card stat-approved">
+                <div class="stat-icon"><i class="bi bi-arrow-return-left"></i></div>
+                <div class="stat-card__label">Returned Security</div>
+                <div class="stat-card__value" id="returnedSecurity">₹0</div>
+                <small>Refunded to users</small>
+            </div>
+        </div>
+        <div class="col-lg-4 col-sm-6">
+            <div class="stat-card stat-rejected">
+                <div class="stat-card__icon"><i class="bi bi-exclamation-circle-fill"></i></div>
+                <div class="stat-card__label">Need to Return</div>
+                <div class="stat-card__value" id="needToReturnSecurity">₹0</div>
+                <small>Pending refunds</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Deposit Table -->
+    <div class="card mb-5">
+        <div class="card-header bg-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-shield-lock me-2"></i>Security Deposits
+                </h5>
+                <div class="d-flex align-items-center">
+                    <select id="securityStatusFilter" class="form-select form-select-sm me-2" style="width: 140px; font-size: 0.75rem; border-radius: 0;">
+                        <option value="">All Statuses</option>
+                        <option value="held">Held</option>
+                        <option value="returned">Pending Return</option>
+                        <option value="completed">Returned</option>
+                    </select>
+                    <button class="btn btn-outline-light btn-sm text-dark border-0" onclick="loadSecurityDeposits()" title="Refresh" style="border-radius: 0; padding: 0.25rem 0.6rem;">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <table class="table table-sm table-hover admin-table" id="securityTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Amount (₹)</th>
+                        <th>Created At</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data loaded by jQuery AJAX -->
+                </tbody>
+            </table>
+            <div class="card-footer bg-white border-top-0 text-center py-2">
+                <a href="{{ route('admin.security') }}" class="btn btn-sm px-4" 
+                   style="background: #000; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+                    View All Security Deposits <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Confirmation Modal -->
+    <div class="modal fade" id="dashboardActionConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="dashboardActionConfirmTitle">Confirm Action</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-2">
+                    <p class="text-muted mb-0" id="dashboardActionConfirmMsg">Are you sure you want to proceed?</p>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-link text-decoration-none text-muted" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-dark px-4" id="dashboardConfirmActionBtn">
+                        Confirm
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -663,15 +760,120 @@ $(function() {
 
     // Expose to global scope for onclick attributes
     window.loadOrders = loadOrders;
+    window.loadSecurityDeposits = loadSecurityDeposits;
     
-    // Initial Load
-    loadOrders();
+    function loadSecurityDeposits() {
+        let status = $('#securityStatusFilter').val();
+        let tbody = $('#securityTable tbody');
+        
+        tbody.html('<tr><td colspan="6" class="text-center py-3"><div class="spinner-border spinner-border-sm text-primary" role="status"></div> Loading...</td></tr>');
 
-    // Filter change
-    $('#orderStatusFilter').on('change', function() {
-        loadOrders();
+        $.ajax({
+            url: "{{ route('admin.dashboard.security.fetch') }}", 
+            method: 'GET',
+            data: { status: status }, 
+            success: function(response) {
+                tbody.empty();
+                if (response.length === 0) {
+                    tbody.html('<tr><td colspan="6" class="text-center py-3 text-muted">No security deposits found.</td></tr>');
+                    return;
+                }
+
+                response.forEach(function(item) {
+                    let statusBadge = '';
+                    if (item.is_security_returned) {
+                         statusBadge = '<span class="badge bg-success">Refunded</span>';
+                    } else if (item.status === 'Returned') {
+                         statusBadge = '<span class="badge bg-warning text-dark">Pending Return</span>';
+                    } else {
+                         statusBadge = '<span class="badge bg-warning text-dark">Held</span>';
+                    }
+
+                    let actionBtn = '';
+                    if (!item.is_security_returned) {
+                        if (item.status === 'Returned') {
+                            actionBtn = `<button class="btn btn-dark btn-sm btn-action mark-returned-btn" data-id="${item.id}" style="font-size: 0.75rem; padding: 0.2rem 0.5rem;">Mark Returned</button>`;
+                        } else {
+                            actionBtn = `<button class="btn btn-outline-secondary btn-sm btn-action" disabled style="font-size: 0.75rem; padding: 0.2rem 0.5rem;">Wait for Return</button>`;
+                        }
+                    } else {
+                        actionBtn = '<span class="text-success small fw-bold"><i class="bi bi-check-all me-1"></i>Completed</span>';
+                    }
+
+                    let row = `
+                        <tr>
+                            <td><a href="{{ route('admin.orders') }}?search=${item.id}" class="text-decoration-none fw-bold text-dark">#${item.id}</a></td>
+                            <td>${item.buyer_name}</td>
+                            <td class="fw-bold">₹${Number(item.amount).toLocaleString()}</td>
+                            <td>${item.created_at}</td>
+                            <td>${statusBadge}</td>
+                            <td class="text-end">${actionBtn}</td>
+                        </tr>
+                    `;
+                    tbody.append(row);
+                });
+            },
+            error: function() {
+                tbody.html('<tr><td colspan="7" class="text-center py-3 text-danger">Failed to load data.</td></tr>');
+            }
+        });
+    }
+
+    // Security & General Actions handling
+    let dashboardPendingAction = null;
+
+    function showDashboardConfirmModal(title, message, action) {
+        $('#dashboardActionConfirmTitle').text(title);
+        $('#dashboardActionConfirmMsg').text(message);
+        dashboardPendingAction = action;
+        $('#dashboardActionConfirmModal').modal('show');
+    }
+
+    $('#dashboardConfirmActionBtn').on('click', function() {
+        if (dashboardPendingAction) {
+            const $btn = $(this);
+            const originalHtml = $btn.html();
+            $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status"></span>');
+            
+            Promise.resolve(dashboardPendingAction()).finally(() => {
+                $('#dashboardActionConfirmModal').modal('hide');
+                $btn.prop('disabled', false).html(originalHtml);
+                dashboardPendingAction = null;
+            });
+        }
     });
+
+    $(document).on('click', '#securityTable .mark-returned-btn', function() {
+        const id = $(this).data('id');
+        
+        showDashboardConfirmModal(
+            'Confirm Return',
+            'Are you sure you want to mark this security deposit as Returned? This will record the refund date and update statistics.',
+            () => {
+                return new Promise((resolve) => {
+                    $.post(`{{ url('/admin/security/mark-returned') }}/${id}`, {
+                        _token: '{{ csrf_token() }}'
+                    }, function(res) {
+                        if(res.success) {
+                            loadSecurityDeposits(); // Refresh table
+                            loadPayments(); 
+                             window.showAlert(res.message || 'Security deposit marked as returned.', 'success');
+                        } else {
+                            window.showAlert(res.message || 'Action failed', 'danger');
+                        }
+                        resolve();
+                    }).fail(function(xhr) {
+                        window.showAlert('Error: ' + (xhr.responseJSON?.message || 'Something went wrong'), 'danger');
+                        resolve();
+                    });
+                });
+            }
+        );
+    });
+
     // Payments Logic
+    window.loadPayments = loadPayments;
+
     function loadPayments() {
         let status = $('#paymentStatusFilter').val();
         let url = "{{ route('admin.dashboard.payments.fetch') }}";
@@ -685,6 +887,9 @@ $(function() {
             let pendingCount = 0;
             let failedCount = 0;
             let totalRevenue = 0;
+            let totalSecurityHeld = 0;
+            let returnedSecurity = 0;
+            let needToReturnSecurity = 0;
             
             if (!payments || payments.length === 0) {
                 $('#paymentsTable tbody').html('<tr><td colspan="7" class="text-center">No payments found</td></tr>');
@@ -692,16 +897,48 @@ $(function() {
                 $('#pendingPaymentCount').text('0');
                 $('#failedPaymentCount').text('0');
                 $('#totalRevenue').text('₹0');
+                $('#totalSecurityHeld').text('₹0');
+                $('#returnedSecurity').text('₹0');
+                $('#needToReturnSecurity').text('₹0');
                 return;
             }
             
             payments.forEach(function(payment, index) {
                 const statusLower = (payment.payment_status || '').toLowerCase();
                 const amount = parseFloat(payment.amount || 0);
+                const securityAmount = parseFloat(payment.security_amount || 0);
+                const orderStatus = (payment.order_status || '').toLowerCase();
                 
                 if (statusLower === 'paid' || statusLower === 'success') {
                     paidCount++;
+                    // Revenue normally doesn't include security deposit if it's refundable, 
+                    // but usually 'amount' is total paid. 
+                    // Assuming 'amount' includes security deposit for now.
                     totalRevenue += amount;
+
+                    // Security Logic
+                    if (securityAmount > 0) {
+                        if (orderStatus === 'returned') {
+                             // Assuming if order is 'Returned', we treat security as 'Need to Return' 
+                             // unless we have specific flag for refund status.
+                             // For this simple logic: 
+                             // If order is complete/returned, maybe security is refunded? 
+                             // Let's assume 'Returned' status means item is back, so we NEED to return/have returned security.
+                             // Without a dedicated refund table, this is an estimation.
+                             
+                             // Let's refine based on typical flow:
+                             // Order Returned -> Start Refund Process.
+                             // For now, let's say 'Returned' status = Need To Return (or Returned).
+                             // We'll mark it as 'Need to Return' if it's just 'Returned'.
+                             // If we had a 'Refunded' status, it would go there.
+                             // Since we don't have refund status in payment fetch key, 
+                             // let's put it in 'Need to Return' if Order Status is Returned.
+                             needToReturnSecurity += securityAmount;
+                        } else {
+                            // Order is Active/Delivered/etc -> Security is Held
+                            totalSecurityHeld += securityAmount;
+                        }
+                    }
                 }
                 else if (statusLower === 'pending') pendingCount++;
                 else if (statusLower === 'failed' || statusLower === 'cancelled') failedCount++;
@@ -731,6 +968,11 @@ $(function() {
             $('#pendingPaymentCount').text(pendingCount);
             $('#failedPaymentCount').text(failedCount);
             $('#totalRevenue').text(`₹${Math.round(totalRevenue).toLocaleString('en-IN')}`);
+            
+            // Security Stats Update
+            $('#totalSecurityHeld').text(`₹${Math.round(totalSecurityHeld).toLocaleString('en-IN')}`);
+            $('#returnedSecurity').text(`₹${Math.round(returnedSecurity).toLocaleString('en-IN')}`);
+            $('#needToReturnSecurity').text(`₹${Math.round(needToReturnSecurity).toLocaleString('en-IN')}`);
 
         }).fail(function(xhr, status, error) {
             console.error("Error loading payments:", error);
@@ -742,12 +984,33 @@ $(function() {
     window.loadPayments = loadPayments;
     
     // Initial Load
+    loadOrders();
     loadPayments();
+    loadSecurityDeposits();
 
-    // Filter change
+    // Attach event listeners for filters
+    $('#orderStatusFilter').on('change', function() {
+        loadOrders();
+    });
+    
     $('#paymentStatusFilter').on('change', function() {
         loadPayments();
     });
+
+    $('#securityStatusFilter').on('change', function() {
+        loadSecurityDeposits();
+    });
+
+    // Auto-refresh every 30 seconds
+    setInterval(function() {
+        // Only refresh order and security tables if no modal is open (to avoid disrupting user)
+        if (!$('.modal.show').length) {
+            loadOrders();
+            loadPayments(); // This one updates stats cards too, so it's good to refresh
+            loadSecurityDeposits();
+        }
+    }, 30000);
+
 });
 </script>
 @endpush

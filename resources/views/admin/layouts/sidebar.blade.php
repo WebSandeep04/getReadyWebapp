@@ -30,6 +30,8 @@
             'icon' => 'bi-clipboard-data',
             'links' => [
                 ['label' => 'Orders', 'route' => 'admin.orders', 'icon' => 'bi-receipt'],
+                ['label' => 'Security Deposits', 'route' => 'admin.security', 'icon' => 'bi-shield-lock'],
+                ['label' => 'Payments', 'route' => 'admin.payments', 'icon' => 'bi-wallet2'],
             ],
         ],
     ];

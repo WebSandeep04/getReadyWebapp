@@ -80,7 +80,17 @@ Route::middleware(['admin.auth'])->group(function () {
     Route::get('/admin/dashboard/stats', [AdminController::class, 'dashboardStats']);
     Route::get('/admin/dashboard/orders/fetch', [AdminController::class, 'fetchOrders'])->name('admin.dashboard.orders.fetch');
     Route::get('/admin/dashboard/payments/fetch', [AdminController::class, 'fetchPayments'])->name('admin.dashboard.payments.fetch');
+    Route::get('/admin/dashboard/security/fetch', [AdminController::class, 'fetchSecurityDeposits'])->name('admin.dashboard.security.fetch');
 
+    // Security Deposit Management
+    Route::get('/admin/security', [App\Http\Controllers\Admin\SecurityController::class, 'index'])->name('admin.security');
+    Route::get('/admin/security/fetch', [App\Http\Controllers\Admin\SecurityController::class, 'fetchData'])->name('admin.security.fetch');
+    Route::post('/admin/security/mark-returned/{id}', [App\Http\Controllers\Admin\SecurityController::class, 'markAsReturned'])->name('admin.security.mark-returned');
+
+    // Payment Management
+    Route::get('/admin/payments', [App\Http\Controllers\Admin\PaymentController::class, 'index'])->name('admin.payments');
+    Route::get('/admin/payments/fetch', [App\Http\Controllers\Admin\PaymentController::class, 'fetchData'])->name('admin.payments.fetch');
+    
     // Frontend Management (Admin)
     Route::get('/admin/frontend', [AdminController::class, 'frontend'])->name('admin.frontend');
     Route::post('/admin/frontend/update', [AdminController::class, 'updateFrontendSetting'])->name('admin.frontend.update');

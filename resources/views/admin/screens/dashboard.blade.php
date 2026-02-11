@@ -68,7 +68,7 @@
     <div class="row g-3 mb-4">
         <div class="col-lg-3 col-sm-6">
             <div class="stat-card stat-pending">
-                <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
+                <div class="stat-card__icon"><i class="bi bi-hourglass-split"></i></div>
                 <div class="stat-card__label">Pending</div>
                 <div class="stat-card__value" id="pendingCount">-</div>
                 <small>Awaiting review</small>
@@ -76,7 +76,7 @@
         </div>
         <div class="col-lg-3 col-sm-6">
             <div class="stat-card stat-approved">
-                <div class="stat-icon"><i class="bi bi-check2-circle"></i></div>
+                <div class="stat-card__icon"><i class="bi bi-check2-circle"></i></div>
                 <div class="stat-card__label">Approved</div>
                 <div class="stat-card__value" id="approvedCount">-</div>
                 <small>Live on storefront</small>
@@ -92,6 +92,7 @@
         </div>
         <div class="col-lg-3 col-sm-6">
             <div class="stat-card stat-rejected">
+                <div class="stat-card__icon"><i class="bi bi-x-circle"></i></div>
                 <div class="stat-card__label">Rejected</div>
                 <div class="stat-card__value" id="rejectedCount">-</div>
                 <small>Require revisions</small>
@@ -155,7 +156,7 @@
         <h5 class="fw-bold mb-0">Order Summary</h5>
         <div class="col-lg-3 col-sm-6">
             <div class="stat-card stat-pending">
-                <div class="stat-icon"><i class="bi bi-box-seam"></i></div>
+                <div class="stat-card__icon"><i class="bi bi-box-seam"></i></div>
                 <div class="stat-card__label">Processing</div>
                 <div class="stat-card__value" id="processingOrderCount">-</div>
                 <small>New orders</small>
@@ -163,7 +164,7 @@
         </div>
         <div class="col-lg-3 col-sm-6">
             <div class="stat-card stat-approved">
-                <div class="stat-icon"><i class="bi bi-truck"></i></div>
+                <div class="stat-card__icon"><i class="bi bi-truck"></i></div>
                 <div class="stat-card__label">Shipped</div>
                 <div class="stat-card__value" id="shippedOrderCount">-</div>
                 <small>Out for delivery</small>
@@ -179,6 +180,7 @@
         </div>
         <div class="col-lg-3 col-sm-6">
             <div class="stat-card stat-rejected">
+                <div class="stat-card__icon"><i class="bi bi-arrow-counterclockwise"></i></div>
                 <div class="stat-card__label">Returned</div>
                 <div class="stat-card__value" id="returnedOrderCount">-</div>
                 <small>Items returned</small>
@@ -239,7 +241,7 @@
         <h5 class="fw-bold mb-0">Payment Summary</h5>
         <div class="col-lg-3 col-sm-6">
             <div class="stat-card stat-approved">
-                <div class="stat-icon"><i class="bi bi-check-circle-fill"></i></div>
+                <div class="stat-card__icon"><i class="bi bi-check-circle-fill"></i></div>
                 <div class="stat-card__label">Paid</div>
                 <div class="stat-card__value" id="paidPaymentCount">-</div>
                 <small>Confirmed payments</small>
@@ -247,7 +249,7 @@
         </div>
         <div class="col-lg-3 col-sm-6">
             <div class="stat-card stat-pending">
-                <div class="stat-icon"><i class="bi bi-clock-history"></i></div>
+                <div class="stat-card__icon"><i class="bi bi-clock-history"></i></div>
                 <div class="stat-card__label">Pending</div>
                 <div class="stat-card__value" id="pendingPaymentCount">-</div>
                 <small>Awaiting confirmation</small>
@@ -263,6 +265,7 @@
         </div>
         <div class="col-lg-3 col-sm-6">
             <div class="stat-card stat-reapproval">
+                <div class="stat-card__icon"><i class="bi bi-wallet2"></i></div>
                 <div class="stat-card__label">Total Revenue</div>
                 <div class="stat-card__value" id="totalRevenue">₹0</div>
                 <small>All time</small>
@@ -321,7 +324,7 @@
     <div class="row g-3 mb-4">
         <div class="col-lg-4 col-sm-6">
             <div class="stat-card stat-pending">
-                <div class="stat-icon"><i class="bi bi-shield-lock-fill"></i></div>
+                <div class="stat-card__icon"><i class="bi bi-shield-lock-fill"></i></div>
                 <div class="stat-card__label">Total Security Held</div>
                 <div class="stat-card__value" id="totalSecurityHeld">₹0</div>
                 <small>Currently with platform</small>
@@ -329,7 +332,7 @@
         </div>
         <div class="col-lg-4 col-sm-6">
             <div class="stat-card stat-approved">
-                <div class="stat-icon"><i class="bi bi-arrow-return-left"></i></div>
+                <div class="stat-card__icon"><i class="bi bi-arrow-return-left"></i></div>
                 <div class="stat-card__label">Returned Security</div>
                 <div class="stat-card__value" id="returnedSecurity">₹0</div>
                 <small>Refunded to users</small>
@@ -474,31 +477,28 @@ $(function() {
             url += `?status=${status}`;
         }
         
-        $.get(url, function(clothes) {
+        $.get(url, function(response) {
             let rows = '';
-            let pendingCount = 0;
-            let approvedCount = 0;
-            let reapprovalCount = 0;
-            let rejectedCount = 0;
-            let totalRent = 0;
-            let totalDeposit = 0;
-            const totalCount = clothes ? clothes.length : 0;
+            const clothes = response.clothes || [];
+            const stats = response.stats || {};
             
-            if (!clothes || clothes.length === 0) {
+            // Update statistics from backend
+            if (stats) {
+                $('#totalCount').text(stats.total || '0');
+                $('#approvedCount').text(stats.approved || '0');
+                $('#pendingCount').text(stats.pending || '0');
+                $('#reapprovalCount').text(stats.reapproval || '0');
+                $('#rejectedCount').text(stats.rejected || '0');
+                $('#totalRentSum').text(`₹${Math.round(stats.total_rent || 0).toLocaleString('en-IN')}`);
+                $('#totalDepositSum').text(`₹${Math.round(stats.total_security || 0).toLocaleString('en-IN')}`);
+            }
+
+            if (clothes.length === 0) {
                 $('#clothesTable tbody').html('<tr><td colspan="11" class="text-center">No clothes found</td></tr>');
-                $('#totalCount').text('0');
-                $('#totalRentSum').text('₹0');
-                $('#totalDepositSum').text('₹0');
                 return;
             }
             
-            // Ensure sorted by ID DESC for "last 5"
-            clothes.sort((a, b) => b.id - a.id);
-            
-            clothes.forEach(function(cloth, index) {
-                totalRent += parseFloat(cloth.rent_price ?? 0);
-                totalDeposit += parseFloat(cloth.security_deposit ?? 0);
-
+            clothes.forEach(function(cloth) {
                 // Determine status badge and button states
                 let statusBadge = '';
                 let approveDisabled = false;
@@ -508,63 +508,48 @@ $(function() {
                     statusBadge = '<span class="badge bg-success">Approved</span>';
                     approveDisabled = true;
                     rejectDisabled = true;
-                    approvedCount++;
                 } else if (cloth.is_approved === -1) {
                     statusBadge = '<span class="badge bg-danger">Rejected</span>';
                     approveDisabled = false;
                     rejectDisabled = false;
-                    rejectedCount++;
                 } else if (cloth.is_approved === null) {
                     if (cloth.resubmission_count > 0) {
                         statusBadge = '<span class="badge bg-info">Re-approval</span>';
-                        reapprovalCount++;
                     } else {
                         statusBadge = '<span class="badge bg-warning text-dark">Pending</span>';
-                        pendingCount++;
                     }
                     approveDisabled = false;
                     rejectDisabled = false;
                 }
                 
-                // Only show first 5 in the table rows
-                if (index < 5) {
-                    rows += `<tr>
-                        <td>${cloth.title}</td>
-                        <td>${cloth.category}</td>
-                        <td>${cloth.user ? cloth.user.name : ''}</td>
-                        <td>${cloth.gender}</td>
-                        <td>${cloth.size}</td>
-                        <td>${cloth.condition}</td>
-                        <td>₹${cloth.rent_price}</td>
-                        <td>₹${cloth.security_deposit}</td>
-                        <td>${statusBadge}</td>
-                        <td class="text-center">
-                            <div class="btn-group btn-group-sm" role="group">
-                                <button class="btn btn-outline-success approve-btn" data-id="${cloth.id}" ${approveDisabled ? 'disabled' : ''} title="${approveDisabled ? 'Approved' : 'Approve'}">
-                                    <i class="bi bi-check-lg"></i>
-                                </button>
-                                <button class="btn btn-outline-danger reject-btn" data-id="${cloth.id}" ${rejectDisabled ? 'disabled' : ''} title="${rejectDisabled ? 'Rejected' : 'Reject'}">
-                                    <i class="bi bi-x-lg"></i>
-                                </button>
-                                <button class="btn btn-outline-secondary view-reason-btn" data-id="${cloth.id}" title="View Reason">
-                                    <i class="bi bi-eye"></i>
-                                </button>   
-                            </div>
-                        </td>
-                    </tr>`;
-                }
+                rows += `<tr>
+                    <td>${cloth.title}</td>
+                    <td>${cloth.category}</td>
+                    <td>${cloth.user_name}</td>
+                    <td>${cloth.gender}</td>
+                    <td>${cloth.size}</td>
+                    <td>${cloth.condition}</td>
+                    <td>₹${cloth.rent_price}</td>
+                    <td>₹${cloth.security_deposit}</td>
+                    <td>${statusBadge}</td>
+                    <td class="text-center">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button class="btn btn-outline-success approve-btn" data-id="${cloth.id}" ${approveDisabled ? 'disabled' : ''} title="${approveDisabled ? 'Approved' : 'Approve'}">
+                                <i class="bi bi-check-lg"></i>
+                            </button>
+                            <button class="btn btn-outline-danger reject-btn" data-id="${cloth.id}" ${rejectDisabled ? 'disabled' : ''} title="${rejectDisabled ? 'Rejected' : 'Reject'}">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary view-reason-btn" data-id="${cloth.id}" title="View Reason">
+                                <i class="bi bi-eye"></i>
+                            </button>   
+                        </div>
+                    </td>
+                </tr>`;
             });
             
             $('#clothesTable tbody').html(rows);
-            
-            // Update statistics
-            $('#pendingCount').text(pendingCount);
-            $('#approvedCount').text(approvedCount);
-            $('#reapprovalCount').text(reapprovalCount);
-            $('#rejectedCount').text(rejectedCount);
-            $('#totalCount').text(totalCount);
-            $('#totalRentSum').text(`₹${Math.round(totalRent).toLocaleString('en-IN')}`);
-            $('#totalDepositSum').text(`₹${Math.round(totalDeposit).toLocaleString('en-IN')}`);
+
         }).fail(function(xhr, status, error) {
             $('#clothesTable tbody').html('<tr><td colspan="12" class="text-center text-danger">Error loading clothes data</td></tr>');
         });
@@ -696,61 +681,45 @@ $(function() {
             url += `?status=${status}`;
         }
         
-        $.get(url, function(orders) {
+        $.get(url, function(response) {
             let rows = '';
-            let processingCount = 0;
-            let shippedCount = 0;
-            let deliveredCount = 0;
-            let returnedCount = 0;
-            const totalCount = orders ? orders.length : 0;
+            const orders = response.orders || [];
+            const stats = response.stats || {};
+
+            // Update Stats from backend
+            if (stats) {
+                $('#processingOrderCount').text(stats.processing || '0');
+                $('#shippedOrderCount').text(stats.shipped || '0');
+                $('#deliveredOrderCount').text(stats.delivered || '0');
+                $('#returnedOrderCount').text(stats.returned || '0');
+            }
             
-            if (!orders || orders.length === 0) {
+            if (orders.length === 0) {
                 $('#ordersTable tbody').html('<tr><td colspan="7" class="text-center">No orders found</td></tr>');
-                $('#processingOrderCount').text('0');
-                $('#shippedOrderCount').text('0');
-                $('#deliveredOrderCount').text('0');
-                $('#returnedOrderCount').text('0');
                 return;
             }
             
-            orders.forEach(function(order, index) {
+            orders.forEach(function(order) {
                 const statusLower = (order.status || '').toLowerCase();
                 
-                if (statusLower === 'processing' || statusLower === 'pending' || statusLower === 'confirmed') processingCount++;
-                else if (statusLower === 'shipped') shippedCount++;
-                else if (statusLower === 'delivered') deliveredCount++;
-                else if (statusLower === 'returned') returnedCount++;
-                else if (statusLower !== 'cancelled') processingCount++; // Catch-all for other statuses as Processing (except Cancelled)
+                let statusBadge = '';
+                if (statusLower === 'delivered') statusBadge = '<span class="badge bg-success">Delivered</span>';
+                else if (statusLower === 'shipped') statusBadge = '<span class="badge bg-info">Shipped</span>';
+                else if (statusLower === 'returned') statusBadge = '<span class="badge bg-danger">Returned</span>';
+                else if (statusLower === 'cancelled') statusBadge = '<span class="badge bg-secondary">Cancelled</span>';
+                else statusBadge = '<span class="badge bg-warning text-dark">Processing</span>';
 
-                // Only show first 5
-                if (index < 5) {
-                    let statusBadge = '';
-                    if (statusLower === 'delivered') statusBadge = '<span class="badge bg-success">Delivered</span>';
-                    else if (statusLower === 'shipped') statusBadge = '<span class="badge bg-info">Shipped</span>';
-                    else if (statusLower === 'returned') statusBadge = '<span class="badge bg-danger">Returned</span>';
-                    else if (statusLower === 'cancelled') statusBadge = '<span class="badge bg-secondary">Cancelled</span>';
-                    else statusBadge = '<span class="badge bg-warning text-dark">Processing</span>';
-
-                    // Using url() helper explicitly for details link if route naming is complex
-                    // Trying to link to admin.orders with filter or similar. Assuming admin.orders is the list page.
-                    rows += `<tr>
-                        <td>#${order.id}</td>
-                        <td>${order.user_name}</td>
-                        <td>${order.created_at_formatted}</td>
-                        <td>${order.items_count} Item(s)</td>
-                        <td>₹${order.total_amount}</td>
-                        <td>${statusBadge}</td>
-                     
-                    </tr>`;
-                }
+                rows += `<tr>
+                    <td>#${order.id}</td>
+                    <td>${order.user_name}</td>
+                    <td>${order.created_at_formatted}</td>
+                    <td>${order.items_count} Item(s)</td>
+                    <td>₹${order.total_amount}</td>
+                    <td>${statusBadge}</td>
+                </tr>`;
             });
             
             $('#ordersTable tbody').html(rows);
-            
-            $('#processingOrderCount').text(processingCount);
-            $('#shippedOrderCount').text(shippedCount);
-            $('#deliveredOrderCount').text(deliveredCount);
-            $('#returnedOrderCount').text(returnedCount);
 
         }).fail(function(xhr, status, error) {
             console.error("Error loading orders:", error);
@@ -893,58 +862,45 @@ $(function() {
             url += `?status=${status}`;
         }
         
-        $.get(url, function(payments) {
+        $.get(url, function(response) {
             let rows = '';
-            let paidCount = 0;
-            let pendingCount = 0;
-            let failedCount = 0;
-            let totalRevenue = 0;
+            const payments = response.payments || [];
+            const stats = response.stats || {};
             
-            if (!payments || payments.length === 0) {
+            // Update Stats from backend
+            if (stats) {
+                $('#paidPaymentCount').text(stats.paid_count || '0');
+                $('#pendingPaymentCount').text(stats.pending_count || '0');
+                $('#failedPaymentCount').text(stats.failed_count || '0');
+                $('#totalRevenue').text(`₹${Math.round(stats.total_revenue || 0).toLocaleString('en-IN')}`);
+            }
+
+            if (payments.length === 0) {
                 $('#paymentsTable tbody').html('<tr><td colspan="7" class="text-center">No payments found</td></tr>');
-                $('#paidPaymentCount').text('0');
-                $('#pendingPaymentCount').text('0');
-                $('#failedPaymentCount').text('0');
-                $('#totalRevenue').text('₹0');
                 return;
             }
             
-            payments.forEach(function(payment, index) {
+            payments.forEach(function(payment) {
                 const statusLower = (payment.payment_status || '').toLowerCase();
                 const amount = parseFloat(payment.amount || 0);
                 
-                if (statusLower === 'paid' || statusLower === 'success') {
-                    paidCount++;
-                    totalRevenue += amount;
-                }
-                else if (statusLower === 'pending') pendingCount++;
-                else if (statusLower === 'failed' || statusLower === 'cancelled') failedCount++;
-                
-                // Only show first 5
-                if (index < 5) {
-                    let statusBadge = '';
-                    if (statusLower === 'paid' || statusLower === 'success') statusBadge = '<span class="badge bg-success">Paid</span>';
-                    else if (statusLower === 'pending') statusBadge = '<span class="badge bg-warning text-dark">Pending</span>';
-                    else statusBadge = '<span class="badge bg-danger">Failed</span>';
+                let statusBadge = '';
+                if (statusLower === 'paid' || statusLower === 'success') statusBadge = '<span class="badge bg-success">Paid</span>';
+                else if (statusLower === 'pending') statusBadge = '<span class="badge bg-warning text-dark">Pending</span>';
+                else statusBadge = '<span class="badge bg-danger">Failed</span>';
 
-                    rows += `<tr>
-                        <td>#${payment.id}</td>
-                        <td><a href="{{ route('admin.orders') }}?search=${payment.order_id}" target="_blank">#${payment.order_id}</a></td>
-                        <td>${payment.payer_name}</td>
-                        <td>₹${amount}</td>
-                        <td>${payment.payment_method || '-'}</td>
-                        <td>${payment.paid_at_formatted}</td>
-                        <td>${statusBadge}</td>
-                    </tr>`;
-                }
+                rows += `<tr>
+                    <td>#${payment.id}</td>
+                    <td><a href="{{ route('admin.orders') }}?search=${payment.order_id}" target="_blank">#${payment.order_id}</a></td>
+                    <td>${payment.payer_name}</td>
+                    <td>₹${amount}</td>
+                    <td>${payment.payment_method || '-'}</td>
+                    <td>${payment.paid_at_formatted}</td>
+                    <td>${statusBadge}</td>
+                </tr>`;
             });
             
             $('#paymentsTable tbody').html(rows);
-            
-            $('#paidPaymentCount').text(paidCount);
-            $('#pendingPaymentCount').text(pendingCount);
-            $('#failedPaymentCount').text(failedCount);
-            $('#totalRevenue').text(`₹${Math.round(totalRevenue).toLocaleString('en-IN')}`);
 
         }).fail(function(xhr, status, error) {
             console.error("Error loading payments:", error);

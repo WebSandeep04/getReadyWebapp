@@ -254,13 +254,11 @@ class AdminController extends Controller
             }
         }
         
-        $clothes = $query->latest()->get();
+        // Limit for dashboard table
+        $clothesLimited = $query->latest()->limit(5)->get();
         
         // Convert objects to display format efficiently
-        $formattedClothes = $clothes->map(function ($cloth) {
-            // Clone only needed properties or rely on serialization, 
-            // but we need to overwrite the IDs with Names as per current frontend expectation
-            
+        $formattedClothes = $clothesLimited->map(function ($cloth) {
             // Map relationships to flat names
             $cloth->category_name = $cloth->category ? $cloth->category->name : 'Unknown';
             $cloth->brand_name = $cloth->brand ? $cloth->brand->name : 'Unknown';
@@ -271,23 +269,10 @@ class AdminController extends Controller
             $cloth->fit_type_name = $cloth->fitType ? $cloth->fitType->name : 'Unknown';
             $cloth->condition_name = $cloth->condition ? $cloth->condition->name : 'Unknown';
             
-            // For frontend compatibility with existing keys if needed (but we really should change them)
-            $cloth->category = $cloth->category_name;
-            $cloth->brand = $cloth->brand_name;
-            $cloth->fabric = $cloth->fabric_name;
-            $cloth->color = $cloth->color_name;
-            $cloth->size = $cloth->size_name;
-            $cloth->bottom_type = $cloth->bottom_type_name;
-            $cloth->fit_type = $cloth->fit_type_name;
-            $cloth->condition = $cloth->condition_name;
-            
             // Format timestamps
             $cloth->created_at_formatted = $cloth->created_at ? $cloth->created_at->toISOString() : null;
             $cloth->updated_at_formatted = $cloth->updated_at ? $cloth->updated_at->toISOString() : null;
             
-            // Ensure numerics
-            $cloth->resubmission_count = $cloth->resubmission_count ?? 0;
-
             // Convert to array and remove relationship objects to avoid [object Object] in JS
             $data = $cloth->toArray();
             
@@ -303,7 +288,7 @@ class AdminController extends Controller
                 }
             }
 
-            // Re-assign flattened names to original keys for JS compatibility
+            // Re-assign flattened names
             $data['category'] = $cloth->category_name;
             $data['brand'] = $cloth->brand_name;
             $data['fabric'] = $cloth->fabric_name;
@@ -312,11 +297,26 @@ class AdminController extends Controller
             $data['bottom_type'] = $cloth->bottom_type_name;
             $data['fit_type'] = $cloth->fit_type_name;
             $data['condition'] = $cloth->condition_name;
+            $data['user_name'] = $cloth->user ? $cloth->user->name : 'Unknown';
             
             return $data;
         });
+
+        // Global Stats
+        $stats = [
+            'total' => Cloth::count(),
+            'approved' => Cloth::where('is_approved', 1)->count(),
+            'pending' => Cloth::where('is_approved', null)->where('resubmission_count', 0)->count(),
+            'reapproval' => Cloth::where('is_approved', null)->where('resubmission_count', '>', 0)->count(),
+            'rejected' => Cloth::where('is_approved', -1)->count(),
+            'total_rent' => Cloth::sum('rent_price'),
+            'total_security' => Cloth::sum('security_deposit'),
+        ];
         
-        return response()->json($formattedClothes);
+        return response()->json([
+            'clothes' => $formattedClothes,
+            'stats' => $stats
+        ]);
     }
 
     public function fetchOrders(Request $request)
@@ -330,24 +330,34 @@ class AdminController extends Controller
             }
         }
 
-        $orders = $query->latest()->get();
+        // Limit for dashboard table
+        $orders = $query->latest()->limit(5)->get();
 
         $formattedOrders = $orders->map(function ($order) {
-            // Check if created_at is a Carbon instance, simple check
             $createdAt = $order->created_at;
             if (!($createdAt instanceof \Carbon\Carbon)) {
                 $createdAt = \Carbon\Carbon::parse($createdAt);
             }
             
             $data = $order->toArray();
-            // Use 'buyer' relationship
             $data['user_name'] = $order->buyer ? $order->buyer->name : 'Guest';
             $data['items_count'] = $order->items->count();
             $data['created_at_formatted'] = $createdAt ? $createdAt->format('d M Y, h:i A') : '-';
             return $data;
         });
 
-    return response()->json($formattedOrders);
+        // Global Stats
+        $stats = [
+            'processing' => Order::where('status', 'Processing')->count(),
+            'shipped' => Order::where('status', 'Shipped')->count(),
+            'delivered' => Order::where('status', 'Delivered')->count(),
+            'returned' => Order::where('status', 'Returned')->count(),
+        ];
+
+        return response()->json([
+            'orders' => $formattedOrders,
+            'stats' => $stats
+        ]);
     }
 
     public function fetchPayments(Request $request)
@@ -361,7 +371,8 @@ class AdminController extends Controller
             }
         }
 
-        $payments = $query->latest()->get();
+        // Limit for dashboard table
+        $payments = $query->latest()->limit(5)->get();
 
         $formattedPayments = $payments->map(function ($payment) {
             $data = $payment->toArray();
@@ -377,7 +388,18 @@ class AdminController extends Controller
             return $data;
         });
 
-        return response()->json($formattedPayments);
+        // Global Stats
+        $stats = [
+            'paid_count' => Payment::whereIn('payment_status', ['Paid', 'Success', 'paid', 'success'])->count(),
+            'pending_count' => Payment::where('payment_status', 'Pending')->count(),
+            'failed_count' => Payment::whereIn('payment_status', ['Failed', 'Cancelled', 'failed', 'cancelled'])->count(),
+            'total_revenue' => Payment::whereIn('payment_status', ['Paid', 'Success', 'paid', 'success'])->sum('amount'),
+        ];
+
+        return response()->json([
+            'payments' => $formattedPayments,
+            'stats' => $stats
+        ]);
     }
 
     public function fetchSecurityDeposits(Request $request)

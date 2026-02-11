@@ -22,6 +22,8 @@ The project follows the standard Laravel directory structure with key applicatio
 
 *   **`app/Http/Controllers/`**: Contains all request handling logic.
     *   **Admin/**: Administrative functions (User management, specific master data CRUDs).
+    *       *   `PaymentController`: Handles payment listings, filtering (Paid, Pending, Failed), and statistics.
+    *       *   `SecurityController`: Manages security deposit tracking, returns, and dashboard stats.
     *   **Api/**: API endpoints (e.g., `XpressbeesWebhookController`).
     *   Specific feature controllers: `ClothController`, `OrderController`, `CartController`, `RejectionController`.
 *   **`app/Models/`**: Eloquent models representing database tables (`Cloth`, `User`, `Order`, `Role`, `Permission`, `Rejection`).
@@ -63,7 +65,16 @@ This is the central entity of the marketplace.
 *   `Shipments` table stores tracking info.
 *   Webhooks handled by `Api/XpressbeesWebhookController`.
 
-### 3.5 Interactions
+### 3.6 Security & Payments
+*   **Payment Management:** Dedicated module (`PaymentController`) to track all transaction statuses.
+    *   Filters: Paid, Pending, Failed, Cancelled, Refunded.
+    *   Stats: Real-time revenue, pending payments, and failed transaction counts.
+*   **Security Deposits:** Comprehensive tracking of security amounts held for rental items.
+    *   Status workflow: Held -> Pending Return -> Returned (Refunded).
+    *   Dashboard integration with AJAX-loaded statistics for "Total Held", "Returned", and "Need to Return".
+    *   Admins can mark security as returned directly from the dashboard with confirmation modals.
+
+### 3.7 Interactions
 *   **Reviews:** Users can review products (`ReviewController`).
 *   **Q&A:** Users can ask questions about products (`QuestionController`).
 *   **Notifications:** System notifications for users (`NotificationController`).
@@ -89,6 +100,15 @@ This is the central entity of the marketplace.
 6.  **Admin** reviews in Dashboard.
     *   **If Approved:** Item becomes visible in marketplace.
     *   **If Rejected:** User is notified (via `RejectionController` logic).
+
+### Security Return Flow
+1.  **Order** with rental items completes (Item returned by user).
+2.  **Admin** reviews the item condition.
+3.  **Admin** navigates to Dashboard -> Security Deposits.
+4.  Filters by "Returned" status to see pending refunds.
+5.  Clicks "Mark Returned" to confirm the security deposit refund.
+6.  System updates `is_security_returned` flag and timestamps the action.
+7.  Dashboard stats update immediately via AJAX.
 
 ---
 
@@ -151,3 +171,4 @@ This is the central entity of the marketplace.
 *   **Validation:** Most validation logic resides directly in Controllers (e.g., `ClothController::store`).
 *   **API:** The project is primarily server-side rendered (Blade). API routes are minimal.
 *   **Linting:** `php artisan pint` (if installed) or standard PSR-12 coding standards.
+*   **Admin Sidebar:** The sidebar features a "Software Setup" mode. Clicking the button at the bottom toggles the menu to show only setup-related links (Users, Categories, Attributes), keeping the main interface clean for daily operations.

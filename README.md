@@ -25,13 +25,15 @@ GetReady is a modern, comprehensive web application designed for the circular fa
 ### 🛡️ For Administrators
 *   **Command Center**: A powerful admin dashboard with real-time statistics and metrics.
 *   **Approval Workflow**: Rigorous "Cloth Approval" workspace to review, approve, or reject user-submitted listings.
-*   **Order Supervision**: comprehensive oversight of all platform orders and transactions.
+*   **Order Supervision**: Comprehensive oversight of all platform orders and transactions.
+*   **Security & Payment Tracking**: Dedicated modules to monitor platform revenue, transaction statuses, and security deposit returns for rentals.
 *   **Dynamic Catalog Management**: Complete control over all product attributes:
     *   Categories & Brands
     *   Colors & Sizes
     *   Fabric Types & Bottom Types
     *   Body Type Fits & Garment Conditions
-*   **Frontend Management**: Configure site-wide settings and visuals directly from the panel.
+*   **Software Setup Mode**: Specialized sidebar toggle to manage platform-wide settings and master data without cluttering the main dashboard.
+*   **Frontend Management**: Configure site-wide banners and visuals directly from the panel.
 *   **User Management**: Monitor user activity and manage accounts.
 
 ## 🛠️ Technology Stack
@@ -51,7 +53,7 @@ GetReady is a modern, comprehensive web application designed for the circular fa
 *   **System**: `Notification`, `FrontendSetting`, `AvailabilityBlock`, `Payment`
 
 ## 📚 Developer Documentation
-For a deep dive into the database schema, system architecture, and detailed workflows, please refer to the [Workflows & System Architecture](WORKFLOW.md) guide.
+For a deep dive into the system architecture and database schema, see the [Codebase Overview](CODEBASE_OVERVIEW.md). To understand the platform's operational processes, refer to the [System Workflow](WORKFLOW.md) guide.
 
 
 ## ⚙️ Installation & Setup

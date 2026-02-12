@@ -24,11 +24,13 @@ The project follows the standard Laravel directory structure with key applicatio
     *   **Admin/**: Administrative functions (User management, specific master data CRUDs).
     *       *   `PaymentController`: Handles payment listings, filtering (Paid, Pending, Failed), and statistics.
     *       *   `SecurityController`: Manages security deposit tracking, returns, and dashboard stats.
+    *       *   `ReportController`: Handles tactical operations monitoring (Calendar) and financial performance analysis.
     *   **Api/**: API endpoints (e.g., `XpressbeesWebhookController`).
     *   Specific feature controllers: `ClothController`, `OrderController`, `CartController`, `RejectionController`.
 *   **`app/Models/`**: Eloquent models representing database tables (`Cloth`, `User`, `Order`, `Role`, `Permission`, `Rejection`).
 *   **`database/migrations/`**: Database schema definitions.
 *   **`resources/views/`**: Blade templates for the frontend UI.
+    *   **admin/screens/reports/**: Contains Operation Alert Calendar and Financial Reporting screens.
 *   **`routes/`**: Route definitions (`web.php` for browser, `api.php` for external services).
 
 ---
@@ -79,7 +81,15 @@ This is the central entity of the marketplace.
 ### 3.7 Interactions
 *   **Reviews:** Users can review products (`ReviewController`).
 *   **Q&A:** Users can ask questions about products (`QuestionController`).
-*   **Notifications:** System notifications for users (`NotificationController`).
+### 3.8 Reporting & Operations
+*   **Alert Calendar**: A tactical dashboard for daily operations.
+    *   Generates dual alerts for every order: **Pickup [P]** (Start Date) and **Return [R]** (End Date).
+    *   Includes **Sale [S]** alerts for direct purchases.
+    *   Features a detailed table-based modal tracking Order IDs, Security Deposits, and Rent Payouts.
+*   **Financial Reporting**: A deep-dive analytical screen for profitability.
+    *   Tracks: Total Revenue, Security Held, Payouts, and Net Profit.
+    *   Logic: Automatically handles platform commission on base prices and adjusts for PG expenses (2%) and delivery costs.
+*   **UI Standard**: Both modules follow a premium, high-contrast design system with sharp square components (zero border-radius).
 
 ---
 

@@ -504,6 +504,40 @@ $(function() {
         );
     });
 
+    // Refund Payment Logic (Manual)
+    $tableBody.on('click', '.refund-payment-btn', function(e) {
+        e.preventDefault();
+        const $btn = $(this);
+        const orderId = $btn.data('order-id');
+        
+        showConfirmModal(
+            'Manual Refund',
+            'Are you sure you want to mark this transaction as Refunded? This will update payment history and revenue stats.',
+            () => {
+                return new Promise((resolve) => {
+                    $.ajax({
+                        url: `/admin/orders/${orderId}/refund-payment`,
+                        type: 'POST',
+                        data: { _token: '{{ csrf_token() }}' },
+                        success: function(response) {
+                            if (response.success) {
+                                fetchOrders();
+                                window.showAlert(response.message || 'Payment marked as refunded.', 'success');
+                            } else {
+                                window.showAlert(response.message || 'Action failed', 'danger');
+                            }
+                            resolve();
+                        },
+                        error: function(xhr) {
+                            window.showAlert('Error: ' + (xhr.responseJSON?.message || 'Something went wrong'), 'danger');
+                            resolve();
+                        }
+                    });
+                });
+            }
+        );
+    });
+
     $form.on('submit', function(e) {
         e.preventDefault();
         fetchOrders();

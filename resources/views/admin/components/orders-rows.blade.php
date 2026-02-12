@@ -85,7 +85,7 @@
                     </button>
                 @endif
 
-                @if($order->has_rental_items && $order->status !== 'Returned' && $order->status !== 'Cancelled')
+                @if($order->has_rental_items && $order->status !== 'Returned' && $order->status !== 'Cancelled' && in_array($order->status, ['Delivered', 'Return Requested', 'Return In Progress', 'Order Confirmed & Shipment Created', 'Confirmed']))
                     <button class="btn btn-sm btn-outline-primary mark-returned-btn" 
                             data-order-id="{{ $order->id }}" 
                             title="Mark as Returned">
@@ -109,6 +109,14 @@
                             data-images="{{ json_encode($order->return_images) }}"
                             title="Review Return Request">
                         <i class="bi bi-eye"></i>
+                    </button>
+                @endif
+
+                @if($order->status === 'Returned' && !$order->has_rental_items && $latestPayment && in_array(strtolower($latestPayment->payment_status), ['paid', 'success']))
+                    <button class="btn btn-sm btn-outline-danger refund-payment-btn" 
+                            data-order-id="{{ $order->id }}" 
+                            title="Refund Payment (Manual)">
+                        <i class="bi bi-cash-stack"></i>
                     </button>
                 @endif
             </div>

@@ -66,6 +66,7 @@ Route::middleware(['admin.auth'])->group(function () {
     Route::post('/admin/orders/{id}/retry-shipment', [AdminController::class, 'retryShipment'])->name('admin.orders.retry-shipment');
     Route::post('/admin/orders/{id}/approve-return', [AdminController::class, 'approveOrderReturn'])->name('admin.orders.approve-return');
     Route::post('/admin/orders/{id}/reject-return', [AdminController::class, 'rejectOrderReturn'])->name('admin.orders.reject-return');
+    Route::post('/admin/orders/{id}/refund-payment', [AdminController::class, 'refundOrderPayment'])->name('admin.orders.refund-payment');
 
     // User
     Route::get('/admin/user/fetch', [UserController::class, 'fetch'])->name('user.fetch');

@@ -583,10 +583,10 @@ class AdminController extends Controller
         $order->status = 'Returned';
         $order->save();
 
-        // Increment SKU for rented items
+        // Increment SKU for all returned items (Rental or Purchase)
         foreach ($order->items as $item) {
             $cloth = $item->cloth;
-            if ($cloth && $item->price != $cloth->selling_price) { 
+            if ($cloth) { 
                 $cloth->sku = $cloth->sku + 1;
                 $cloth->is_available = true; // Make available again
                 $cloth->save();
@@ -842,5 +842,27 @@ class AdminController extends Controller
         ]);
 
         return response()->json(['success' => true, 'message' => 'Return request rejected.']);
+    }
+
+    public function refundOrderPayment($id)
+    {
+        $order = Order::with('payments')->findOrFail($id);
+
+        if ($order->has_rental_items) {
+            return response()->json(['success' => false, 'message' => 'Rental and Mixed orders must be managed through the Security Dashboard to handle security deposits correctly.'], 400);
+        }
+        
+        $paidPayments = $order->payments()->whereIn('payment_status', ['Paid', 'Success', 'paid', 'success'])->get();
+        
+        if ($paidPayments->isEmpty()) {
+            return response()->json(['success' => false, 'message' => 'No paid payments found for this order.'], 400);
+        }
+
+        foreach ($paidPayments as $payment) {
+            $payment->payment_status = 'Refunded';
+            $payment->save();
+        }
+
+        return response()->json(['success' => true, 'message' => 'Payments marked as refunded successfully.']);
     }
 }

@@ -89,8 +89,8 @@ The final stage remains an administrative checkpoint to ensure item quality.
     1.  **Return Arrival**: When the logistics partner delivers the return package, the webhook (`handleWebhook`) detects the `reverse` shipment type and automatically updates the order status to **"Returned"**.
     2.  **Inspection**: Admin/Seller verifies the item condition.
     3.  **Repayment (Refund Logic)**:
-        *   **Standard Return**: Only the **Security Deposit** is marked for refund.
-        *   **Dispute Return**: The system flags the order in the Security Dashboard. The Admin is prompted to refund both the **Rental Fee** and the **Security Deposit** (Total Amount).
+        *   **Standard Return**: Only the **Security Deposit** is marked for refund. The `payment_status` remains `Paid`.
+        *   **Dispute Return**: The system flags the order in the Security Dashboard. The Admin is prompted to refund both the **Rental Fee** and the **Security Deposit** (Total Amount). Marking it as returned will automatically update the `payment_status` to **'Refunded'** to ensure it is excluded from revenue stats.
     4.  **Admin Action**: Admin manually triggers the security refund in the dashboard, updating `is_security_returned = true`.
     4.  **Inventory Recovery**: The system automatically increments the `sku` and sets `is_available = true` for the returned items.
 

@@ -287,6 +287,7 @@
                         <option value="Paid">Paid</option>
                         <option value="Pending">Pending</option>
                         <option value="Refunded">Refunded</option>
+                        <option value="Partially Refunded">Partially Refunded</option>
                         <option value="Failed">Failed</option>
                     </select>
                     <button class="btn btn-outline-light btn-sm text-dark border-0" onclick="loadPayments()" title="Refresh" style="border-radius: 0; padding: 0.25rem 0.6rem;">
@@ -888,7 +889,8 @@ $(function() {
                 let statusBadge = '';
                 if (statusLower === 'paid' || statusLower === 'success') statusBadge = '<span class="badge bg-success">Paid</span>';
                 else if (statusLower === 'pending') statusBadge = '<span class="badge bg-warning text-dark">Pending</span>';
-                else if (statusLower === 'refunded') statusBadge = '<span class="badge bg-info text-white">Refunded</span>';
+                else if (statusLower === 'refunded') statusBadge = '<span class="badge bg-info text-dark">Refunded</span>';
+                else if (statusLower === 'partially refunded') statusBadge = '<span class="badge bg-info text-dark">Partially Refunded</span>';
                 else statusBadge = '<span class="badge bg-danger">Failed</span>';
 
                 rows += `<tr>

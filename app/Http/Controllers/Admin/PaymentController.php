@@ -46,9 +46,9 @@ class PaymentController extends Controller
     protected function getStats()
     {
         return [
-            'total_revenue' => Payment::where('payment_status', 'Paid')->sum('amount'), // Assuming 'Paid' is the status
+            'total_revenue' => Payment::whereIn('payment_status', ['Paid', 'Success', 'paid', 'success'])->sum('amount'),
             'pending_count' => Payment::where('payment_status', 'Pending')->count(),
-            'failed_count' => Payment::whereIn('payment_status', ['Failed', 'Cancelled'])->count(),
+            'failed_count' => Payment::whereIn('payment_status', ['Failed', 'Cancelled', 'failed', 'cancelled'])->count(),
         ];
     }
 }

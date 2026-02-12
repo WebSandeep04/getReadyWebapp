@@ -59,7 +59,7 @@
         </td>
         <td>
             @if($latestPayment)
-                <div class="fw-semibold {{ $latestPayment->payment_status === 'Paid' ? 'text-success' : ($latestPayment->payment_status === 'Failed' ? 'text-danger' : 'text-muted') }}">
+                <div class="fw-semibold {{ $latestPayment->payment_status === 'Paid' ? 'text-success' : (in_array($latestPayment->payment_status, ['Refunded', 'Partially Refunded']) ? 'text-info' : ($latestPayment->payment_status === 'Failed' ? 'text-danger' : 'text-muted')) }}">
                     {{ $latestPayment->payment_status }}
                 </div>
                 <small class="text-muted">{{ $latestPayment->payment_method }}</small>

@@ -82,6 +82,7 @@
                         <option value="Failed">Failed</option>
                         <option value="Cancelled">Cancelled</option>
                         <option value="Refunded">Refunded</option>
+                        <option value="Partially Refunded">Partially Refunded</option>
                     </select>
                 </div>
                  <div class="col-auto ms-auto">

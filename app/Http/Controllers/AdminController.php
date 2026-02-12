@@ -41,7 +41,7 @@ class AdminController extends Controller
         $stats = $this->getOrderStats();
         $filters = $request->all();
         $statuses = ['Pending', 'Confirmed', 'Delivered', 'Returned', 'Cancelled'];
-        $paymentStatuses = ['Paid', 'Pending', 'Failed', 'unpaid'];
+        $paymentStatuses = ['Paid', 'Pending', 'Failed', 'Refunded', 'Partially Refunded', 'unpaid'];
 
         return view('admin.screens.orders', compact('orders', 'stats', 'filters', 'statuses', 'paymentStatuses'));
     }

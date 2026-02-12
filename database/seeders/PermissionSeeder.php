@@ -42,6 +42,10 @@ class PermissionSeeder extends Seeder
             ['name' => 'admin.orders', 'label' => 'Orders', 'module' => 'Operations'],
             ['name' => 'admin.security', 'label' => 'Security Deposits', 'module' => 'Operations'],
             ['name' => 'admin.payments', 'label' => 'Payments', 'module' => 'Operations'],
+            
+            // Reports
+            ['name' => 'admin.reports.financial', 'label' => 'Financial Report', 'module' => 'Reports'],
+            ['name' => 'admin.reports.calendar', 'label' => 'Alert Calendar', 'module' => 'Reports'],
         ];
 
         foreach ($permissions as $permission) {

@@ -17,6 +17,14 @@
                 ['label' => 'Payments', 'route' => 'admin.payments', 'icon' => 'bi-wallet2'],
             ],
         ],
+        [
+            'title' => 'Reports',
+            'icon' => 'bi-bar-chart-line',
+            'links' => [
+                ['label' => 'Financial Report', 'route' => 'admin.reports.financial', 'icon' => 'bi-cash-coin'],
+                ['label' => 'Alert Calendar', 'route' => 'admin.reports.calendar', 'icon' => 'bi-calendar3'],
+            ],
+        ],
     ];
 
     // Setup Links (Hidden from main array, shown separately)

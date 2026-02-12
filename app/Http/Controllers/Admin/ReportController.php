@@ -111,11 +111,13 @@ class ReportController extends Controller
 
     public function calendar(Request $request)
     {
-        // Fetch orders with rental items to show on calendar
-        $orders = Order::with('buyer')
-            ->where('has_rental_items', true)
-            ->whereNotNull('rental_from')
-            ->whereNotNull('rental_to')
+        // Fetch all relevant orders for the calendar
+        $orders = Order::with(['buyer', 'items.cloth'])
+            ->where(function($query) {
+                $query->where('has_rental_items', true)
+                      ->whereNotNull('rental_from');
+            })
+            ->orWhere('has_purchase_items', true)
             ->get();
 
         return view('admin.screens.reports.calendar', compact('orders'));

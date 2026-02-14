@@ -88,6 +88,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             StateSeeder::class,
             CitySeeder::class,
+            TaxSeeder::class,
             FrontendSettingsSeeder::class,
             PermissionSeeder::class,
             RolePermissionSeeder::class,

@@ -42,6 +42,7 @@
         ['label' => 'Admin Users', 'route' => 'admin_panel_users.index', 'icon' => 'bi-person-badge'],
         ['label' => 'States', 'route' => 'states.index', 'icon' => 'bi-map'],
         ['label' => 'Cities', 'route' => 'cities.index', 'icon' => 'bi-building'],
+        ['label' => 'Tax (Management)', 'route' => 'admin.tax', 'icon' => 'bi-receipt-cutoff'],
         ['label' => 'Frontend Settings', 'route' => 'admin.frontend', 'icon' => 'bi-globe'],
     ];
 

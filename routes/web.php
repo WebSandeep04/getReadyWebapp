@@ -180,6 +180,14 @@ Route::middleware(['admin.auth'])->group(function () {
     Route::delete('/admin/cities/{id}', [App\Http\Controllers\CityController::class, 'destroy'])->name('cities.destroy');
     Route::post('/admin/cities/toggle/{id}', [App\Http\Controllers\CityController::class, 'toggleStatus'])->name('cities.toggle');
 
+    // Tax Management (Admin)
+    Route::get('/admin/tax-management', [App\Http\Controllers\TaxController::class, 'index'])->name('admin.tax');
+    Route::get('/admin/tax/json', [App\Http\Controllers\TaxController::class, 'json'])->name('admin.tax.json');
+    Route::post('/admin/tax', [App\Http\Controllers\TaxController::class, 'store'])->name('admin.tax.store');
+    Route::put('/admin/tax/{id}', [App\Http\Controllers\TaxController::class, 'update'])->name('admin.tax.update');
+    Route::delete('/admin/tax/{id}', [App\Http\Controllers\TaxController::class, 'destroy'])->name('admin.tax.destroy');
+    Route::post('/admin/tax/toggle/{id}', [App\Http\Controllers\TaxController::class, 'toggleStatus'])->name('admin.tax.toggle');
+
     // Role Master
     Route::get('/admin/role-master', [App\Http\Controllers\RoleMasterController::class, 'index'])->name('role_master.index');
     Route::get('/admin/role-master/permissions/{id}', [App\Http\Controllers\RoleMasterController::class, 'getRolePermissions'])->name('role_master.permissions');

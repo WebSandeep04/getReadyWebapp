@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Cache;
 use App\Services\Msg91Service;
 use Illuminate\Support\Str;
+use App\Models\State;
 
 class LoginController extends Controller
 {
@@ -30,8 +31,9 @@ class LoginController extends Controller
         }
 
         $redirectTo = request()->query('redirect', $previousUrl);
-
-        return view('login', compact('showFilters', 'redirectTo'));
+        
+        $states = State::where('status', 1)->get();
+        return view('login', compact('showFilters', 'redirectTo', 'states'));
     }
 
     /**
@@ -232,7 +234,8 @@ class LoginController extends Controller
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string|regex:/^[0-9]{10,15}$/',
             'verification_token' => 'required|string',
-            'city' => 'required|string|max:255',
+            'state_id' => 'required|exists:states,id',
+            'city_id' => 'required|exists:cities,id',
             'age' => 'required|integer|min:1|max:120',
             'gender' => 'required|in:Boy,Girl,Men,Women',
             'is_gst' => 'required|boolean',
@@ -273,7 +276,8 @@ class LoginController extends Controller
             'email' => null, 
             'phone' => $phone,
             'address' => null,
-            'city' => $request->city,
+            'state_id' => $request->state_id,
+            'city_id' => $request->city_id,
             'age' => $request->age,
             'gender' => $request->gender,
             'is_gst' => $request->is_gst,

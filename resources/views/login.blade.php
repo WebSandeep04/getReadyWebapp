@@ -66,7 +66,19 @@
             <input type="hidden" name="verification_token" id="verificationToken">
             
             <div class="form-group position-relative mb-3">
-                <input type="text" name="city" id="city" class="form-control" placeholder="City">
+                <select name="state_id" id="state_id" class="form-control">
+                    <option value="" disabled selected>Select State</option>
+                    @foreach($states as $state)
+                        <option value="{{ $state->id }}">{{ $state->name }}</option>
+                    @endforeach
+                </select>
+                <i class="bi bi-map icon"></i>
+            </div>
+
+            <div class="form-group position-relative mb-3">
+                <select name="city_id" id="city_id" class="form-control" disabled>
+                    <option value="" disabled selected>Select City</option>
+                </select>
                 <i class="bi bi-geo-alt icon"></i>
             </div>
             

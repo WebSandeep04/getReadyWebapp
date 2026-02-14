@@ -40,6 +40,8 @@
         ['label' => 'Outfit Conditions', 'route' => 'garment_conditions.index', 'icon' => 'bi-shield-check'],
         ['label' => 'Role Master', 'route' => 'role_master.index', 'icon' => 'bi-shield-shaded'],
         ['label' => 'Admin Users', 'route' => 'admin_panel_users.index', 'icon' => 'bi-person-badge'],
+        ['label' => 'States', 'route' => 'states.index', 'icon' => 'bi-map'],
+        ['label' => 'Cities', 'route' => 'cities.index', 'icon' => 'bi-building'],
         ['label' => 'Frontend Settings', 'route' => 'admin.frontend', 'icon' => 'bi-globe'],
     ];
 

@@ -22,6 +22,8 @@ class User extends Authenticatable
         'email',
         'phone',
         'address',
+        'state_id',
+        'city_id',
         'city',
         'age',
         'gstin',
@@ -32,6 +34,16 @@ class User extends Authenticatable
         'profile_image',
         'last_login_at',
     ];
+
+    public function state()
+    {
+        return $this->belongsTo(State::class);
+    }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class);
+    }
 
     /**
      * The attributes that should be hidden for serialization.

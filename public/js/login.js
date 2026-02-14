@@ -74,6 +74,29 @@ $(document).ready(function () {
         }
     });
 
+    // Handle State change to load Cities
+    $('#state_id').on('change', function () {
+        const stateId = $(this).val();
+        const citySelect = $('#city_id');
+
+        if (!stateId) {
+            citySelect.prop('disabled', true).html('<option value="" disabled selected>Select City</option>');
+            return;
+        }
+
+        citySelect.prop('disabled', true).html('<option value="" disabled selected>Loading...</option>');
+
+        $.getJSON(`/admin/cities/json?state_id=${stateId}`, function (data) {
+            let options = '<option value="" disabled selected>Select City</option>';
+            data.forEach(city => {
+                options += `<option value="${city.id}">${city.name}</option>`;
+            });
+            citySelect.html(options).prop('disabled', false);
+        }).fail(function () {
+            citySelect.html('<option value="" disabled selected>Error loading cities</option>');
+        });
+    });
+
     // Mobile login form submission
     $('#mobileLoginForm').on('submit', function (e) {
         e.preventDefault();
@@ -85,14 +108,15 @@ $(document).ready(function () {
         // Check if we are in Step 3 (Registration)
         if ($('#mobileLoginStep3').is(':visible')) {
             // Validate Profile Details
-            const city = $('#city').val().trim();
+            const stateId = $('#state_id').val();
+            const cityId = $('#city_id').val();
             const age = $('#age').val();
             const gender = $('#gender').val();
             const isGst = $('#is_gst').val();
             const gstin = $('#gstin').val().trim();
             const verificationToken = $('#verificationToken').val();
 
-            if (!city || !age || !gender) {
+            if (!stateId || !cityId || !age || !gender) {
                 alert('Please fill all required fields');
                 return;
             }
@@ -113,7 +137,8 @@ $(document).ready(function () {
                     _token: $('input[name="_token"]').val(),
                     phone: phone,
                     verification_token: verificationToken,
-                    city: city,
+                    state_id: stateId,
+                    city_id: cityId,
                     age: age,
                     gender: gender,
                     is_gst: isGst,

@@ -166,12 +166,30 @@ Route::middleware(['admin.auth'])->group(function () {
     Route::put('/admin/panel-users/{id}', [App\Http\Controllers\AdminPanelUserController::class, 'update'])->name('admin_panel_users.update');
     Route::delete('/admin/panel-users/{id}', [App\Http\Controllers\AdminPanelUserController::class, 'destroy'])->name('admin_panel_users.destroy');
 
+    // State Management (Admin)
+    Route::get('/admin/states', [App\Http\Controllers\StateController::class, 'index'])->name('states.index');
+    Route::post('/admin/states', [App\Http\Controllers\StateController::class, 'store'])->name('states.store');
+    Route::put('/admin/states/{id}', [App\Http\Controllers\StateController::class, 'update'])->name('states.update');
+    Route::delete('/admin/states/{id}', [App\Http\Controllers\StateController::class, 'destroy'])->name('states.destroy');
+    Route::post('/admin/states/toggle/{id}', [App\Http\Controllers\StateController::class, 'toggleStatus'])->name('states.toggle');
+
+    // City Management (Admin)
+    Route::get('/admin/cities', [App\Http\Controllers\CityController::class, 'index'])->name('cities.index');
+    Route::post('/admin/cities', [App\Http\Controllers\CityController::class, 'store'])->name('cities.store');
+    Route::put('/admin/cities/{id}', [App\Http\Controllers\CityController::class, 'update'])->name('cities.update');
+    Route::delete('/admin/cities/{id}', [App\Http\Controllers\CityController::class, 'destroy'])->name('cities.destroy');
+    Route::post('/admin/cities/toggle/{id}', [App\Http\Controllers\CityController::class, 'toggleStatus'])->name('cities.toggle');
+
     // Role Master
     Route::get('/admin/role-master', [App\Http\Controllers\RoleMasterController::class, 'index'])->name('role_master.index');
     Route::get('/admin/role-master/permissions/{id}', [App\Http\Controllers\RoleMasterController::class, 'getRolePermissions'])->name('role_master.permissions');
     Route::post('/admin/role-master/save', [App\Http\Controllers\RoleMasterController::class, 'saveRolePermissions'])->name('role_master.save');
-    Route::post('/admin/role-master/store', [App\Http\Controllers\RoleMasterController::class, 'store'])->name('role_master.store');
+     Route::post('/admin/role-master/store', [App\Http\Controllers\RoleMasterController::class, 'store'])->name('role_master.store');
 });
+
+// Public API routes for mobile/frontend
+Route::get('/admin/states/json', [App\Http\Controllers\StateController::class, 'json'])->name('states.json');
+Route::get('/admin/cities/json', [App\Http\Controllers\CityController::class, 'json'])->name('cities.json');
 
 // User (Non-admin route, kept outside)
 Route::get('/user', [UserController::class, 'index'])->name('user.index');

@@ -33,6 +33,16 @@ class PermissionSeeder extends Seeder
             ['name' => 'garment_conditions.index', 'label' => 'Outfit Conditions', 'module' => 'Setup'],
             ['name' => 'role_master.index', 'label' => 'Role Master', 'module' => 'Setup'],
             ['name' => 'admin_panel_users.index', 'label' => 'Admin Users', 'module' => 'Setup'],
+            ['name' => 'states.index', 'label' => 'States', 'module' => 'Setup'],
+            ['name' => 'cities.index', 'label' => 'Cities', 'module' => 'Setup'],
+            ['name' => 'state-list', 'label' => 'State List', 'module' => 'Setup'],
+            ['name' => 'state-create', 'label' => 'State Create', 'module' => 'Setup'],
+            ['name' => 'state-edit', 'label' => 'State Edit', 'module' => 'Setup'],
+            ['name' => 'state-delete', 'label' => 'State Delete', 'module' => 'Setup'],
+            ['name' => 'city-list', 'label' => 'City List', 'module' => 'Setup'],
+            ['name' => 'city-create', 'label' => 'City Create', 'module' => 'Setup'],
+            ['name' => 'city-edit', 'label' => 'City Edit', 'module' => 'Setup'],
+            ['name' => 'city-delete', 'label' => 'City Delete', 'module' => 'Setup'],
             ['name' => 'admin.frontend', 'label' => 'Frontend Settings', 'module' => 'Setup'],
             
             // Approval

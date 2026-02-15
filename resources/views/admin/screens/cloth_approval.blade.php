@@ -164,8 +164,8 @@
                                     <th>Size</th>
                                     <th>Condition</th>
                                     <th>Base Rent (₹)</th>
-                                    <th>Buyer Pay (₹)</th>
-                                    <th>Seller Net (₹)</th>
+                                    <th>Buyer See (₹)</th>
+                                    <th>Seller See (₹)</th>
                                     <th>Deposit (₹)</th>
                                     <th>Status</th>
                                     <th class="text-center">Actions</th>
@@ -306,14 +306,6 @@
                             <div class="col-4">
                                 <small class="text-muted d-block">Seller Sees Rent</small>
                                 <span class="fw-bold text-success" id="detailSellerSeeRent">-</span>
-                            </div>
-                            <div class="col-4 mt-2">
-                                <small class="text-muted d-block">Total Buyer Pays</small>
-                                <span class="fw-bold text-primary" id="detailBuyerRent">-</span>
-                            </div>
-                            <div class="col-4 mt-2">
-                                <small class="text-muted d-block">Net Seller Payout</small>
-                                <span class="fw-bold text-success" id="detailSellerRent">-</span>
                             </div>
                              <div class="col-4">
                                 <small class="text-muted d-block">Security Deposit</small>
@@ -582,8 +574,8 @@ $(function() {
                 <td>${cloth.size}</td>
                 <td>${cloth.condition}</td>
                 <td>₹${cloth.rent_price}</td>
-                <td class="text-primary fw-bold">₹${cloth.display_rent_price}</td>
-                <td class="text-success fw-bold">₹${cloth.seller_rent}</td>
+                <td class="fw-bold">₹${cloth.buyer_see_rent}</td>
+                <td class="fw-bold">₹${cloth.seller_see_rent}</td>
                 <td>₹${cloth.security_deposit}</td>
                     <td>${statusBadge}</td>
                     <td class="text-center">
@@ -780,8 +772,6 @@ $(function() {
         $('#detailRent').text(cloth.base_rent ? '₹' + cloth.base_rent : '-');
         $('#detailBuyerSeeRent').text(cloth.buyer_see_rent ? '₹' + cloth.buyer_see_rent : '-');
         $('#detailSellerSeeRent').text(cloth.seller_see_rent ? '₹' + cloth.seller_see_rent : '-');
-        $('#detailBuyerRent').text(cloth.display_rent_price ? '₹' + cloth.display_rent_price : '-');
-        $('#detailSellerRent').text(cloth.seller_rent ? '₹' + cloth.seller_rent : '-');
         $('#detailDeposit').text(cloth.security_deposit ? '₹' + cloth.security_deposit : '-');
         $('#detailPurchase').text(cloth.selling_price ? '₹' + cloth.selling_price : 'Not for sale');
         

@@ -27,6 +27,7 @@ class SecurityController extends Controller
     {
         $query = Order::with('buyer', 'payments')
             ->where('has_rental_items', true)
+            ->whereNull('return_reason') // Issue-based returns are handled in Orders dashboard
             ->whereNotNull('security_amount')
             ->where('security_amount', '>', 0);
         
@@ -80,10 +81,12 @@ class SecurityController extends Controller
             'total_held' => Order::where('has_rental_items', true)
                             ->where('status', '!=', 'Returned')
                             ->where('is_security_returned', false)
+                            ->whereNull('return_reason')
                             ->sum('security_amount'),
             'need_to_return' => Order::where('has_rental_items', true)
                                 ->where('status', 'Returned')
                                 ->where('is_security_returned', false)
+                                ->whereNull('return_reason')
                                 ->sum('security_amount'),
             'returned' => Order::where('has_rental_items', true)
                                 ->where('is_security_returned', true)

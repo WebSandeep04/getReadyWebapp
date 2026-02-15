@@ -605,6 +605,11 @@ class AdminController extends Controller
             return response()->json(['success' => false, 'message' => 'Order is already returned.'], 400);
         }
 
+        // Only allow marking as returned if it's already delivered or in return process
+        if (!in_array($order->status, ['Delivered', 'Return Requested', 'Return In Progress', 'Order Confirmed & Shipment Created', 'Confirmed'])) {
+             return response()->json(['success' => false, 'message' => 'Only orders that have been shipped or delivered can be marked as returned.'], 400);
+        }
+
         $order->status = 'Returned';
         $order->save();
 
@@ -624,19 +629,31 @@ class AdminController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
-            'status' => 'required|in:Pending,Confirmed,Delivered,Returned,Cancelled,Order Confirmed & Shipment Created'
+            'status' => 'required|in:Pending,Confirmed,Shipped,Delivered,Returned,Cancelled,Order Confirmed & Shipment Created,Return Requested,Return In Progress'
         ]);
 
         $order = Order::findOrFail($id);
-        $order->status = $request->status;
+        $oldStatus = $order->status;
+        $newStatus = $request->status;
+
+        // If moving to Returned, use the dedicated logic to handle stock
+        if ($newStatus === 'Returned' && $oldStatus !== 'Returned') {
+            return $this->markAsReturned($id);
+        }
+
+        $order->status = $newStatus;
         $order->save();
 
-        return response()->json(['success' => true, 'message' => 'Order status updated to ' . $request->status]);
+        return response()->json(['success' => true, 'message' => 'Order status updated to ' . $newStatus]);
     }
 
     public function retryShipment($id)
     {
         $order = Order::with(['items.cloth', 'buyer', 'payments', 'shipments'])->findOrFail($id);
+
+        if (!in_array($order->status, ['Confirmed', 'Order Confirmed & Shipment Created'])) {
+            return response()->json(['success' => false, 'message' => 'Only Confirmed or Shipment Created orders can have shipments retried.'], 400);
+        }
 
         if ($order->shipments->where('type', 'forward')->isNotEmpty()) {
             return response()->json(['success' => false, 'message' => 'Forward shipment already exists for this order.'], 400);
@@ -828,6 +845,18 @@ class AdminController extends Controller
                 'icon' => 'bi-truck'
             ]);
 
+            // Send Notification to Seller(s)
+            $uniqueSellers = $order->items->map(fn($item) => $item->cloth ? $item->cloth->user_id : null)->unique()->filter();
+            foreach ($uniqueSellers as $sId) {
+                Notification::create([
+                    'user_id' => $sId,
+                    'title' => 'Return Scheduled',
+                    'message' => "Order #{$order->id} is being returned. A reverse shipment has been scheduled.",
+                    'type' => 'info',
+                    'icon' => 'bi-arrow-left-right'
+                ]);
+            }
+
             return response()->json([
                 'success' => true, 
                 'message' => "Return approved. {$shipmentsCreated} reverse shipments created.",
@@ -889,5 +918,54 @@ class AdminController extends Controller
         }
 
         return response()->json(['success' => true, 'message' => 'Payments marked as refunded successfully.']);
+    }
+
+    /**
+     * Handle full refund (Rent + Security) for an order that was returned due to an issue.
+     */
+    public function processIssueRefund($id)
+    {
+        $order = Order::with('payments')->findOrFail($id);
+
+        if ($order->status !== 'Returned') {
+            return response()->json(['success' => false, 'message' => 'Order must be in Returned status to process the final refund.'], 400);
+        }
+
+        if (!$order->return_reason) {
+            return response()->json(['success' => false, 'message' => 'This order was not returned via a reported issue. Please use the standard security dashboard.'], 400);
+        }
+
+        // 1. Mark all payments as Refunded
+        $payments = Payment::where('order_id', $order->id)
+            ->whereIn('payment_status', ['Paid', 'Success', 'paid', 'success'])
+            ->get();
+            
+        if ($payments->isEmpty()) {
+             return response()->json(['success' => false, 'message' => 'No eligible payments found to refund.'], 400);
+        }
+
+        foreach ($payments as $payment) {
+            $payment->update(['payment_status' => 'Refunded']);
+        }
+
+        // 2. Mark security as returned
+        $order->update([
+            'is_security_returned' => true,
+            'security_returned_at' => now(),
+        ]);
+
+        // 3. Notify Buyer
+        Notification::create([
+            'user_id' => $order->buyer_id,
+            'title' => 'Full Refund Processed',
+            'message' => "Your full refund for Order #{$order->id} (including security deposit) has been processed successfully.",
+            'type' => 'success',
+            'icon' => 'bi-cash-stack'
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Full refund processed and security marked as returned.'
+        ]);
     }
 }

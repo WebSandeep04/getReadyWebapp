@@ -52,9 +52,21 @@ class XpressbeesWebhookController extends Controller
                 $newStatus = ($shipment->type === 'reverse') ? 'Returned' : 'Delivered';
                 
                 if ($order->status !== $newStatus) {
+                    if ($newStatus === 'Returned') {
+                        // Increment SKU for all returned items (Rental or Purchase)
+                        foreach ($order->items as $item) {
+                            $cloth = $item->cloth;
+                            if ($cloth) { 
+                                $cloth->sku = $cloth->sku + 1;
+                                $cloth->is_available = true; // Make available again
+                                $cloth->save();
+                            }
+                        }
+                    }
+                    
                     $order->status = $newStatus;
                     $order->save();
-                    Log::info("Webhook: Order #{$order->id} marked as {$newStatus} via {$shipment->type} Webhook.");
+                    Log::info("Webhook: Order #{$order->id} marked as {$newStatus} via {$shipment->type} Webhook and stock updated if needed.");
                 }
             }
             // You can map other statuses here (e.g., RTO -> Returned)

@@ -98,6 +98,8 @@ Route::middleware(['admin.auth'])->group(function () {
     Route::get('/admin/payments', [App\Http\Controllers\Admin\PaymentController::class, 'index'])->name('admin.payments');
     Route::get('/admin/payments/fetch', [App\Http\Controllers\Admin\PaymentController::class, 'fetchData'])->name('admin.payments.fetch');
 
+    Route::post('/admin/orders/{id}/process-issue-refund', [AdminController::class, 'processIssueRefund'])->name('admin.orders.process-issue-refund');
+
     // Reports
     Route::get('/admin/reports/financial', [App\Http\Controllers\Admin\ReportController::class, 'financial'])->name('admin.reports.financial');
     Route::get('/admin/reports/calendar', [App\Http\Controllers\Admin\ReportController::class, 'calendar'])->name('admin.reports.calendar');

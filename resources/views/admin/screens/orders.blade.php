@@ -538,6 +538,40 @@ $(function() {
         );
     });
 
+    // Process Issue Refund (Full Refund for Request Returns)
+    $tableBody.on('click', '.process-issue-refund-btn', function(e) {
+        e.preventDefault();
+        const $btn = $(this);
+        const orderId = $btn.data('order-id');
+        
+        showConfirmModal(
+            'Process Full Refund',
+            'This item was returned due to an issue. Are you sure you want to process a FULL REFUND (Rent + Security) for Order #'+orderId+'?',
+            () => {
+                return new Promise((resolve) => {
+                    $.ajax({
+                        url: `/admin/orders/${orderId}/process-issue-refund`,
+                        type: 'POST',
+                        data: { _token: '{{ csrf_token() }}' },
+                        success: function(response) {
+                            if (response.success) {
+                                fetchOrders();
+                                window.showAlert(response.message || 'Full refund processed.', 'success');
+                            } else {
+                                window.showAlert(response.message || 'Action failed', 'danger');
+                            }
+                            resolve();
+                        },
+                        error: function(xhr) {
+                            window.showAlert('Error: ' + (xhr.responseJSON?.message || 'Something went wrong'), 'danger');
+                            resolve();
+                        }
+                    });
+                });
+            }
+        );
+    });
+
     $form.on('submit', function(e) {
         e.preventDefault();
         fetchOrders();

@@ -299,6 +299,16 @@ class AdminController extends Controller
             $data['condition'] = $cloth->condition_name;
             $data['user_name'] = $cloth->user ? $cloth->user->name : 'Unknown';
             
+            // Full Pricing Breakdown for Admin (using 4 days as standard)
+            $pricing = (new \App\Services\PriceCalculatorService())->calculate($cloth, 4);
+            $data['display_rent_price'] = $pricing['total_buyer_pay'];
+            $data['seller_rent'] = $pricing['net_seller_payout'];
+            $data['base_rent'] = $pricing['base_rent'];
+            
+            // Intermediate prices for transparency
+            $data['buyer_see_rent'] = $cloth->display_rent_price;
+            $data['seller_see_rent'] = $cloth->seller_rent;
+            
             return $data;
         });
 

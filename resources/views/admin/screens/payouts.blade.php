@@ -42,26 +42,26 @@
     <!-- Payout Stats Row -->
     <div class="row g-3 mb-4">
         <div class="col-md-4">
-            <div class="stat-card" style="border-left: 4px solid #6f42c1; background: #f8f0ff;">
-                <div class="stat-card__icon" style="color: #6f42c1;"><i class="bi bi-cash-stack"></i></div>
-                <div class="stat-card__label" style="color: #6f42c1;">Total Seller Net</div>
-                <div class="stat-card__value" id="stat-total-net" style="color: #6f42c1;">₹{{ number_format($stats['total_net']) }}</div>
-                <small class="text-muted">Gross earnings for all sellers</small>
+            <div class="stat-card" style="border-left: 4px solid #6f42c1;">
+                <div class="stat-card__icon"><i class="bi bi-cash-stack"></i></div>
+                <div class="stat-card__label">Total Seller Amount Held</div>
+                <div class="stat-card__value" id="stat-total-held">₹{{ number_format($stats['total_held']) }}</div>
+                <small class="text-muted">Gross earnings (Unpaid)</small>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="stat-card" style="border-left: 4px solid #fd7e14; background: #fffcf0;">
-                <div class="stat-card__icon" style="color: #fd7e14;"><i class="bi bi-hourglass-split"></i></div>
-                <div class="stat-card__label" style="color: #fd7e14;">Need to Pay</div>
-                <div class="stat-card__value" id="stat-need-to-pay" style="color: #fd7e14;">₹{{ number_format($stats['need_to_pay']) }}</div>
-                <small class="text-muted">Orders returned, pending transfer</small>
+            <div class="stat-card" style="border-left: 4px solid #fd7e14;">
+                <div class="stat-card__icon"><i class="bi bi-hourglass-split"></i></div>
+                <div class="stat-card__label">Need to Pay</div>
+                <div class="stat-card__value" id="stat-need-to-pay">₹{{ number_format($stats['need_to_pay']) }}</div>
+                <small class="text-muted">Returned & Ready for Payout</small>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="stat-card" style="border-left: 4px solid #20c997; background: #e6fffa;">
-                <div class="stat-card__icon" style="color: #20c997;"><i class="bi bi-check2-circle"></i></div>
-                <div class="stat-card__label" style="color: #20c997;">Paid to Sellers</div>
-                <div class="stat-card__value" id="stat-paid-to-sellers" style="color: #20c997;">₹{{ number_format($stats['paid_to_sellers']) }}</div>
+            <div class="stat-card" style="border-left: 4px solid #20c997;">
+                <div class="stat-card__icon"><i class="bi bi-check2-circle"></i></div>
+                <div class="stat-card__label">Paid to Sellers</div>
+                <div class="stat-card__value" id="stat-paid-to-sellers">₹{{ number_format($stats['paid_to_sellers']) }}</div>
                 <small class="text-muted">Transferred to accounts</small>
             </div>
         </div>
@@ -165,7 +165,7 @@ $(function() {
                 
                 // Update stats
                 if(res.stats) {
-                    $('#stat-total-net').text('₹' + Math.round(res.stats.total_net).toLocaleString('en-IN'));
+                    $('#stat-total-held').text('₹' + Math.round(res.stats.total_held).toLocaleString('en-IN'));
                     $('#stat-need-to-pay').text('₹' + Math.round(res.stats.need_to_pay).toLocaleString('en-IN'));
                     $('#stat-paid-to-sellers').text('₹' + Math.round(res.stats.paid_to_sellers).toLocaleString('en-IN'));
                 }

@@ -17,7 +17,8 @@ class OrderItem extends Model
         'buyer_commission',
         'seller_commission',
         'rent_gst',
-        'commission_gst',
+        'buyer_commission_gst',
+        'seller_commission_gst',
         'tcs_amount',
         'is_seller_gst',
     ];

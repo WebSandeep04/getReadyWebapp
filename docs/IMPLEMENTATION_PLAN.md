@@ -83,7 +83,7 @@ $isPurchase = $order->has_purchase_items && ...;
 $stats = OrderItem::whereBetween('created_at', [$from, $to])
     ->selectRaw("
         SUM(buyer_commission) + SUM(seller_commission) as gross_revenue,
-        SUM(commission_gst) as total_tax_liability,
+        SUM(buyer_commission_gst) + SUM(seller_commission_gst) as total_commission_tax,
         SUM(tcs_amount) as total_tcs_collected
     ")->first();
 ```
@@ -96,9 +96,30 @@ The `security_deposit` will remain a separate, non-taxable entity stored in the 
 ---
 
 ## 6. Implementation Checklist
-1. [ ] Create Migration to add columns to `order_items`.
-2. [ ] Develop `PriceCalculatorService`.
-3. [ ] Integrate Service into `CartController` (for "Marketplace Display").
-4. [ ] Integrate Service into `CheckoutController` (for "Final Payment").
-5. [ ] Update `resources/views/clothes/show.blade.php` JS to match the Service logic exactly.
-6. [ ] Update `Admin/ReportController` to utilize the new database columns.
+1. [x] Create Migration to add columns to `order_items`.
+2. [x] Develop `PriceCalculatorService`.
+3. [x] Integrate Service into `CartController` (for "Marketplace Display").
+4. [x] Integrate Service into `CheckoutController` (for "Final Payment").
+5. [x] Update `resources/views/clothes/show.blade.php` JS to match the Service logic exactly.
+6. [x] Update `Admin/ReportController` to utilize the new database columns.
+
+---
+
+## 7. Advanced Return & Dispute Workflow
+To automate issue resolution, the system handles returns with a "Wait-then-Revert" logic.
+
+### Workflow Details:
+1.  **Approval (`AdminController@approveOrderReturn`)**:
+    *   Generates reverse AWB via Xpressbees.
+    *   Moves status to `Return In Progress`.
+    *   *Note: No money moves yet to ensure the item is returned safely first.*
+2.  **Tracking (`XpressbeesWebhookController`)**:
+    *   Listens for final delivery of reverse shipment.
+    *   Automatically moves status to `Returned` and **increments Stock SKU**.
+3.  **Settlement (`AdminController@processIssueRefund`)**:
+    *   New button **"Refund All"** appears on the Orders screen for Returned orders with issues.
+    *   Marks all associated `payments` as `Refunded`.
+    *   Marks `is_security_returned = true` to settle the security dashboard.
+4.  **Dashboard Isolation**:
+    *   **Payout Dashboard**: Excludes orders where `return_reason` is NOT NULL. Sellers are not paid for faulty orders.
+    *   **Security Dashboard**: Excludes issue-based returns to prevent double-processing. Settlement is done via the Orders screen.

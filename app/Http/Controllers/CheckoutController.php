@@ -105,7 +105,8 @@ class CheckoutController extends Controller
                     'buyer_commission' => $pricing['buyer_comm'],
                     'seller_commission' => $pricing['seller_comm'],
                     'rent_gst' => $pricing['rent_gst'],
-                    'commission_gst' => $pricing['commission_gst'],
+                    'buyer_commission_gst' => $pricing['buyer_comm_gst'],
+                    'seller_commission_gst' => $pricing['seller_comm_gst'],
                     'tcs_amount' => $pricing['tcs'],
                     'is_seller_gst' => $pricing['is_seller_gst'],
                 ]);

@@ -331,7 +331,7 @@ class AdminController extends Controller
 
     public function fetchOrders(Request $request)
     {
-        $query = Order::with(['buyer', 'items']);
+        $query = Order::with(['buyer', 'items', 'shipments']);
 
         if ($request->has('status') && $request->status) {
             $status = $request->status;
@@ -353,6 +353,11 @@ class AdminController extends Controller
             $data['user_name'] = $order->buyer ? $order->buyer->name : 'Guest';
             $data['items_count'] = $order->items->count();
             $data['created_at_formatted'] = $createdAt ? $createdAt->format('d M Y, h:i A') : '-';
+            
+            // Flags for UI buttons
+            $data['shipment_missing'] = !$order->shipments->where('type', 'forward')->first() && $order->status === 'Confirmed';
+            $data['is_rental'] = (bool) $order->has_rental_items;
+            
             return $data;
         });
 
@@ -405,9 +410,9 @@ class AdminController extends Controller
                     $sellerComm += (float) ($item->seller_commission ?? 0);
                     $rentGst += (float) ($item->rent_gst ?? 0);
                     
-                    // Specific GST parts
-                    $bCommGst = ($item->buyer_commission ?? 0) * 0.18;
-                    $sCommGst = ($item->seller_commission ?? 0) * 0.18;
+                    // Specific GST parts from stored columns or fallback
+                    $bCommGst = (float) ($item->buyer_commission_gst ?? (($item->buyer_commission ?? 0) * 0.18));
+                    $sCommGst = (float) ($item->seller_commission_gst ?? (($item->seller_commission ?? 0) * 0.18));
                     
                     $buyerCommGst += $bCommGst;
                     $sellerCommGst += $sCommGst;
@@ -435,42 +440,50 @@ class AdminController extends Controller
         });
 
         // Global Stats updated with pricing logic
-        $paidOrderIds = Payment::whereIn('payment_status', ['Paid', 'Success', 'paid', 'success'])->pluck('order_id');
+        $paidStatus = ['Paid', 'Success', 'paid', 'success'];
+        $failedStatus = ['Failed', 'Cancelled', 'failed', 'cancelled'];
+        $refundStatus = ['Refunded', 'Partially Refunded', 'refunded'];
+
+        $paidOrderIds = Payment::whereIn('payment_status', $paidStatus)->pluck('order_id');
         
         $orderItems = \App\Models\OrderItem::whereIn('order_id', $paidOrderIds)->get();
-        
-        $transactionVolume = Payment::whereIn('payment_status', ['Paid', 'Success', 'paid', 'success'])->sum('amount');
         
         // Commissions as base amounts
         $buyerCommTotal = $orderItems->sum('buyer_commission');
         $sellerCommTotal = $orderItems->sum('seller_commission');
         $totalCommission = $buyerCommTotal + $sellerCommTotal;
         
-        // GST Breakup
+        // GST Breakup using new columns
         $rentGstTotal = $orderItems->sum('rent_gst');
-        $buyerCommGstTotal = $orderItems->sum(fn($i) => ($i->buyer_commission ?? 0) * 0.18);
-        $sellerCommGstTotal = $orderItems->sum(fn($i) => ($i->seller_commission ?? 0) * 0.18);
+        $buyerCommGstTotal = $orderItems->sum('buyer_commission_gst');
+        $sellerCommGstTotal = $orderItems->sum('seller_commission_gst');
         $totalGst = $rentGstTotal + $buyerCommGstTotal + $sellerCommGstTotal;
         
         $sellerPayouts = $orderItems->sum(function($item) {
-            $sCommGst = ($item->seller_commission ?? 0) * 0.18;
+            $sCommGst = (float)($item->seller_commission_gst ?? (($item->seller_commission ?? 0) * 0.18));
             return ($item->base_rent ?? 0) + ($item->rent_gst ?? 0) - (($item->seller_commission ?? 0) + $sCommGst + ($item->tcs_amount ?? 0));
         });
 
         $stats = [
-            'paid_count' => $paidOrderIds->count(),
+            'paid_count' => Payment::whereIn('payment_status', $paidStatus)->count(),
+            'paid_amount' => Payment::whereIn('payment_status', $paidStatus)->sum('amount'),
+            
             'pending_count' => Payment::where('payment_status', 'Pending')->count(),
-            'failed_count' => Payment::whereIn('payment_status', ['Failed', 'Cancelled', 'failed', 'cancelled'])->count(),
-            'total_volume' => $transactionVolume,
-            'buyer_commission_total' => $buyerCommTotal,
-            'seller_commission_total' => $sellerCommTotal,
-            'total_commission' => $totalCommission,
-            'rent_gst_total' => $rentGstTotal,
-            'buyer_comm_gst_total' => $buyerCommGstTotal,
-            'seller_comm_gst_total' => $sellerCommGstTotal,
-            'total_gst' => $totalGst,
-            'seller_payouts' => $sellerPayouts,
-            'total_platform_earning' => $totalCommission + $buyerCommGstTotal + $sellerCommGstTotal,
+            'pending_amount' => Payment::where('payment_status', 'Pending')->sum('amount'),
+            
+            'failed_count' => Payment::whereIn('payment_status', $failedStatus)->count(),
+            'failed_amount' => Payment::whereIn('payment_status', $failedStatus)->sum('amount'),
+            
+            'refund_count' => Payment::whereIn('payment_status', $refundStatus)->count(),
+            'refund_amount' => Payment::whereIn('payment_status', $refundStatus)->sum('amount'),
+
+            // New detailed stats
+            'total_commission' => round($totalCommission, 2),
+            'total_gst' => round($totalGst, 2),
+            'total_seller_payouts' => round($sellerPayouts, 2),
+            'total_rent_gst' => round($rentGstTotal, 2),
+            'total_buyer_comm_gst' => round($buyerCommGstTotal, 2),
+            'total_seller_comm_gst' => round($sellerCommGstTotal, 2),
         ];
 
         return response()->json([
@@ -883,7 +896,8 @@ class AdminController extends Controller
 
         $order->update([
             'status' => 'Delivered', // Revert back to delivered
-            'admin_rejection_reason' => $request->reason
+            'admin_rejection_reason' => $request->reason,
+            'return_reason' => null // Clear reason so it shows in standard dashboards again
         ]);
 
         // Notify Buyer

@@ -40,13 +40,13 @@ class ReportController extends Controller
                     $sellerComm = (float)$item->seller_commission;
                     $buyerComm = (float)$item->buyer_commission;
                     $rentGst = (float)$item->rent_gst;
-                    $commGst = (float)$item->commission_gst;
+                    $buyerCommGst = (float)$item->buyer_commission_gst;
+                    $sellerCommGst = (float)$item->seller_commission_gst;
                     $tcs = (float)$item->tcs_amount;
 
                     $platformRevenue = $sellerComm + $buyerComm;
                     
                     // Net Payout Calculation consistent with PriceCalculatorService
-                    $sellerCommGst = $sellerComm * 0.18;
                     $payableToSeller = ($basePrice + $rentGst) - ($sellerComm + $sellerCommGst + $tcs);
                     $receivableFromBuyer = $pricePaid;
                     $discount = 0;

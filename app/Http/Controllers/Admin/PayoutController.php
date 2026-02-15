@@ -124,40 +124,43 @@ class PayoutController extends Controller
     protected function getStats()
     {
         // 1. Get IDs of orders that are actually paid by buyer AND not disputed/cancelled
-        $validOrderQuery = Order::whereNull('return_reason')
-            ->whereNotIn('status', ['Cancelled', 'Return Requested', 'Return In Progress']);
-            
-        $validOrderIds = $validOrderQuery->pluck('id');
-        
-        $totalNet = OrderItem::whereIn('order_id', $validOrderIds)->get()->sum(function($item) {
-            $sCommGst = ($item->seller_commission ?? 0) * 0.18;
-            return ($item->base_rent ?? 0) + ($item->rent_gst ?? 0) - (($item->seller_commission ?? 0) + $sCommGst + ($item->tcs_amount ?? 0));
-        });
+        $validOrderIds = Order::whereNull('return_reason')
+            ->whereNotIn('status', ['Cancelled', 'Return Requested', 'Return In Progress'])
+            ->pluck('id');
 
-        // 2. Orders that are Returned (Stock back) and ready for Seller Payout
+        // 2. Total Seller Amount Held (Earnings from valid orders that haven't been paid yet)
+        $totalHeld = OrderItem::whereIn('order_id', $validOrderIds)
+            ->whereHas('order', function($q) {
+                $q->where('is_seller_paid', false);
+            })->get()->sum(function($item) {
+                $sCommGst = (float)($item->seller_commission_gst ?? (($item->seller_commission ?? 0) * 0.18));
+                return ($item->base_rent ?? 0) + ($item->rent_gst ?? 0) - (($item->seller_commission ?? 0) + $sCommGst + ($item->tcs_amount ?? 0));
+            });
+
+        // 2. Need to Pay (Returned items, not yet paid)
         $needToPay = Order::with('items')
             ->where('status', 'Returned')
             ->where('is_seller_paid', false)
-            ->whereNull('return_reason') // Critical: Only standard returns, not issues
+            ->whereNull('return_reason')
             ->get()->sum(function($order) {
                 return $order->items->sum(function($item) {
-                    $sCommGst = ($item->seller_commission ?? 0) * 0.18;
+                    $sCommGst = (float)($item->seller_commission_gst ?? (($item->seller_commission ?? 0) * 0.18));
                     return ($item->base_rent ?? 0) + ($item->rent_gst ?? 0) - (($item->seller_commission ?? 0) + $sCommGst + ($item->tcs_amount ?? 0));
                 });
             });
 
-        // 3. Orders already paid out to sellers
+        // 3. Paid to Sellers (Lifetime paid)
         $paidToSellers = Order::with('items')
             ->where('is_seller_paid', true)
             ->get()->sum(function($order) {
                 return $order->items->sum(function($item) {
-                    $sCommGst = ($item->seller_commission ?? 0) * 0.18;
+                    $sCommGst = (float)($item->seller_commission_gst ?? (($item->seller_commission ?? 0) * 0.18));
                     return ($item->base_rent ?? 0) + ($item->rent_gst ?? 0) - (($item->seller_commission ?? 0) + $sCommGst + ($item->tcs_amount ?? 0));
                 });
             });
 
         return [
-            'total_net' => round($totalNet, 2),
+            'total_held' => round($totalHeld, 2),
             'need_to_pay' => round($needToPay, 2),
             'paid_to_sellers' => round($paidToSellers, 2),
         ];

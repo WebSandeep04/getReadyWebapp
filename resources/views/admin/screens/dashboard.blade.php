@@ -221,7 +221,7 @@
                         <th>Items</th>
                         <th>Total (₹)</th>
                         <th>Status</th>
-                        <!-- <th class="text-center">Actions</th> -->
+                        <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -244,9 +244,9 @@
         <div class="col-lg-3 col-sm-6">
             <div class="stat-card stat-approved">
                 <div class="stat-card__icon"><i class="bi bi-check-circle-fill"></i></div>
-                <div class="stat-card__label">Paid</div>
+                <div class="stat-card__label">Confirmed</div>
                 <div class="stat-card__value" id="paidPaymentCount">-</div>
-                <small>Confirmed payments</small>
+                <small id="paidPaymentAmount">Total: ₹0</small>
             </div>
         </div>
         <div class="col-lg-3 col-sm-6">
@@ -254,7 +254,7 @@
                 <div class="stat-card__icon"><i class="bi bi-clock-history"></i></div>
                 <div class="stat-card__label">Pending</div>
                 <div class="stat-card__value" id="pendingPaymentCount">-</div>
-                <small>Awaiting confirmation</small>
+                <small id="pendingPaymentAmount">Total: ₹0</small>
             </div>
         </div>
         <div class="col-lg-3 col-sm-6">
@@ -262,85 +262,15 @@
                 <div class="stat-card__icon"><i class="bi bi-x-circle-fill"></i></div>
                 <div class="stat-card__label">Failed</div>
                 <div class="stat-card__value" id="failedPaymentCount">-</div>
-                <small>Transaction failures</small>
+                <small id="failedPaymentAmount">Total: ₹0</small>
             </div>
         </div>
         <div class="col-lg-3 col-sm-6">
             <div class="stat-card stat-reapproval">
-                <div class="stat-card__icon"><i class="bi bi-wallet2"></i></div>
-                <div class="stat-card__label">Transaction Volume</div>
-                <div class="stat-card__value" id="totalVolume">₹0</div>
-                <small>Total amount paid by buyers</small>
-            </div>
-        </div>
-    </div>
-
-    <div class="row g-3 mb-3">
-        <div class="col-lg-2 col-sm-6">
-            <div class="stat-card" style="border-left: 4px solid #0d6efd;">
-                <div class="stat-card__label">Buyer Comm</div>
-                <div class="stat-card__value text-primary small" id="buyerCommTotal">₹0</div>
-                <small>Commission only</small>
-            </div>
-        </div>
-        <div class="col-lg-2 col-sm-6">
-            <div class="stat-card" style="border-left: 4px solid #6f42c1;">
-                <div class="stat-card__label">Seller Comm</div>
-                <div class="stat-card__value text-purple small" style="color: #6f42c1;" id="sellerCommTotal">₹0</div>
-                <small>Commission only</small>
-            </div>
-        </div>
-        <div class="col-lg-2 col-sm-6">
-            <div class="stat-card" style="border-left: 4px solid #000;">
-                <div class="stat-card__label">Total Comm</div>
-                <div class="stat-card__value fw-bold small" id="totalCommission">₹0</div>
-                <small>Platform base</small>
-            </div>
-        </div>
-        <div class="col-lg-2 col-sm-6">
-            <div class="stat-card" style="border-left: 4px solid #6c757d;">
-                <div class="stat-card__label">Rent GST</div>
-                <div class="stat-card__value text-secondary small" id="rentGstTotal">₹0</div>
-                <small>Tax on Rent</small>
-            </div>
-        </div>
-        <div class="col-lg-2 col-sm-6">
-            <div class="stat-card" style="border-left: 4px solid #adb5bd;">
-                <div class="stat-card__label">Buyer GST</div>
-                <div class="stat-card__value text-secondary small" id="buyerGstTotal">₹0</div>
-                <small>Tax on B.Comm</small>
-            </div>
-        </div>
-        <div class="col-lg-2 col-sm-6">
-            <div class="stat-card" style="border-left: 4px solid #dee2e6;">
-                <div class="stat-card__label">Seller GST</div>
-                <div class="stat-card__value text-secondary small" id="sellerGstTotal">₹0</div>
-                <small>Tax on S.Comm</small>
-            </div>
-        </div>
-        <div class="col-lg-2 col-sm-6">
-            <div class="stat-card" style="border-left: 4px solid #495057;">
-                <div class="stat-card__label fw-bold">Total GST</div>
-                <div class="stat-card__value text-dark small fw-bold" id="totalGst">₹0</div>
-                <small>Total Tax Amount</small>
-            </div>
-        </div>
-        <div class="col-lg-2 col-sm-6">
-            <div class="stat-card" style="border-left: 4px solid #000; background: #f8f9fa;">
-                <div class="stat-card__label fw-bold">Platform Earning</div>
-                <div class="stat-card__value text-dark small fw-bold" id="totalPlatformEarning">₹0</div>
-                <small>Comm + Comm Tax</small>
-            </div>
-        </div>
-    </div>
-
-    <div class="row g-3 mb-4">
-        <div class="col-12">
-            <div class="stat-card" style="border-left: 4px solid #198754;">
-                <div class="stat-card__icon"><i class="bi bi-cash-stack"></i></div>
-                <div class="stat-card__label">Seller Net Payouts</div>
-                <div class="stat-card__value text-success" id="sellerPayouts">₹0</div>
-                <small>Total net amount due/paid to sellers across all orders</small>
+                <div class="stat-card__icon"><i class="bi bi-arrow-counterclockwise"></i></div>
+                <div class="stat-card__label">Refund</div>
+                <div class="stat-card__value" id="refundPaymentCount">-</div>
+                <small id="refundPaymentAmount">Total: ₹0</small>
             </div>
         </div>
     </div>
@@ -479,27 +409,27 @@
     <!-- Seller Payouts Section -->
     <div class="row g-3 mb-4">
         <div class="col-lg-4 col-sm-6">
-            <div class="stat-card" style="border-left: 4px solid #6f42c1; background: #f8f0ff;">
-                <div class="stat-card__icon" style="color: #6f42c1;"><i class="bi bi-cash-stack"></i></div>
-                <div class="stat-card__label" style="color: #6f42c1;">Total Seller Net</div>
-                <div class="stat-card__value" id="totalSellerNetVal" style="color: #6f42c1;">₹0</div>
-                <small>Gross earnings for sellers</small>
+            <div class="stat-card stat-pending">
+                <div class="stat-card__icon"><i class="bi bi-cash-stack"></i></div>
+                <div class="stat-card__label">Total Seller Amount Held</div>
+                <div class="stat-card__value" id="totalSellerNetVal">₹0</div>
+                <small>Gross earnings (Unpaid)</small>
             </div>
         </div>
         <div class="col-lg-4 col-sm-6">
-            <div class="stat-card" style="border-left: 4px solid #fd7e14; background: #fffcf0;">
-                <div class="stat-card__icon" style="color: #fd7e14;"><i class="bi bi-hourglass-split"></i></div>
-                <div class="stat-card__label" style="color: #fd7e14;">Need to Pay</div>
-                <div class="stat-card__value" id="needToPaySellerVal" style="color: #fd7e14;">₹0</div>
-                <small>Orders returned, not paid</small>
-            </div>
-        </div>
-        <div class="col-lg-4 col-sm-6">
-            <div class="stat-card" style="border-left: 4px solid #20c997; background: #e6fffa;">
-                <div class="stat-card__icon" style="color: #20c997;"><i class="bi bi-check2-circle"></i></div>
-                <div class="stat-card__label" style="color: #20c997;">Paid to Sellers</div>
-                <div class="stat-card__value" id="paidToSellersVal" style="color: #20c997;">₹0</div>
+            <div class="stat-card stat-approved">
+                <div class="stat-card__icon"><i class="bi bi-check2-circle"></i></div>
+                <div class="stat-card__label">Paid to Sellers</div>
+                <div class="stat-card__value" id="paidToSellersVal">₹0</div>
                 <small>Transferred to accounts</small>
+            </div>
+        </div>
+        <div class="col-lg-4 col-sm-6">
+            <div class="stat-card stat-rejected">
+                <div class="stat-card__icon"><i class="bi bi-hourglass-split"></i></div>
+                <div class="stat-card__label">Need to Pay</div>
+                <div class="stat-card__value" id="needToPaySellerVal">₹0</div>
+                <small>Returned & Ready for Payout</small>
             </div>
         </div>
     </div>
@@ -565,6 +495,38 @@
                     <button type="button" class="btn btn-dark px-4" id="dashboardConfirmActionBtn">
                         Confirm
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Return Review Modal (Same as Orders Page) -->
+    <div class="modal fade" id="returnReviewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 0 !important;">
+                <div class="modal-header border-bottom-0">
+                    <h6 class="modal-title fw-bold">Review Return Request</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-0">
+                    <div class="alert alert-light border small">
+                        <strong>Reason:</strong> <span id="rr_reason"></span><br>
+                        <strong>Details:</strong> <span id="rr_details"></span>
+                    </div>
+                    <h6>Evidence Images:</h6>
+                    <div id="rr_images" class="d-flex flex-wrap gap-2 mb-3"></div>
+
+                    <div id="rejectionSection" style="display:none;" class="mt-3 p-3 border-top bg-light">
+                        <label class="form-label small fw-bold">Rejection Reason</label>
+                        <textarea id="rejectionReasonText" class="form-control mb-2" rows="2" placeholder="Tell the buyer why the request was rejected..." style="border-radius: 0;"></textarea>
+                        <button class="btn btn-sm btn-dark" id="submitRejectBtn" style="border-radius: 0;">Confirm Rejection</button>
+                        <button class="btn btn-sm btn-link text-muted" onclick="$('#rejectionSection').hide();">Cancel</button>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-link text-decoration-none text-muted" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-outline-danger btn-sm" id="rejectReturnBtn" style="border-radius: 0;">Reject Request</button>
+                    <button type="button" class="btn btn-success btn-sm" id="approveReturnBtn" style="border-radius: 0;">Approve & Generate AWB</button>
                 </div>
             </div>
         </div>
@@ -861,11 +823,46 @@ $(function() {
                 const statusLower = (order.status || '').toLowerCase();
                 
                 let statusBadge = '';
-                if (statusLower === 'delivered') statusBadge = '<span class="badge bg-success">Delivered</span>';
-                else if (statusLower === 'shipped') statusBadge = '<span class="badge bg-info">Shipped</span>';
-                else if (statusLower === 'returned') statusBadge = '<span class="badge bg-danger">Returned</span>';
-                else if (statusLower === 'cancelled') statusBadge = '<span class="badge bg-secondary">Cancelled</span>';
-                else statusBadge = '<span class="badge bg-warning text-dark">Processing</span>';
+                if (order.status === 'Returned') statusBadge = '<span class="badge bg-success">Returned</span>';
+                else if (order.status === 'Cancelled') statusBadge = '<span class="badge bg-secondary">Cancelled</span>';
+                else if (order.status === 'Shipped') statusBadge = '<span class="badge bg-info">Shipped</span>';
+                else if (order.status === 'Delivered') statusBadge = '<span class="badge bg-success">Delivered</span>';
+                else statusBadge = '<span class="badge bg-warning text-dark">' + (order.status || 'Processing') + '</span>';
+
+                if (order.shipment_missing) {
+                    statusBadge += ' <i class="bi bi-exclamation-triangle-fill text-danger ms-1" title="Shipment missing"></i>';
+                }
+                // Action buttons building (Mirroring components.orders-rows)
+                let actionBtn = `<div class="d-flex gap-1 justify-content-end">`;
+                
+                // 1. Move to Next Status
+                if (['Pending', 'Confirmed', 'Order Confirmed & Shipment Created'].includes(order.status)) {
+                    let nextStatus = (order.status === 'Pending') ? 'Confirmed' : 'Delivered';
+                    let nextIcon = (order.status === 'Pending') ? 'bi-check-circle' : 'bi-truck';
+                    actionBtn += `<button class="btn btn-sm btn-outline-success update-status-btn" data-order-id="${order.id}" data-status="${nextStatus}" title="Move to ${nextStatus}" style="padding: 0.15rem 0.4rem; font-size: 0.7rem;"><i class="bi ${nextIcon}"></i></button>`;
+                }
+
+                // 2. Mark as Returned
+                if (order.is_rental && !['Returned', 'Cancelled', 'Return Requested'].includes(order.status) && ['Delivered', 'Return In Progress', 'Order Confirmed & Shipment Created', 'Confirmed', 'Shipped'].includes(order.status)) {
+                    actionBtn += `<button class="btn btn-sm btn-outline-primary mark-returned-btn" data-order-id="${order.id}" title="Mark as Returned" style="padding: 0.15rem 0.4rem; font-size: 0.7rem;"><i class="bi bi-box-arrow-in-left"></i></button>`;
+                }
+
+                // 3. Retry Shipment
+                if (order.shipment_missing) {
+                     actionBtn += `<button class="btn btn-sm btn-outline-warning retry-shipment-btn" data-order-id="${order.id}" title="Retry Shipment" style="padding: 0.15rem 0.4rem; font-size: 0.7rem;"><i class="bi bi-arrow-clockwise"></i></button>`;
+                }
+
+                // 4. Review Return Request
+                if (order.status === 'Return Requested') {
+                    actionBtn += `<button class="btn btn-sm btn-danger review-return-btn" data-order-id="${order.id}" data-reason="${order.return_reason || ''}" data-details="${order.return_details || ''}" data-images='${JSON.stringify(order.return_images || [])}' title="Review Return" style="padding: 0.15rem 0.4rem; font-size: 0.7rem;"><i class="bi bi-eye"></i></button>`;
+                }
+
+                // 5. Process Issue Refund (Full Refund)
+                if (order.status === 'Returned' && order.return_reason && !order.is_security_returned) {
+                    actionBtn += `<button class="btn btn-sm btn-dark process-issue-refund-btn" data-order-id="${order.id}" title="Refund All" style="padding: 0.15rem 0.4rem; font-size: 0.7rem;"><i class="bi bi-wallet2 me-1"></i>Refund All</button>`;
+                }
+
+                actionBtn += `</div>`;
 
                 rows += `<tr>
                     <td>#${order.id}</td>
@@ -874,6 +871,7 @@ $(function() {
                     <td>${order.items_count} Item(s)</td>
                     <td>₹${order.total_amount}</td>
                     <td>${statusBadge}</td>
+                    <td class="text-end">${actionBtn}</td>
                 </tr>`;
             });
             
@@ -961,6 +959,221 @@ $(function() {
         });
     }
 
+    // --- ORDERS ACTION HANDLERS (Same as Orders Page) ---
+
+    // 1. Update Status
+    $(document).on('click', '#ordersTable .update-status-btn', function() {
+        const orderId = $(this).data('order-id');
+        const newStatus = $(this).data('status');
+        
+        showDashboardConfirmModal(
+            'Update Status',
+            `Are you sure you want to change order status to ${newStatus}?`,
+            () => {
+                return new Promise((resolve) => {
+                    $.post(`/admin/orders/${orderId}/status`, {
+                        _token: '{{ csrf_token() }}',
+                        status: newStatus
+                    }, function(res) {
+                        if(res.success) {
+                            loadOrders();
+                            window.showAlert(res.message || 'Status updated successfully.', 'success');
+                        } else {
+                            window.showAlert(res.message || 'Action failed', 'danger');
+                        }
+                        resolve();
+                    }).fail(function(xhr) {
+                        window.showAlert('Error: ' + (xhr.responseJSON?.message || 'Something went wrong'), 'danger');
+                        resolve();
+                    });
+                });
+            }
+        );
+    });
+
+    // 2. Mark as Returned (Order Management Table)
+    $(document).on('click', '#ordersTable .mark-returned-btn', function() {
+        const orderId = $(this).data('order-id');
+        
+        showDashboardConfirmModal(
+            'Confirm Return',
+            'Are you sure you want to mark this order as Returned? This will increment stock for rented items.',
+            () => {
+                return new Promise((resolve) => {
+                    $.post(`/admin/orders/${orderId}/return`, {
+                        _token: '{{ csrf_token() }}'
+                    }, function(res) {
+                        if(res.success) {
+                            loadOrders();
+                            loadSecurityDeposits(); // Security might change
+                             window.showAlert(res.message || 'Order marked as returned.', 'success');
+                        } else {
+                            window.showAlert(res.message || 'Action failed', 'danger');
+                        }
+                        resolve();
+                    }).fail(function(xhr) {
+                        window.showAlert('Error: ' + (xhr.responseJSON?.message || 'Something went wrong'), 'danger');
+                        resolve();
+                    });
+                });
+            }
+        );
+    });
+
+    // 3. Retry Shipment
+    $(document).on('click', '#ordersTable .retry-shipment-btn', function() {
+        const orderId = $(this).data('order-id');
+        
+        showDashboardConfirmModal(
+            'Retry Shipment',
+            'Attempt to create shipment for this order again?',
+            () => {
+                return new Promise((resolve) => {
+                    $.post(`/admin/orders/${orderId}/retry-shipment`, {
+                        _token: '{{ csrf_token() }}'
+                    }, function(res) {
+                        if(res.success) {
+                            loadOrders();
+                            window.showAlert(res.message || 'Shipment retry initiated.', 'success');
+                        } else {
+                            window.showAlert(res.message || 'Action failed', 'danger');
+                        }
+                        resolve();
+                    }).fail(function(xhr) {
+                        window.showAlert('Error: ' + (xhr.responseJSON?.message || 'Something went wrong'), 'danger');
+                        resolve();
+                    });
+                });
+            }
+        );
+    });
+
+    // 4. Process Issue Refund (Full Refund)
+    $(document).on('click', '#ordersTable .process-issue-refund-btn', function() {
+        const orderId = $(this).data('order-id');
+        
+        showDashboardConfirmModal(
+            'Process Full Refund',
+            `This item was returned due to an issue. Are you sure you want to process a FULL REFUND (Rent + Security) for Order #${orderId}?`,
+            () => {
+                return new Promise((resolve) => {
+                    $.post(`/admin/orders/${orderId}/process-issue-refund`, {
+                        _token: '{{ csrf_token() }}'
+                    }, function(res) {
+                        if(res.success) {
+                            loadOrders();
+                            loadSecurityDeposits();
+                            window.showAlert(res.message || 'Full refund processed.', 'success');
+                        } else {
+                            window.showAlert(res.message || 'Action failed', 'danger');
+                        }
+                        resolve();
+                    }).fail(function(xhr) {
+                        window.showAlert('Error: ' + (xhr.responseJSON?.message || 'Something went wrong'), 'danger');
+                        resolve();
+                    });
+                });
+            }
+        );
+    });
+
+    // 5. Review Return Logic
+    let reviewingOrderId = null;
+
+    $(document).on('click', '#ordersTable .review-return-btn', function() {
+        const $btn = $(this);
+        reviewingOrderId = $btn.data('order-id');
+        $('#rr_reason').text($btn.data('reason'));
+        $('#rr_details').text($btn.data('details'));
+        
+        let imagesHtml = '';
+        const images = $btn.data('images'); // Already parsed by JSON.stringify/parse via jQuery data()? 
+                                          // Actually data-images is a stringified array. 
+                                          // jQuery .data() automatically parses JSON if it looks like it.
+        
+        let imagesArray = images;
+        if (typeof images === 'string') {
+            try { imagesArray = JSON.parse(images); } catch(e) { imagesArray = []; }
+        }
+
+        if (imagesArray && imagesArray.length > 0) {
+            imagesArray.forEach(path => {
+                imagesHtml += `<img src="/storage/${path}" style="width:120px; height:120px; object-fit:cover; border:1px solid #eee; cursor:pointer;" onclick="window.open(this.src)">`;
+            });
+        } else {
+            imagesHtml = '<span class="text-muted italic">No images provided.</span>';
+        }
+        $('#rr_images').html(imagesHtml);
+        $('#rejectionSection').hide();
+        $('#returnReviewModal').modal('show');
+    });
+
+    $('#approveReturnBtn').on('click', function() {
+        const $btn = $(this);
+        $btn.prop('disabled', true).html('Processing...');
+        
+        $.ajax({
+            url: `/admin/orders/${reviewingOrderId}/approve-return`,
+            type: 'POST',
+            data: { _token: '{{ csrf_token() }}' },
+            success: function(response) {
+                if (response.success) {
+                    loadOrders();
+                    $('#returnReviewModal').modal('hide');
+                    window.showAlert(response.message, 'success');
+                } else {
+                    let errMsg = response.message;
+                    if (response.errors && response.errors.length > 0) {
+                        errMsg += ' Details: ' + response.errors.join(', ');
+                    }
+                    window.showAlert(errMsg, 'danger');
+                }
+            },
+            error: function(xhr) {
+                window.showAlert('Error: ' + (xhr.responseJSON?.message || 'Something went wrong'), 'danger');
+            },
+            complete: function() {
+                $btn.prop('disabled', false).html('Approve & Generate AWB');
+            }
+        });
+    });
+
+    $('#rejectReturnBtn').on('click', function() {
+        $('#rejectionSection').slideDown();
+    });
+
+    $('#submitRejectBtn').on('click', function() {
+        const reason = $('#rejectionReasonText').val();
+        if (!reason) return alert('Please provide a reason for rejection.');
+        
+        const $btn = $(this);
+        $btn.prop('disabled', true).html('Rejecting...');
+
+        $.ajax({
+            url: `/admin/orders/${reviewingOrderId}/reject-return`,
+            type: 'POST',
+            data: { 
+                _token: '{{ csrf_token() }}',
+                reason: reason
+            },
+            success: function(response) {
+                if (response.success) {
+                    loadOrders();
+                    $('#returnReviewModal').modal('hide');
+                    window.showAlert(response.message, 'success');
+                } else {
+                    window.showAlert(response.message, 'danger');
+                }
+            },
+            error: function(xhr) {
+                window.showAlert('Error: ' + (xhr.responseJSON?.message || 'Something went wrong'), 'danger');
+            },
+            complete: function() {
+                $btn.prop('disabled', false).html('Confirm Rejection');
+            }
+        });
+    });
+
     // Security & General Actions handling
     let dashboardPendingAction = null;
 
@@ -1031,18 +1244,16 @@ $(function() {
             // Update Stats from backend
             if (stats) {
                 $('#paidPaymentCount').text(stats.paid_count || '0');
+                $('#paidPaymentAmount').text(`Total: ₹${Math.round(stats.paid_amount || 0).toLocaleString('en-IN')}`);
+
                 $('#pendingPaymentCount').text(stats.pending_count || '0');
+                $('#pendingPaymentAmount').text(`Total: ₹${Math.round(stats.pending_amount || 0).toLocaleString('en-IN')}`);
+
                 $('#failedPaymentCount').text(stats.failed_count || '0');
-                $('#totalVolume').text(`₹${Math.round(stats.total_volume || 0).toLocaleString('en-IN')}`);
-                $('#buyerCommTotal').text(`₹${Math.round(stats.buyer_commission_total || 0).toLocaleString('en-IN')}`);
-                $('#sellerCommTotal').text(`₹${Math.round(stats.seller_commission_total || 0).toLocaleString('en-IN')}`);
-                $('#totalCommission').text(`₹${Math.round(stats.total_commission || 0).toLocaleString('en-IN')}`);
-                $('#rentGstTotal').text(`₹${Math.round(stats.rent_gst_total || 0).toLocaleString('en-IN')}`);
-                $('#buyerGstTotal').text(`₹${Math.round(stats.buyer_comm_gst_total || 0).toLocaleString('en-IN')}`);
-                $('#sellerGstTotal').text(`₹${Math.round(stats.seller_comm_gst_total || 0).toLocaleString('en-IN')}`);
-                $('#totalGst').text(`₹${Math.round(stats.total_gst || 0).toLocaleString('en-IN')}`);
-                $('#sellerPayouts').text(`₹${Math.round(stats.seller_payouts || 0).toLocaleString('en-IN')}`);
-                $('#totalPlatformEarning').text(`₹${Math.round(stats.total_platform_earning || 0).toLocaleString('en-IN')}`);
+                $('#failedPaymentAmount').text(`Total: ₹${Math.round(stats.failed_amount || 0).toLocaleString('en-IN')}`);
+
+                $('#refundPaymentCount').text(stats.refund_count || '0');
+                $('#refundPaymentAmount').text(`Total: ₹${Math.round(stats.refund_amount || 0).toLocaleString('en-IN')}`);
             }
 
             if (payments.length === 0) {
@@ -1103,7 +1314,7 @@ $(function() {
             
             // Update Stats
             if (stats) {
-                $('#totalSellerNetVal').text(`₹${Math.round(stats.total_net || 0).toLocaleString('en-IN')}`);
+                $('#totalSellerNetVal').text(`₹${Math.round(stats.total_held || 0).toLocaleString('en-IN')}`);
                 $('#needToPaySellerVal').text(`₹${Math.round(stats.need_to_pay || 0).toLocaleString('en-IN')}`);
                 $('#paidToSellersVal').text(`₹${Math.round(stats.paid_to_sellers || 0).toLocaleString('en-IN')}`);
             }

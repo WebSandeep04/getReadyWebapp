@@ -53,8 +53,9 @@ class PaymentController extends Controller
                     $sellerComm += (float) ($item->seller_commission ?? 0);
                     $rentGst += (float) ($item->rent_gst ?? 0);
                     
-                    $bCommGst = ($item->buyer_commission ?? 0) * 0.18;
-                    $sCommGst = ($item->seller_commission ?? 0) * 0.18;
+                    // Use stored columns or fallback to manual calculation
+                    $bCommGst = (float) ($item->buyer_commission_gst ?? ($item->buyer_commission * 0.18 ?? 0));
+                    $sCommGst = (float) ($item->seller_commission_gst ?? ($item->seller_commission * 0.18 ?? 0));
                     
                     $buyerCommGst += $bCommGst;
                     $sellerCommGst += $sCommGst;
@@ -86,50 +87,39 @@ class PaymentController extends Controller
 
     protected function getStats()
     {
-        $paidPayments = Payment::with('order.items')
-            ->whereIn('payment_status', ['Paid', 'Success', 'paid', 'success'])
-            ->get();
+        $paidStatus = ['Paid', 'Success', 'paid', 'success'];
+        $failedStatus = ['Failed', 'Cancelled', 'failed', 'cancelled'];
+        $refundStatus = ['Refunded', 'Partially Refunded', 'refunded'];
 
-        $transactionVolume = $paidPayments->sum('amount');
-        
-        $totalBuyerComm = 0;
-        $totalSellerComm = 0;
-        $totalRentGst = 0;
-        $totalBuyerCommGst = 0;
-        $totalSellerCommGst = 0;
-        $totalSellerPayout = 0;
+        $paidPayments = Payment::whereIn('payment_status', $paidStatus)->pluck('order_id');
+        $orderItems = \App\Models\OrderItem::whereIn('order_id', $paidPayments)->get();
 
-        foreach ($paidPayments as $payment) {
-            if ($payment->order && $payment->order->items) {
-                foreach ($payment->order->items as $item) {
-                    $totalBuyerComm += (float) $item->buyer_commission;
-                    $totalSellerComm += (float) $item->seller_commission;
-                    $totalRentGst += (float) $item->rent_gst;
-                    
-                    $bCommGst = ($item->buyer_commission ?? 0) * 0.18;
-                    $sCommGst = ($item->seller_commission ?? 0) * 0.18;
-                    
-                    $totalBuyerCommGst += $bCommGst;
-                    $totalSellerCommGst += $sCommGst;
-                    
-                    $totalSellerPayout += ($item->base_rent ?? 0) + ($item->rent_gst ?? 0) - (($item->seller_commission ?? 0) + $sCommGst + ($item->tcs_amount ?? 0));
-                }
-            }
-        }
+        $rentGst = $orderItems->sum('rent_gst');
+        $buyerGst = $orderItems->sum('buyer_commission_gst');
+        $sellerGst = $orderItems->sum('seller_commission_gst');
+        $buyerComm = $orderItems->sum('buyer_commission');
+        $sellerComm = $orderItems->sum('seller_commission');
 
         return [
-            'total_volume' => $transactionVolume,
-            'buyer_commission_total' => $totalBuyerComm,
-            'seller_commission_total' => $totalSellerComm,
-            'total_commission' => $totalBuyerComm + $totalSellerComm,
-            'rent_gst_total' => $totalRentGst,
-            'buyer_comm_gst_total' => $totalBuyerCommGst,
-            'seller_comm_gst_total' => $totalSellerCommGst,
-            'total_gst' => $totalRentGst + $totalBuyerCommGst + $totalSellerCommGst,
-            'seller_payouts' => $totalSellerPayout,
-            'total_platform_earning' => $totalBuyerComm + $totalSellerComm + $totalBuyerCommGst + $totalSellerCommGst,
+            'confirmed_count' => Payment::whereIn('payment_status', $paidStatus)->count(),
+            'confirmed_amount' => Payment::whereIn('payment_status', $paidStatus)->sum('amount'),
+            
             'pending_count' => Payment::where('payment_status', 'Pending')->count(),
-            'failed_count' => Payment::whereIn('payment_status', ['Failed', 'Cancelled', 'failed', 'cancelled'])->count(),
+            'pending_amount' => Payment::where('payment_status', 'Pending')->sum('amount'),
+            
+            'failed_count' => Payment::whereIn('payment_status', $failedStatus)->count(),
+            'failed_amount' => Payment::whereIn('payment_status', $failedStatus)->sum('amount'),
+            
+            'refund_count' => Payment::whereIn('payment_status', $refundStatus)->count(),
+            'refund_amount' => Payment::whereIn('payment_status', $refundStatus)->sum('amount'),
+
+            // Breakdown
+            'rent_gst' => $rentGst,
+            'buyer_gst' => $buyerGst,
+            'seller_gst' => $sellerGst,
+            'total_gst' => $rentGst + $buyerGst + $sellerGst,
+            'total_comm' => $buyerComm + $sellerComm,
+            'platform_earning' => ($buyerComm + $sellerComm) + ($buyerGst + $sellerGst)
         ];
     }
 }

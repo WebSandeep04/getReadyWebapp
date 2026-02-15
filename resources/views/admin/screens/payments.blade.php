@@ -39,17 +39,25 @@
 @section('content')
 <div class="container mt-4">
 
-    <!-- Stats Row -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-4 col-sm-6">
-            <div class="stat-card">
-                <div class="stat-card__icon"><i class="bi bi-wallet2 text-success"></i></div>
-                <div class="stat-card__label">Total Revenue</div>
-                <div class="stat-card__value text-success" id="stat-revenue">₹{{ number_format($stats['total_revenue']) }}</div> <!-- Sum of Paid -->
-                <small class="text-muted">Successful payments</small>
+    <!-- Volume & Status Stats Row -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 4px solid #000;">
+                <div class="stat-card__icon"><i class="bi bi-wallet2"></i></div>
+                <div class="stat-card__label">Transaction Volume</div>
+                <div class="stat-card__value" id="stat-volume">₹{{ number_format($stats['total_volume']) }}</div>
+                <small class="text-muted">Total amount paid by buyers</small>
             </div>
         </div>
-        <div class="col-md-4 col-sm-6">
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 4px solid #198754;">
+                <div class="stat-card__icon"><i class="bi bi-cash-stack"></i></div>
+                <div class="stat-card__label">Seller Net Payouts</div>
+                <div class="stat-card__value text-success" id="stat-payouts">₹{{ number_format($stats['seller_payouts']) }}</div>
+                <small class="text-muted">Total due to garment owners</small>
+            </div>
+        </div>
+        <div class="col-md-3">
             <div class="stat-card">
                 <div class="stat-card__icon"><i class="bi bi-hourglass-split text-warning"></i></div>
                 <div class="stat-card__label">Pending Payments</div>
@@ -57,12 +65,65 @@
                 <small class="text-muted">Awaiting confirmation</small>
             </div>
         </div>
-         <div class="col-md-4 col-sm-6">
+        <div class="col-md-3">
             <div class="stat-card">
                 <div class="stat-card__icon"><i class="bi bi-x-circle text-danger"></i></div>
                 <div class="stat-card__label">Failed / Cancelled</div>
                 <div class="stat-card__value text-danger" id="stat-failed">{{ number_format($stats['failed_count']) }}</div>
                 <small class="text-muted">Unsuccessful transactions</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Platform Earnings Breakdown -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card" style="border-left: 4px solid #0d6efd;">
+                <div class="stat-card__label text-primary">Buyer Commissions</div>
+                <div class="stat-card__value text-primary" style="font-size: 1.5rem;" id="stat-buyer-comm">₹{{ number_format($stats['buyer_commission_total']) }}</div>
+                <small class="text-muted">Total Gross (Comm + GST)</small>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card" style="border-left: 4px solid #6f42c1;">
+                <div class="stat-card__label text-purple" style="color: #6f42c1;">Seller Commissions</div>
+                <div class="stat-card__value text-purple" style="color: #6f42c1; font-size: 1.5rem;" id="stat-seller-comm">₹{{ number_format($stats['seller_commission_total']) }}</div>
+                <small class="text-muted">Total Gross (Comm + GST)</small>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="stat-card" style="border-left: 4px solid #212529;">
+                <div class="stat-card__label fw-bold">Total Comm.</div>
+                <div class="stat-card__value fw-bold" style="font-size: 1.5rem;" id="stat-total-comm">₹{{ number_format($stats['total_commission']) }}</div>
+                <small class="text-muted">Platform Total</small>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="stat-card" style="border-left: 4px solid #6c757d;">
+                <div class="stat-card__label text-secondary">Rent GST</div>
+                <div class="stat-card__value text-secondary" style="font-size: 1.25rem;" id="stat-rent-gst">₹{{ number_format($stats['rent_gst_total']) }}</div>
+                <small class="text-muted">Tax on Rent</small>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="stat-card" style="border-left: 4px solid #adb5bd;">
+                <div class="stat-card__label text-secondary">Buyer GST</div>
+                <div class="stat-card__value text-secondary" style="font-size: 1.25rem;" id="stat-buyer-gst">₹{{ number_format($stats['buyer_comm_gst_total']) }}</div>
+                <small class="text-muted">Tax on B.Comm</small>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="stat-card" style="border-left: 4px solid #dee2e6;">
+                <div class="stat-card__label text-secondary">Seller GST</div>
+                <div class="stat-card__value text-secondary" style="font-size: 1.25rem;" id="stat-seller-gst">₹{{ number_format($stats['seller_comm_gst_total']) }}</div>
+                <small class="text-muted">Tax on S.Comm</small>
+            </div>
+        </div>
+        <div class="col-md-2" style="width: 14%;"> <!-- Adjusting width slightly for the 7th card if needed, or stick to col-md-2 -->
+            <div class="stat-card" style="border-left: 4px solid #495057;">
+                <div class="stat-card__label fw-bold">Total GST</div>
+                <div class="stat-card__value text-dark fw-bold" style="font-size: 1.25rem;" id="stat-total-gst">₹{{ number_format($stats['total_gst']) }}</div>
+                <small class="text-muted">Combined Tax</small>
             </div>
         </div>
     </div>
@@ -99,9 +160,18 @@
                 <table class="table table-hover mb-0">
                     <thead class="bg-light">
                         <tr>
-                            <th>Order ID / Date</th>
+                            <th>Order / Date</th>
                             <th>Customer</th>
-                            <th>Amount / Txn ID</th>
+                            <th>Total (₹) / Txn</th>
+                            <th>Base Rent</th>
+                            <th>Buyer Comm</th>
+                            <th>Seller Comm</th>
+                            <th>Rent GST</th>
+                            <th>Buyer GST</th>
+                            <th>Seller GST</th>
+                            <th>Total GST</th>
+                            <th>Security</th>
+                            <th>Seller Net</th>
                             <th>Method</th>
                             <th>Status</th>
                             <th class="text-end">Actions</th>
@@ -136,7 +206,7 @@ $(function() {
 
         Object.assign(params, extra);
 
-        $('#paymentTableBody').html('<tr><td colspan="6" class="text-center py-4 text-muted">Loading...</td></tr>');
+        $('#paymentTableBody').html('<tr><td colspan="15" class="text-center py-4 text-muted">Loading...</td></tr>');
 
         $.ajax({
             url: fetchUrl,
@@ -148,13 +218,21 @@ $(function() {
                 
                 // Update stats
                 if(res.stats) {
-                    $('#stat-revenue').text('₹' + Number(res.stats.total_revenue).toLocaleString());
+                    $('#stat-volume').text('₹' + Math.round(res.stats.total_volume).toLocaleString());
+                    $('#stat-payouts').text('₹' + Math.round(res.stats.seller_payouts).toLocaleString());
                     $('#stat-pending').text(Number(res.stats.pending_count).toLocaleString());
                     $('#stat-failed').text(Number(res.stats.failed_count).toLocaleString());
+                    $('#stat-buyer-comm').text('₹' + Math.round(res.stats.buyer_commission_total).toLocaleString());
+                    $('#stat-seller-comm').text('₹' + Math.round(res.stats.seller_commission_total).toLocaleString());
+                    $('#stat-total-comm').text('₹' + Math.round(res.stats.total_commission).toLocaleString());
+                    $('#stat-rent-gst').text('₹' + Math.round(res.stats.rent_gst_total).toLocaleString());
+                    $('#stat-buyer-gst').text('₹' + Math.round(res.stats.buyer_comm_gst_total).toLocaleString());
+                    $('#stat-seller-gst').text('₹' + Math.round(res.stats.seller_comm_gst_total).toLocaleString());
+                    $('#stat-total-gst').text('₹' + Math.round(res.stats.total_gst).toLocaleString());
                 }
             },
             error: function() {
-                $('#paymentTableBody').html('<tr><td colspan="6" class="text-center py-4 text-danger">Error loading data.</td></tr>');
+                $('#paymentTableBody').html('<tr><td colspan="15" class="text-center py-4 text-danger">Error loading data.</td></tr>');
             }
         });
     }

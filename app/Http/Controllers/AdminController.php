@@ -372,7 +372,7 @@ class AdminController extends Controller
 
     public function fetchPayments(Request $request)
     {
-        $query = Payment::with(['order.buyer']);
+        $query = Payment::with(['order.buyer', 'order.items']);
 
         if ($request->has('status') && $request->status) {
             $status = $request->status;
@@ -389,7 +389,43 @@ class AdminController extends Controller
             $data['payer_name'] = $payment->order && $payment->order->buyer ? $payment->order->buyer->name : 'Unknown';
             $data['order_id'] = $payment->order_id;
             
-            // Add security amount from order if available
+            // Financial Breakdown for the Order
+            $baseRent = 0;
+            $buyerComm = 0;
+            $sellerComm = 0;
+            $rentGst = 0;
+            $buyerCommGst = 0;
+            $sellerCommGst = 0;
+            $sellerNet = 0;
+            
+            if ($payment->order && $payment->order->items) {
+                foreach ($payment->order->items as $item) {
+                    $baseRent += (float) ($item->base_rent ?? 0);
+                    $buyerComm += (float) ($item->buyer_commission ?? 0);
+                    $sellerComm += (float) ($item->seller_commission ?? 0);
+                    $rentGst += (float) ($item->rent_gst ?? 0);
+                    
+                    // Specific GST parts
+                    $bCommGst = ($item->buyer_commission ?? 0) * 0.18;
+                    $sCommGst = ($item->seller_commission ?? 0) * 0.18;
+                    
+                    $buyerCommGst += $bCommGst;
+                    $sellerCommGst += $sCommGst;
+                    
+                    // Net for Seller calculation
+                    $sellerNet += ($item->base_rent ?? 0) + ($item->rent_gst ?? 0) - (($item->seller_commission ?? 0) + $sCommGst + ($item->tcs_amount ?? 0));
+                }
+            }
+            
+            $data['base_rent_total'] = round($baseRent, 2);
+            $data['buyer_comm_total'] = round($buyerComm, 2);
+            $data['seller_comm_total'] = round($sellerComm, 2);
+            $data['rent_gst_total'] = round($rentGst, 2);
+            $data['buyer_comm_gst_total'] = round($buyerCommGst, 2);
+            $data['seller_comm_gst_total'] = round($sellerCommGst, 2);
+            $data['gst_total'] = round($rentGst + $buyerCommGst + $sellerCommGst, 2);
+            $data['seller_net_payout'] = round($sellerNet, 2);
+            
             $data['security_amount'] = $payment->order ? ($payment->order->security_amount ?? 0) : 0;
             $data['order_status'] = $payment->order ? $payment->order->status : 'Draft';
             
@@ -398,12 +434,42 @@ class AdminController extends Controller
             return $data;
         });
 
-        // Global Stats
+        // Global Stats updated with pricing logic
+        $paidOrderIds = Payment::whereIn('payment_status', ['Paid', 'Success', 'paid', 'success'])->pluck('order_id');
+        
+        $orderItems = \App\Models\OrderItem::whereIn('order_id', $paidOrderIds)->get();
+        
+        $transactionVolume = Payment::whereIn('payment_status', ['Paid', 'Success', 'paid', 'success'])->sum('amount');
+        
+        // Commissions as base amounts
+        $buyerCommTotal = $orderItems->sum('buyer_commission');
+        $sellerCommTotal = $orderItems->sum('seller_commission');
+        $totalCommission = $buyerCommTotal + $sellerCommTotal;
+        
+        // GST Breakup
+        $rentGstTotal = $orderItems->sum('rent_gst');
+        $buyerCommGstTotal = $orderItems->sum(fn($i) => ($i->buyer_commission ?? 0) * 0.18);
+        $sellerCommGstTotal = $orderItems->sum(fn($i) => ($i->seller_commission ?? 0) * 0.18);
+        $totalGst = $rentGstTotal + $buyerCommGstTotal + $sellerCommGstTotal;
+        
+        $sellerPayouts = $orderItems->sum(function($item) {
+            $sCommGst = ($item->seller_commission ?? 0) * 0.18;
+            return ($item->base_rent ?? 0) + ($item->rent_gst ?? 0) - (($item->seller_commission ?? 0) + $sCommGst + ($item->tcs_amount ?? 0));
+        });
+
         $stats = [
-            'paid_count' => Payment::whereIn('payment_status', ['Paid', 'Success', 'paid', 'success'])->count(),
+            'paid_count' => $paidOrderIds->count(),
             'pending_count' => Payment::where('payment_status', 'Pending')->count(),
             'failed_count' => Payment::whereIn('payment_status', ['Failed', 'Cancelled', 'failed', 'cancelled'])->count(),
-            'total_revenue' => Payment::whereIn('payment_status', ['Paid', 'Success', 'paid', 'success'])->sum('amount'),
+            'total_volume' => $transactionVolume,
+            'buyer_commission_total' => $buyerCommTotal,
+            'seller_commission_total' => $sellerCommTotal,
+            'total_commission' => $totalCommission,
+            'rent_gst_total' => $rentGstTotal,
+            'buyer_comm_gst_total' => $buyerCommGstTotal,
+            'seller_comm_gst_total' => $sellerCommGstTotal,
+            'total_gst' => $totalGst,
+            'seller_payouts' => $sellerPayouts,
         ];
 
         return response()->json([

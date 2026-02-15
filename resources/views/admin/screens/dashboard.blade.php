@@ -268,9 +268,72 @@
         <div class="col-lg-3 col-sm-6">
             <div class="stat-card stat-reapproval">
                 <div class="stat-card__icon"><i class="bi bi-wallet2"></i></div>
-                <div class="stat-card__label">Total Revenue</div>
-                <div class="stat-card__value" id="totalRevenue">₹0</div>
-                <small>All time</small>
+                <div class="stat-card__label">Transaction Volume</div>
+                <div class="stat-card__value" id="totalVolume">₹0</div>
+                <small>Total amount paid by buyers</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-lg-2 col-sm-6">
+            <div class="stat-card" style="border-left: 4px solid #0d6efd;">
+                <div class="stat-card__label">Buyer Comm</div>
+                <div class="stat-card__value text-primary small" id="buyerCommTotal">₹0</div>
+                <small>Commission only</small>
+            </div>
+        </div>
+        <div class="col-lg-2 col-sm-6">
+            <div class="stat-card" style="border-left: 4px solid #6f42c1;">
+                <div class="stat-card__label">Seller Comm</div>
+                <div class="stat-card__value text-purple small" style="color: #6f42c1;" id="sellerCommTotal">₹0</div>
+                <small>Commission only</small>
+            </div>
+        </div>
+        <div class="col-lg-2 col-sm-6">
+            <div class="stat-card" style="border-left: 4px solid #000;">
+                <div class="stat-card__label">Total Comm</div>
+                <div class="stat-card__value fw-bold small" id="totalCommission">₹0</div>
+                <small>Platform base</small>
+            </div>
+        </div>
+        <div class="col-lg-2 col-sm-6">
+            <div class="stat-card" style="border-left: 4px solid #6c757d;">
+                <div class="stat-card__label">Rent GST</div>
+                <div class="stat-card__value text-secondary small" id="rentGstTotal">₹0</div>
+                <small>Tax on Rent</small>
+            </div>
+        </div>
+        <div class="col-lg-2 col-sm-6">
+            <div class="stat-card" style="border-left: 4px solid #adb5bd;">
+                <div class="stat-card__label">Buyer GST</div>
+                <div class="stat-card__value text-secondary small" id="buyerGstTotal">₹0</div>
+                <small>Tax on B.Comm</small>
+            </div>
+        </div>
+        <div class="col-lg-2 col-sm-6">
+            <div class="stat-card" style="border-left: 4px solid #dee2e6;">
+                <div class="stat-card__label">Seller GST</div>
+                <div class="stat-card__value text-secondary small" id="sellerGstTotal">₹0</div>
+                <small>Tax on S.Comm</small>
+            </div>
+        </div>
+        <div class="col-lg-2 col-sm-6">
+            <div class="stat-card" style="border-left: 4px solid #495057;">
+                <div class="stat-card__label fw-bold">Total GST</div>
+                <div class="stat-card__value text-dark small fw-bold" id="totalGst">₹0</div>
+                <small>Total Tax Amount</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-12">
+            <div class="stat-card" style="border-left: 4px solid #198754;">
+                <div class="stat-card__icon"><i class="bi bi-cash-stack"></i></div>
+                <div class="stat-card__label">Seller Net Payouts</div>
+                <div class="stat-card__value text-success" id="sellerPayouts">₹0</div>
+                <small>Total net amount due/paid to sellers across all orders</small>
             </div>
         </div>
     </div>
@@ -303,9 +366,18 @@
                 <thead class="table-light">
                     <tr>
                         <th>ID</th>
-                        <th>Order ID</th>
+                        <th>Order</th>
                         <th>Payer</th>
-                        <th>Amount (₹)</th>
+                        <th>Total (₹)</th>
+                        <th>Base Rent</th>
+                        <th>Buyer Comm</th>
+                        <th>Seller Comm</th>
+                        <th>Rent GST</th>
+                        <th>Buyer GST</th>
+                        <th>Seller GST</th>
+                        <th>Total GST</th>
+                        <th>Security</th>
+                        <th>Seller Net</th>
                         <th>Method</th>
                         <th>Date</th>
                         <th>Status</th>
@@ -878,11 +950,19 @@ $(function() {
                 $('#paidPaymentCount').text(stats.paid_count || '0');
                 $('#pendingPaymentCount').text(stats.pending_count || '0');
                 $('#failedPaymentCount').text(stats.failed_count || '0');
-                $('#totalRevenue').text(`₹${Math.round(stats.total_revenue || 0).toLocaleString('en-IN')}`);
+                $('#totalVolume').text(`₹${Math.round(stats.total_volume || 0).toLocaleString('en-IN')}`);
+                $('#buyerCommTotal').text(`₹${Math.round(stats.buyer_commission_total || 0).toLocaleString('en-IN')}`);
+                $('#sellerCommTotal').text(`₹${Math.round(stats.seller_commission_total || 0).toLocaleString('en-IN')}`);
+                $('#totalCommission').text(`₹${Math.round(stats.total_commission || 0).toLocaleString('en-IN')}`);
+                $('#rentGstTotal').text(`₹${Math.round(stats.rent_gst_total || 0).toLocaleString('en-IN')}`);
+                $('#buyerGstTotal').text(`₹${Math.round(stats.buyer_comm_gst_total || 0).toLocaleString('en-IN')}`);
+                $('#sellerGstTotal').text(`₹${Math.round(stats.seller_comm_gst_total || 0).toLocaleString('en-IN')}`);
+                $('#totalGst').text(`₹${Math.round(stats.total_gst || 0).toLocaleString('en-IN')}`);
+                $('#sellerPayouts').text(`₹${Math.round(stats.seller_payouts || 0).toLocaleString('en-IN')}`);
             }
 
             if (payments.length === 0) {
-                $('#paymentsTable tbody').html('<tr><td colspan="7" class="text-center">No payments found</td></tr>');
+                $('#paymentsTable tbody').html('<tr><td colspan="16" class="text-center">No payments found</td></tr>');
                 return;
             }
             
@@ -900,10 +980,19 @@ $(function() {
                 rows += `<tr>
                     <td>#${payment.id}</td>
                     <td><a href="{{ route('admin.orders') }}?search=${payment.order_id}" target="_blank">#${payment.order_id}</a></td>
-                    <td>${payment.payer_name}</td>
-                    <td>₹${amount}</td>
-                    <td>${payment.payment_method || '-'}</td>
-                    <td>${payment.paid_at_formatted}</td>
+                    <td><small>${payment.payer_name}</small></td>
+                    <td class="fw-bold">₹${amount}</td>
+                    <td>₹${payment.base_rent_total}</td>
+                    <td class="text-primary">₹${payment.buyer_comm_total}</td>
+                    <td class="text-purple" style="color: #6f42c1;">₹${payment.seller_comm_total}</td>
+                    <td class="text-secondary small">₹${payment.rent_gst_total}</td>
+                    <td class="text-secondary small">₹${payment.buyer_comm_gst_total}</td>
+                    <td class="text-secondary small">₹${payment.seller_comm_gst_total}</td>
+                    <td class="text-dark fw-bold small">₹${payment.gst_total}</td>
+                    <td class="text-info fw-bold small">₹${payment.security_amount}</td>
+                    <td class="text-success fw-bold">₹${payment.seller_net_payout}</td>
+                    <td><small>${payment.payment_method || '-'}</small></td>
+                    <td><small>${payment.paid_at_formatted}</small></td>
                     <td>${statusBadge}</td>
                 </tr>`;
             });
@@ -912,7 +1001,7 @@ $(function() {
 
         }).fail(function(xhr, status, error) {
             console.error("Error loading payments:", error);
-            $('#paymentsTable tbody').html('<tr><td colspan="7" class="text-center text-danger">Error loading payments data</td></tr>');
+            $('#paymentsTable tbody').html('<tr><td colspan="16" class="text-center text-danger">Error loading payments data</td></tr>');
         });
     }
 

@@ -30,23 +30,40 @@ class CheckoutController extends Controller
              return response()->json(['success' => false, 'message' => 'Delivery address is required.'], 422);
         }
 
-        // Calculate Totals
+        // Calculate Totals using PriceCalculatorService
+        $priceService = new \App\Services\PriceCalculatorService();
+        
         $rentalSubtotal = 0;
         $buySubtotal = 0;
         $securityDeposit = 0;
         $rentalStartDates = [];
         $rentalEndDates = [];
+        
+        $detailedItems = [];
 
         foreach ($cartItems as $item) {
             if ($item->purchase_type === 'buy') {
                 $buySubtotal += (float) ($item->total_selling_price ?? 0);
+                $detailedItems[] = [
+                    'item' => $item,
+                    'is_buy' => true,
+                    'price' => (float) ($item->total_selling_price ?? $item->cloth->selling_price ?? 0)
+                ];
             } else {
-                $daily = (float) ($item->cloth->rent_price ?? 0);
-                $rentalSubtotal += (float) ($item->total_rental_cost ?? ($daily * $item->quantity));
+                $days = $item->rental_days ?? 4;
+                $pricing = $priceService->calculate($item->cloth, $days);
+                
+                $rentalSubtotal += $pricing['total_buyer_pay'] * $item->quantity;
                 $securityDeposit += (float) ($item->cloth->security_deposit ?? 0) * $item->quantity;
 
                 if ($item->rental_start_date) $rentalStartDates[] = $item->rental_start_date;
                 if ($item->rental_end_date) $rentalEndDates[] = $item->rental_end_date;
+                
+                $detailedItems[] = [
+                    'item' => $item,
+                    'is_buy' => false,
+                    'pricing' => $pricing
+                ];
             }
         }
 
@@ -70,14 +87,29 @@ class CheckoutController extends Controller
         ]);
 
         // Create Order Items
-        foreach ($cartItems as $item) {
-            \App\Models\OrderItem::create([
-                'order_id' => $order->id,
-                'cloth_id' => $item->cloth_id,
-                'price' => $item->purchase_type === 'buy' 
-                    ? ($item->total_selling_price ?? $item->cloth->selling_price ?? 0)
-                    : ($item->total_rental_cost ?? ($item->cloth->rent_price * $item->quantity)),
-            ]);
+        foreach ($detailedItems as $dItem) {
+            $item = $dItem['item'];
+            if ($dItem['is_buy']) {
+                \App\Models\OrderItem::create([
+                    'order_id' => $order->id,
+                    'cloth_id' => $item->cloth_id,
+                    'price' => $dItem['price'],
+                ]);
+            } else {
+                $pricing = $dItem['pricing'];
+                \App\Models\OrderItem::create([
+                    'order_id' => $order->id,
+                    'cloth_id' => $item->cloth_id,
+                    'price' => $pricing['total_buyer_pay'],
+                    'base_rent' => $pricing['base_rent'],
+                    'buyer_commission' => $pricing['buyer_comm'],
+                    'seller_commission' => $pricing['seller_comm'],
+                    'rent_gst' => $pricing['rent_gst'],
+                    'commission_gst' => $pricing['commission_gst'],
+                    'tcs_amount' => $pricing['tcs'],
+                    'is_seller_gst' => $pricing['is_seller_gst'],
+                ]);
+            }
         }
 
         // --- HANDLE COD vs ONLINE ---

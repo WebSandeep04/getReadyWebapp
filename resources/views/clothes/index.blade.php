@@ -57,7 +57,7 @@
                                     <td class="align-middle">{{ $cloth->gender }}</td>
                                     <td class="align-middle">{{ $cloth->size->name ?? 'Unknown' }}</td>
                                     <td class="align-middle">{{ $cloth->condition->name ?? 'Unknown' }}</td>
-                                    <td class="align-middle">₹{{ $cloth->rent_price }}</td>
+                                    <td class="align-middle">₹{{ number_format($cloth->seller_rent, 2) }}</td>
                                     <td class="align-middle">
                                         @if($cloth->is_approved == 1)
                                             <span class="badge badge-success">Approved</span>

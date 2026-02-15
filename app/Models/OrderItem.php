@@ -13,6 +13,13 @@ class OrderItem extends Model
         'order_id',
         'cloth_id',
         'price',
+        'base_rent',
+        'buyer_commission',
+        'seller_commission',
+        'rent_gst',
+        'commission_gst',
+        'tcs_amount',
+        'is_seller_gst',
     ];
 
     public function order()

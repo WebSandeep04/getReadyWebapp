@@ -54,8 +54,8 @@
                                                 </div>
                                             </div>
                                         @else
-                                            <p class="text-warning fw-bold item-price" data-price="{{ $cartItem->cloth->rent_price }}" data-deposit="{{ $cartItem->cloth->security_deposit }}">
-                                                ₹{{ number_format($cartItem->cloth->rent_price) }} <small class="text-muted">(for 4 days)</small>
+                                            <p class="text-warning fw-bold item-price" data-price="{{ $cartItem->cloth->display_rent_price }}" data-deposit="{{ $cartItem->cloth->security_deposit }}">
+                                                ₹{{ number_format($cartItem->cloth->display_rent_price) }} <small class="text-muted">(for 4 days)</small>
                                             </p>
                                             
                                             @if($cartItem->rental_start_date && $cartItem->rental_end_date)
@@ -93,7 +93,7 @@
                                                  @if($cartItem->purchase_type === 'buy')
                                                      ₹{{ number_format($cartItem->total_selling_price) }}
                                                  @else
-                                                     ₹{{ number_format($cartItem->total_rental_cost ?? ($cartItem->cloth->rent_price * $cartItem->quantity)) }}
+                                                     ₹{{ number_format($cartItem->total_rental_cost ?? ($cartItem->cloth->display_rent_price * $cartItem->quantity)) }}
                                                  @endif
                                              </p>
                                              <small class="text-muted">
@@ -128,8 +128,8 @@
                                 $rentalItems = $cartItems->where('purchase_type', '!=', 'buy');
                                 $buyItems = $cartItems->where('purchase_type', 'buy');
                                 
-                                $rentalSubtotal = $rentalItems->sum(function($item) {
-                                    return $item->total_rental_cost ?? ($item->cloth->rent_price * $item->quantity);
+                                 $rentalSubtotal = $rentalItems->sum(function($item) {
+                                    return $item->total_rental_cost ?? ($item->cloth->display_rent_price * $item->quantity);
                                 });
                                 $buySubtotal = $buyItems->sum('total_selling_price');
                                 $total = $rentalSubtotal + $buySubtotal;

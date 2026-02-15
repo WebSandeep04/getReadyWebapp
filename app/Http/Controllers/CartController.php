@@ -79,11 +79,16 @@ class CartController extends Controller
                 'rental_days' => 'required|integer|min:4', // Minimum 4 days rental period
             ]);
 
-            // Backend Availability Check (Mirroring Frontend Logic)
+            // Backend Availability Check
             $isAvailable = $this->checkAvailability($cloth, $request->rental_start_date, $request->rental_end_date);
             if (!$isAvailable['success']) {
                 return response()->json(['success' => false, 'message' => $isAvailable['message']], 422);
             }
+
+            // Recalculate cost using the service
+            $priceService = new \App\Services\PriceCalculatorService();
+            $pricing = $priceService->calculate($cloth, $request->rental_days);
+            $totalRentalCost = $pricing['total_buyer_pay'];
             
             // Check if item is already in cart
             $existingItem = Auth::user()->cartItems()->where('cloth_id', $request->cloth_id)->first();
@@ -93,17 +98,17 @@ class CartController extends Controller
                 $existingItem->update([
                     'rental_start_date' => $request->rental_start_date,
                     'rental_end_date' => $request->rental_end_date,
-                    'total_rental_cost' => $request->total_rental_cost,
+                    'total_rental_cost' => $totalRentalCost,
                     'rental_days' => $request->rental_days,
                 ]);
-                $message = 'Rental dates updated in cart';
+                $message = 'Rental dates and price updated in cart';
             } else {
                 Auth::user()->cartItems()->create([
                     'cloth_id' => $request->cloth_id,
                     'quantity' => 1,
                     'rental_start_date' => $request->rental_start_date,
                     'rental_end_date' => $request->rental_end_date,
-                    'total_rental_cost' => $request->total_rental_cost,
+                    'total_rental_cost' => $totalRentalCost,
                     'rental_days' => $request->rental_days,
                 ]);
                 $message = 'Item added to cart successfully';

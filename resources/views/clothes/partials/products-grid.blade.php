@@ -35,7 +35,7 @@
                 <div class="product-pricing">
                     <div class="price-row">
                         <span class="price-label">Rent:</span>
-                        <span class="rent-price">₹{{ number_format($cloth->rent_price) }}</span>
+                        <span class="rent-price">₹{{ number_format($cloth->display_rent_price) }}</span>
                     </div>
                     @if($cloth->is_purchased && $cloth->selling_price)
                         <div class="price-row">

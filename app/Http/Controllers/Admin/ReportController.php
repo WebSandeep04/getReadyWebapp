@@ -29,40 +29,53 @@ class ReportController extends Controller
                 $cloth = $item->cloth;
                 $pricePaid = $item->price;
                 
-                // Heuristic to detect Purchase vs Rental
-                // 1. If order only has purchase items, it's a purchase.
-                // 2. If item price is significantly higher than rent price, it's likely a purchase.
-                $isPurchase = $order->has_purchase_items && (!$order->has_rental_items || $pricePaid > ($cloth->rent_price * 2));
-                
-                if ($isPurchase) {
-                    $basePrice = $cloth->selling_price > 0 ? $cloth->selling_price : $pricePaid;
-                    $mrp = $cloth->mrp ?? $basePrice;
-                    $security = 0;
-                    
-                    // For purchases, we assume commission is only from seller (standard fee)
-                    // unless software logic dictates otherwise. 
-                    $sellerCommRate = 0.20; 
-                    $buyerCommRate = 0; 
-                } else {
-                    $basePrice = $cloth->rent_price > 0 ? $cloth->rent_price : $pricePaid;
+                // --- PRICING DATA SOURCE ---
+                if ($item->base_rent !== null) {
+                    // NEW: Use stored columns
+                    $isPurchase = $item->base_rent == 0 && $item->price > 0;
+                    $basePrice = (float)$item->base_rent;
                     $mrp = $cloth->mrp ?? 0;
                     $security = $cloth->security_deposit ?? 0;
                     
-                    // For rentals, use the 20/20 logic
-                    $sellerCommRate = 0.20;
-                    $buyerCommRate = 0.20;
+                    $sellerComm = (float)$item->seller_commission;
+                    $buyerComm = (float)$item->buyer_commission;
+                    $rentGst = (float)$item->rent_gst;
+                    $commGst = (float)$item->commission_gst;
+                    $tcs = (float)$item->tcs_amount;
+
+                    $platformRevenue = $sellerComm + $buyerComm;
+                    
+                    // Net Payout Calculation consistent with PriceCalculatorService
+                    $sellerCommGst = $sellerComm * 0.18;
+                    $payableToSeller = ($basePrice + $rentGst) - ($sellerComm + $sellerCommGst + $tcs);
+                    $receivableFromBuyer = $pricePaid;
+                    $discount = 0;
+                } else {
+                    // OLD: Heuristic to detect Purchase vs Rental
+                    $isPurchase = $order->has_purchase_items && (!$order->has_rental_items || $pricePaid > ($cloth->rent_price * 2));
+                    
+                    if ($isPurchase) {
+                        $basePrice = $cloth->selling_price > 0 ? $cloth->selling_price : $pricePaid;
+                        $mrp = $cloth->mrp ?? $basePrice;
+                        $security = 0;
+                        $sellerCommRate = 0.20; 
+                        $buyerCommRate = 0; 
+                    } else {
+                        $basePrice = $cloth->rent_price > 0 ? $cloth->rent_price : $pricePaid;
+                        $mrp = $cloth->mrp ?? 0;
+                        $security = $cloth->security_deposit ?? 0;
+                        $sellerCommRate = 0.20;
+                        $buyerCommRate = 0.20;
+                    }
+                    
+                    $sellerComm = $basePrice * $sellerCommRate;
+                    $buyerComm = max(0, $pricePaid - $basePrice);
+                    $discount = max(0, $basePrice - $pricePaid);
+                    
+                    $payableToSeller = $basePrice - $sellerComm;
+                    $receivableFromBuyer = $pricePaid;
+                    $platformRevenue = $sellerComm + $buyerComm;
                 }
-                
-                $sellerComm = $basePrice * $sellerCommRate;
-                
-                // Actual Buyer Commission: What was paid above the base price
-                $buyerComm = max(0, $pricePaid - $basePrice);
-                
-                // Discount: Only if they paid LESS than the base price
-                $discount = max(0, $basePrice - $pricePaid);
-                
-                $payableToSeller = $basePrice - $sellerComm;
-                $receivableFromBuyer = $pricePaid;
                 
                 // Expenses
                 $pgFee = $pricePaid * 0.02; // 2% 
@@ -81,11 +94,11 @@ class ReportController extends Controller
                     'revenue_seller_comm' => $sellerComm,
                     'revenue_buyer_comm' => $buyerComm,
                     'return_handling' => 0,
-                    'total_revenue' => $sellerComm + $buyerComm,
+                    'total_revenue' => $platformRevenue,
                     'exp_pg' => $pgFee,
                     'exp_delivery' => $deliveryCost,
                     'total_exp' => $pgFee + $deliveryCost,
-                    'net_profit' => ($sellerComm + $buyerComm) - ($pgFee + $deliveryCost)
+                    'net_profit' => ($platformRevenue) - ($pgFee + $deliveryCost)
                 ];
             });
 

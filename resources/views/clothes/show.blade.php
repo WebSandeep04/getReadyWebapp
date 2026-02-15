@@ -216,8 +216,8 @@
             <div class="d-flex justify-content-between align-items-start">
               <div>
                 <p class="text-uppercase text-muted small mb-1">Rent for 4 days</p>
-                <h2 class="mb-0 text-primary">₹{{ number_format($cloth->rent_price) }}</h2>
-                <p class="text-muted small mb-1">₹{{ number_format($cloth->rent_price / 4) }} per day (after 4 days)</p>
+                <h2 class="mb-0 text-primary">₹{{ number_format($cloth->display_rent_price) }}</h2>
+                <p class="text-muted small mb-1">₹{{ number_format($cloth->display_rent_price / 4) }} per day (after 4 days)</p>
                 @if($cloth->mrp)
                   <p class="text-muted small mb-1">MRP: <del>₹{{ number_format($cloth->mrp) }}</del></p>
                 @endif
@@ -592,7 +592,7 @@
           <div class="card-body p-3">
             <h6 class="card-title fw-bold mb-1 text-truncate">{{ $related->title }}</h6>
             <div class="d-flex justify-content-between align-items-center">
-              <span class="text-primary fw-bold">₹{{ number_format($related->rent_price) }}<small class="text-muted fw-normal">/4 days</small></span>
+              <span class="text-primary fw-bold">₹{{ number_format($related->display_rent_price) }}<small class="text-muted fw-normal">/4 days</small></span>
               <span class="badge bg-light text-dark border">{{ $related->size->name ?? 'Free' }}</span>
             </div>
           </div>
@@ -620,6 +620,7 @@ const clothData = {
     id: {{ $cloth->id }},
     rentPrice: {{ $cloth->rent_price }},
     securityDeposit: {{ $cloth->security_deposit }},
+    isSellerGst: {{ $cloth->user && $cloth->user->is_gst ? 'true' : 'false' }},
     availableBlocks: @json($cloth->availabilityBlocks->where('type', 'available')->values()),
     blockedBlocks: @json($cloth->availabilityBlocks->where('type', 'blocked')->values()),
     isAlwaysAvailable: {{ $cloth->availabilityBlocks->where('type', 'available')->count() == 0 ? 'true' : 'false' }}
@@ -1001,47 +1002,55 @@ function validateAndCalculateRental() {
     }
     
     // Calculate prices based on 4-day minimum period
-    const basePrice = clothData.rentPrice; // Price for 4 days
-    const perDayRate = basePrice / MIN_RENTAL_DAYS; // Per day rate after 4 days
+    const baseRent = clothData.rentPrice; // Price for 4 days
+    const perDayRate = baseRent / MIN_RENTAL_DAYS; // Per day rate after 4 days
     
-    let rentCost;
-    let costBreakdown = '';
-    
+    let totalRent;
     if (daysDiff <= MIN_RENTAL_DAYS) {
-      // For 4 days or less, use base price
-      rentCost = basePrice;
-      costBreakdown = '';
+      totalRent = baseRent;
     } else {
-      // For more than 4 days: base price + additional days * per day rate
       const additionalDays = daysDiff - MIN_RENTAL_DAYS;
       const additionalCost = additionalDays * perDayRate;
-      rentCost = basePrice + additionalCost;
-      
-      // Show breakdown
-      costBreakdown = `
-        <div class="d-flex justify-content-between mb-1 small text-muted">
-          <span>Base (4 days)</span>
-          <span>₹${basePrice.toLocaleString()}</span>
-        </div>
-        <div class="d-flex justify-content-between mb-1 small text-muted">
-          <span>Additional ${additionalDays} day(s) × ₹${Math.round(perDayRate).toLocaleString()}</span>
-          <span>₹${Math.round(additionalCost).toLocaleString()}</span>
-        </div>
-      `;
+      totalRent = baseRent + additionalCost;
     }
+
+    // 20/20 Model: Buyer sees Rent + 20% Commission
+    const buyerCommission = totalRent * 0.20;
+    const displayRentTotal = totalRent + buyerCommission;
     
-    const totalCost = rentCost + clothData.securityDeposit;
+    // Tax Logic
+    const rentGst = clothData.isSellerGst ? (totalRent * 0.18) : 0;
+    const commGst = buyerCommission * 0.18; // GST on platform fee
+    
+    const finalBuyerAmount = displayRentTotal + rentGst + commGst;
+    const totalCostWithSecurity = finalBuyerAmount + clothData.securityDeposit;
+    
+    let costBreakdown = `
+        <div class="d-flex justify-content-between mb-1 small text-muted">
+          <span>Marketplace Rent (${daysDiff} days)</span>
+          <span>₹${Math.round(displayRentTotal).toLocaleString()}</span>
+        </div>
+        ${rentGst > 0 ? `
+        <div class="d-flex justify-content-between mb-1 small text-muted">
+          <span>GST on Rent (18%)</span>
+          <span>₹${Math.round(rentGst).toLocaleString()}</span>
+        </div>` : ''}
+        <div class="d-flex justify-content-between mb-1 small text-muted">
+          <span>Fixed GST (Service)</span>
+          <span>₹${Math.round(commGst).toLocaleString()}</span>
+        </div>
+    `;
     
     // Update UI
     $rentalDuration.text(`${daysDiff} days`);
     $('#rental-cost-breakdown').html(costBreakdown);
-    $rentalCost.text(`₹${Math.round(rentCost).toLocaleString()}`);
+    $rentalCost.text(`₹${Math.round(finalBuyerAmount).toLocaleString()}`);
     
-    $totalPrice.text(Math.round(totalCost).toLocaleString());
+    $totalPrice.text(Math.round(totalCostWithSecurity).toLocaleString());
     $rentalSummary.show();
     
     // Enable rent button
-    $rentButton.prop('disabled', false).html('<i class="bi bi-cart-plus me-2"></i>Rent now - ₹' + Math.round(totalCost).toLocaleString());
+    $rentButton.prop('disabled', false).html('<i class="bi bi-cart-plus me-2"></i>Rent now - ₹' + Math.round(totalCostWithSecurity).toLocaleString());
     
     // Clear any previous alerts
     $('.alert-danger').remove();

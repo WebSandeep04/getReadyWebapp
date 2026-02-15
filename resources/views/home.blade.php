@@ -140,7 +140,7 @@
                       </span>
                   </div>
               @endif
-                              <p class="card-text text-warning fw-bold">₹{{ number_format($cloth->rent_price) }}</p>
+                              <p class="card-text text-warning fw-bold">₹{{ number_format($cloth->display_rent_price) }}</p>
                 <div class="d-flex flex-column gap-1 mt-auto">
                   <!-- <button class="btn btn-warning btn-sm add-to-cart-btn" data-cloth-id="{{ $cloth->id }}" style="cursor: pointer;">
                     <i class="bi bi-cart-plus me-1"></i>Rent

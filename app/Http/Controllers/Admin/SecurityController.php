@@ -45,6 +45,26 @@ class SecurityController extends Controller
             }
         }
         
+        if ($request->has('limit')) {
+            $orders = $query->latest()->limit($request->limit)->get();
+            $formatted = $orders->map(function($order) {
+                return [
+                    'id' => $order->id,
+                    'buyer_name' => $order->buyer ? $order->buyer->name : 'Unknown',
+                    'amount' => $order->security_amount,
+                    'status' => $order->status,
+                    'is_security_returned' => $order->is_security_returned,
+                    'security_returned_at' => $order->security_returned_at ? $order->security_returned_at->format('d M Y') : null,
+                    'created_at' => $order->created_at->format('d M Y'),
+                ];
+            });
+
+            return response()->json([
+                'orders' => $formatted,
+                'stats' => $this->getStats(),
+            ]);
+        }
+
         $orders = $query->latest()->paginate(20)->appends($request->query());
 
         return response()->json([

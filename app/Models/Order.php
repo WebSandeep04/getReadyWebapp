@@ -20,6 +20,8 @@ class Order extends Model
         'has_rental_items',
         'has_purchase_items',
         'is_security_returned',
+        'is_seller_paid',
+        'seller_paid_at',
         'return_reason',
         'return_details',
         'return_images',
@@ -33,6 +35,8 @@ class Order extends Model
         'has_purchase_items' => 'boolean',
         'security_returned_at' => 'datetime',
         'is_security_returned' => 'boolean',
+        'is_seller_paid' => 'boolean',
+        'seller_paid_at' => 'datetime',
         'return_images' => 'array',
     ];
 

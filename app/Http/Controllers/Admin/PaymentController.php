@@ -127,6 +127,7 @@ class PaymentController extends Controller
             'seller_comm_gst_total' => $totalSellerCommGst,
             'total_gst' => $totalRentGst + $totalBuyerCommGst + $totalSellerCommGst,
             'seller_payouts' => $totalSellerPayout,
+            'total_platform_earning' => $totalBuyerComm + $totalSellerComm + $totalBuyerCommGst + $totalSellerCommGst,
             'pending_count' => Payment::where('payment_status', 'Pending')->count(),
             'failed_count' => Payment::whereIn('payment_status', ['Failed', 'Cancelled', 'failed', 'cancelled'])->count(),
         ];

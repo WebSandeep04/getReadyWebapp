@@ -325,6 +325,13 @@
                 <small>Total Tax Amount</small>
             </div>
         </div>
+        <div class="col-lg-2 col-sm-6">
+            <div class="stat-card" style="border-left: 4px solid #000; background: #f8f9fa;">
+                <div class="stat-card__label fw-bold">Platform Earning</div>
+                <div class="stat-card__value text-dark small fw-bold" id="totalPlatformEarning">₹0</div>
+                <small>Comm + Comm Tax</small>
+            </div>
+        </div>
     </div>
 
     <div class="row g-3 mb-4">
@@ -464,6 +471,79 @@
                 <a href="{{ route('admin.security') }}" class="btn btn-sm px-4" 
                    style="background: #000; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
                     View All Security Deposits <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seller Payouts Section -->
+    <div class="row g-3 mb-4">
+        <div class="col-lg-4 col-sm-6">
+            <div class="stat-card" style="border-left: 4px solid #6f42c1; background: #f8f0ff;">
+                <div class="stat-card__icon" style="color: #6f42c1;"><i class="bi bi-cash-stack"></i></div>
+                <div class="stat-card__label" style="color: #6f42c1;">Total Seller Net</div>
+                <div class="stat-card__value" id="totalSellerNetVal" style="color: #6f42c1;">₹0</div>
+                <small>Gross earnings for sellers</small>
+            </div>
+        </div>
+        <div class="col-lg-4 col-sm-6">
+            <div class="stat-card" style="border-left: 4px solid #fd7e14; background: #fffcf0;">
+                <div class="stat-card__icon" style="color: #fd7e14;"><i class="bi bi-hourglass-split"></i></div>
+                <div class="stat-card__label" style="color: #fd7e14;">Need to Pay</div>
+                <div class="stat-card__value" id="needToPaySellerVal" style="color: #fd7e14;">₹0</div>
+                <small>Orders returned, not paid</small>
+            </div>
+        </div>
+        <div class="col-lg-4 col-sm-6">
+            <div class="stat-card" style="border-left: 4px solid #20c997; background: #e6fffa;">
+                <div class="stat-card__icon" style="color: #20c997;"><i class="bi bi-check2-circle"></i></div>
+                <div class="stat-card__label" style="color: #20c997;">Paid to Sellers</div>
+                <div class="stat-card__value" id="paidToSellersVal" style="color: #20c997;">₹0</div>
+                <small>Transferred to accounts</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seller Payouts Table -->
+    <div class="card mb-5">
+        <div class="card-header bg-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-wallet2 me-2"></i>Seller Payouts
+                </h5>
+                <div class="d-flex align-items-center">
+                    <select id="payoutStatusFilter" class="form-select form-select-sm me-2" style="width: 140px; font-size: 0.75rem; border-radius: 0;">
+                        <option value="">All Statuses</option>
+                        <option value="processing">In Progress Order</option>
+                        <option value="pending">Eligible for Payout</option>
+                        <option value="completed">Paid to Seller</option>
+                    </select>
+                    <button class="btn btn-outline-light btn-sm text-dark border-0" onclick="loadSellerPayouts()" title="Refresh" style="border-radius: 0; padding: 0.25rem 0.6rem;">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <table class="table table-sm table-hover admin-table" id="payoutsTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Seller Name</th>
+                        <th>Net Amount (₹)</th>
+                        <th>Created At</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data loaded by jQuery AJAX -->
+                </tbody>
+            </table>
+            <div class="card-footer bg-white border-top-0 text-center py-2">
+                <a href="{{ route('admin.payouts') }}" class="btn btn-sm px-4" 
+                   style="background: #000; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+                    View All Payouts <i class="bi bi-arrow-right ms-1"></i>
                 </a>
             </div>
         </div>
@@ -818,7 +898,10 @@ $(function() {
         $.ajax({
             url: "{{ route('admin.dashboard.security.fetch') }}", 
             method: 'GET',
-            data: { status: status }, 
+            data: { 
+                status: status,
+                limit: 5
+            }, 
             success: function(response) {
                 tbody.empty();
                 
@@ -959,6 +1042,7 @@ $(function() {
                 $('#sellerGstTotal').text(`₹${Math.round(stats.seller_comm_gst_total || 0).toLocaleString('en-IN')}`);
                 $('#totalGst').text(`₹${Math.round(stats.total_gst || 0).toLocaleString('en-IN')}`);
                 $('#sellerPayouts').text(`₹${Math.round(stats.seller_payouts || 0).toLocaleString('en-IN')}`);
+                $('#totalPlatformEarning').text(`₹${Math.round(stats.total_platform_earning || 0).toLocaleString('en-IN')}`);
             }
 
             if (payments.length === 0) {
@@ -1005,13 +1089,95 @@ $(function() {
         });
     }
 
-    // Expose to global scope
-    window.loadPayments = loadPayments;
-    
+    // Seller Payouts Logic
+    window.loadSellerPayouts = function() {
+        let status = $('#payoutStatusFilter').val();
+        let url = "{{ route('admin.dashboard.payouts.fetch') }}";
+        let params = { limit: 5 };
+        if (status) params.status = status;
+        
+        $.get(url, params, function(response) {
+            let rows = '';
+            const orders = response.orders || [];
+            const stats = response.stats || {};
+            
+            // Update Stats
+            if (stats) {
+                $('#totalSellerNetVal').text(`₹${Math.round(stats.total_net || 0).toLocaleString('en-IN')}`);
+                $('#needToPaySellerVal').text(`₹${Math.round(stats.need_to_pay || 0).toLocaleString('en-IN')}`);
+                $('#paidToSellersVal').text(`₹${Math.round(stats.paid_to_sellers || 0).toLocaleString('en-IN')}`);
+            }
+
+            if (orders.length === 0) {
+                $('#payoutsTable tbody').html('<tr><td colspan="6" class="text-center">No payouts found</td></tr>');
+                return;
+            }
+            
+            orders.forEach(function(order) {
+                let statusBadge = '';
+                let actionBtn = '';
+                
+                if (order.is_seller_paid) {
+                    statusBadge = '<span class="badge bg-success">Paid to Seller</span>';
+                    actionBtn = `<small class="text-muted">Paid on ${order.seller_paid_at}</small>`;
+                } else if (order.status === 'Returned') {
+                    statusBadge = '<span class="badge bg-warning text-dark">Eligible for Payout</span>';
+                    actionBtn = `
+                        <button class="btn btn-sm btn-dark" onclick="confirmSellerPayout(${order.id}, ${order.amount}, '${order.seller_name}')" style="font-size: 0.7rem; border-radius: 0;">
+                            Mark as Paid
+                        </button>`;
+                } else {
+                    statusBadge = `<span class="badge bg-light text-dark border">Order ${order.status}</span>`;
+                    actionBtn = '<small class="text-muted">Awaiting Return</small>';
+                }
+
+                rows += `<tr>
+                    <td><a href="{{ route('admin.orders') }}?search=${order.id}" target="_blank">#${order.id}</a></td>
+                    <td><small>${order.seller_name}</small></td>
+                    <td class="fw-bold">₹${order.amount}</td>
+                    <td><small>${order.created_at}</small></td>
+                    <td>${statusBadge}</td>
+                    <td class="text-end">${actionBtn}</td>
+                </tr>`;
+            });
+            
+            $('#payoutsTable tbody').html(rows);
+
+        }).fail(function() {
+            $('#payoutsTable tbody').html('<tr><td colspan="6" class="text-center text-danger">Error loading payouts</td></tr>');
+        });
+    }
+
+    // Confirm Seller Payout
+    window.confirmSellerPayout = function(orderId, amount, sellerName) {
+        $('#dashboardActionConfirmTitle').text('Confirm Seller Payout');
+        $('#dashboardActionConfirmMsg').html(`Are you sure you want to mark the payout of <b>₹${amount}</b> for <b>${sellerName}</b> as COMPLETED? <br><small class="text-muted">This will record that you have transferred the amount to the seller.</small>`);
+        
+        $('#dashboardConfirmActionBtn').off('click').on('click', function() {
+            let btn = $(this);
+            btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Processing...');
+            
+            $.post("{{ url('/admin/payouts/mark-paid') }}/" + orderId, {
+                _token: "{{ csrf_token() }}"
+            }, function(res) {
+                $('#dashboardActionConfirmModal').modal('hide');
+                btn.prop('disabled', false).text('Confirm');
+                if (res.success) {
+                    loadSellerPayouts();
+                    // Alert success
+                    alert('Payout marked as completed successfully.');
+                }
+            });
+        });
+        
+        $('#dashboardActionConfirmModal').modal('show');
+    }
+
     // Initial Load
     loadOrders();
     loadPayments();
     loadSecurityDeposits();
+    loadSellerPayouts();
 
     // Attach event listeners for filters
     $('#orderStatusFilter').on('change', function() {
@@ -1026,13 +1192,17 @@ $(function() {
         loadSecurityDeposits();
     });
 
+    $('#payoutStatusFilter').on('change', function() {
+        loadSellerPayouts();
+    });
+
     // Auto-refresh every 30 seconds
     setInterval(function() {
-        // Only refresh order and security tables if no modal is open (to avoid disrupting user)
         if (!$('.modal.show').length) {
             loadOrders();
-            loadPayments(); // This one updates stats cards too, so it's good to refresh
+            loadPayments();
             loadSecurityDeposits();
+            loadSellerPayouts();
         }
     }, 30000);
 

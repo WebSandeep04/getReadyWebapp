@@ -83,7 +83,11 @@ Route::middleware(['admin.auth'])->group(function () {
     Route::get('/admin/dashboard/stats', [AdminController::class, 'dashboardStats']);
     Route::get('/admin/dashboard/orders/fetch', [AdminController::class, 'fetchOrders'])->name('admin.dashboard.orders.fetch');
     Route::get('/admin/dashboard/payments/fetch', [AdminController::class, 'fetchPayments'])->name('admin.dashboard.payments.fetch');
-    Route::get('/admin/dashboard/security/fetch', [AdminController::class, 'fetchSecurityDeposits'])->name('admin.dashboard.security.fetch');
+    Route::get('/admin/dashboard/security/fetch', [App\Http\Controllers\Admin\SecurityController::class, 'fetchData'])->name('admin.dashboard.security.fetch');
+    Route::get('/admin/dashboard/payouts/fetch', [App\Http\Controllers\Admin\PayoutController::class, 'fetchData'])->name('admin.dashboard.payouts.fetch');
+    Route::get('/admin/payouts', [App\Http\Controllers\Admin\PayoutController::class, 'index'])->name('admin.payouts');
+    Route::get('/admin/payouts/fetch', [App\Http\Controllers\Admin\PayoutController::class, 'fetchData'])->name('admin.payouts.fetch');
+    Route::post('/admin/payouts/mark-paid/{id}', [App\Http\Controllers\Admin\PayoutController::class, 'markPaid'])->name('admin.payouts.mark-paid');
 
     // Security Deposit Management
     Route::get('/admin/security', [App\Http\Controllers\Admin\SecurityController::class, 'index'])->name('admin.security');

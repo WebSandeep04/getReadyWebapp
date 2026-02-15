@@ -470,62 +470,11 @@ class AdminController extends Controller
             'seller_comm_gst_total' => $sellerCommGstTotal,
             'total_gst' => $totalGst,
             'seller_payouts' => $sellerPayouts,
+            'total_platform_earning' => $totalCommission + $buyerCommGstTotal + $sellerCommGstTotal,
         ];
 
         return response()->json([
             'payments' => $formattedPayments,
-            'stats' => $stats
-        ]);
-    }
-
-    public function fetchSecurityDeposits(Request $request)
-    {
-        $query = Order::with('buyer')
-            ->where('has_rental_items', true)
-            ->whereNotNull('security_amount')
-            ->where('security_amount', '>', 0);
-        
-        if ($request->has('status') && $request->status) {
-            $status = $request->status;
-            if ($status === 'returned') {
-                $query->where('status', 'Returned')->where('is_security_returned', false);
-            } elseif ($status === 'held') {
-                $query->where('status', '!=', 'Returned')->where('is_security_returned', false);
-            } elseif ($status === 'completed') {
-                $query->where('is_security_returned', true);
-            }
-        }
-
-        $orders = $query->latest()->limit(5)->get();
-
-        $formatted = $orders->map(function ($order) {
-            return [
-                'id' => $order->id,
-                'buyer_name' => $order->buyer ? $order->buyer->name : 'Unknown',
-                'amount' => $order->security_amount,
-                'status' => $order->status,
-                'is_security_returned' => $order->is_security_returned,
-                'security_returned_at' => $order->security_returned_at ? $order->security_returned_at->format('d M Y') : null,
-                'created_at' => $order->created_at->format('d M Y'),
-            ];
-        });
-
-        $stats = [
-            'total_held' => Order::where('has_rental_items', true)
-                            ->where('status', '!=', 'Returned')
-                            ->where('is_security_returned', false)
-                            ->sum('security_amount'),
-            'need_to_return' => Order::where('has_rental_items', true)
-                                ->where('status', 'Returned')
-                                ->where('is_security_returned', false)
-                                ->sum('security_amount'),
-            'returned' => Order::where('has_rental_items', true)
-                                ->where('is_security_returned', true)
-                                ->sum('security_amount'),
-        ];
-
-        return response()->json([
-            'orders' => $formatted,
             'stats' => $stats
         ]);
     }

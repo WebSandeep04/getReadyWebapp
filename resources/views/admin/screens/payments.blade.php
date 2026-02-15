@@ -119,11 +119,18 @@
                 <small class="text-muted">Tax on S.Comm</small>
             </div>
         </div>
-        <div class="col-md-2" style="width: 14%;"> <!-- Adjusting width slightly for the 7th card if needed, or stick to col-md-2 -->
+        <div class="col-md-2">
             <div class="stat-card" style="border-left: 4px solid #495057;">
                 <div class="stat-card__label fw-bold">Total GST</div>
                 <div class="stat-card__value text-dark fw-bold" style="font-size: 1.25rem;" id="stat-total-gst">₹{{ number_format($stats['total_gst']) }}</div>
                 <small class="text-muted">Combined Tax</small>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="stat-card" style="border-left: 4px solid #000; background: #f8f9fa;">
+                <div class="stat-card__label fw-bold">Platform Earning</div>
+                <div class="stat-card__value text-dark fw-bold" style="font-size: 1.25rem;" id="stat-platform-earning">₹{{ number_format($stats['total_platform_earning']) }}</div>
+                <small class="text-muted">Comm + Comm Tax</small>
             </div>
         </div>
     </div>
@@ -229,6 +236,7 @@ $(function() {
                     $('#stat-buyer-gst').text('₹' + Math.round(res.stats.buyer_comm_gst_total).toLocaleString());
                     $('#stat-seller-gst').text('₹' + Math.round(res.stats.seller_comm_gst_total).toLocaleString());
                     $('#stat-total-gst').text('₹' + Math.round(res.stats.total_gst).toLocaleString());
+                    $('#stat-platform-earning').text('₹' + Math.round(res.stats.total_platform_earning).toLocaleString());
                 }
             },
             error: function() {

@@ -14,7 +14,8 @@
             'links' => [
                 ['label' => 'Orders', 'route' => 'admin.orders', 'icon' => 'bi-receipt'],
                 ['label' => 'Security Deposits', 'route' => 'admin.security', 'icon' => 'bi-shield-lock'],
-                ['label' => 'Payments', 'route' => 'admin.payments', 'icon' => 'bi-wallet2'],
+                ['label' => 'Seller Payouts', 'route' => 'admin.payouts', 'icon' => 'bi-wallet2'],
+                ['label' => 'Payments', 'route' => 'admin.payments', 'icon' => 'bi-credit-card'],
             ],
         ],
         [

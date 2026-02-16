@@ -245,49 +245,53 @@
             
             events: [
                 @foreach($orders as $order)
-                    @if($order->has_rental_items)
+                    @if($order->has_rental_items && $order->rental_from && $order->rental_to)
                         {
-                            id: '{{ $order->id }}',
-                            title: '[P] {{ $order->buyer->name }}',
+                            title: '[P] {{ addslashes($order->buyer->name ?? "Guest") }}',
                             start: '{{ $order->rental_from->format("Y-m-d") }}',
+                            classNames: ['ind-p'],
                             extendedProps: {
                                 type: 'Pickup',
-                                customer: '{{ $order->buyer->name }}',
-                                date: '{{ $order->rental_from->format("d/m/Y") }}',
+                                orderId: '{{ $order->id }}',
+                                customer: '{{ addslashes($order->buyer->name ?? "Guest") }}',
+                                date: '{{ $order->rental_from->format("d/M/Y") }}',
                                 time: 'After 8:00 PM',
                                 security: '-',
-                                rent: '₹{{ number_format($order->total_amount - $order->security_amount, 2) }}',
+                                rent: '₹{{ number_format($order->rent_payable_to_seller, 2) }}',
                                 selling: '-'
                             }
                         },
                         {
-                            id: '{{ $order->id }}',
-                            title: '[R] {{ $order->buyer->name }}',
+                            title: '[R] {{ addslashes($order->buyer->name ?? "Guest") }}',
                             start: '{{ $order->rental_to->format("Y-m-d") }}',
+                            classNames: ['ind-r'],
                             extendedProps: {
                                 type: 'Return',
-                                customer: '{{ $order->buyer->name }}',
-                                date: '{{ $order->rental_to->format("d/m/Y") }}',
-                                time: 'After 2:00 PM',
+                                orderId: '{{ $order->id }}',
+                                customer: '{{ addslashes($order->buyer->name ?? "Guest") }}',
+                                date: '{{ $order->rental_to->format("d/M/Y") }}',
+                                time: 'Before 2:00 PM',
                                 security: '₹{{ number_format($order->security_amount, 2) }}',
                                 rent: '-',
                                 selling: '-'
                             }
                         },
                     @endif
+                    
                     @if($order->has_purchase_items)
                         {
-                            id: '{{ $order->id }}',
-                            title: '[S] {{ $order->buyer->name }}',
+                            title: '[S] {{ addslashes($order->buyer->name ?? "Guest") }}',
                             start: '{{ $order->created_at->format("Y-m-d") }}',
+                            classNames: ['ind-s'],
                             extendedProps: {
                                 type: 'Sale',
-                                customer: '{{ $order->buyer->name }}',
-                                date: '{{ $order->created_at->format("d/m/Y") }}',
-                                time: 'Business Hours',
+                                orderId: '{{ $order->id }}',
+                                customer: '{{ addslashes($order->buyer->name ?? "Guest") }}',
+                                date: '{{ $order->created_at->format("d/M/Y") }}',
+                                time: 'Immediate Dispatch',
                                 security: '-',
                                 rent: '-',
-                                selling: '₹{{ number_format($order->total_amount, 2) }}'
+                                selling: '₹{{ number_format($order->selling_price_payable_to_seller, 2) }}'
                             }
                         },
                     @endif
@@ -317,14 +321,14 @@
                                     <th>Order ID</th>
                                     <th>Date</th>
                                     <th>Time</th>
-                                    <th>Security Refundable</th>
-                                    <th>Rent Payable</th>
-                                    <th>Selling Price</th>
+                                    <th>Security deposit refundable</th>
+                                    <th>Rent payable to seller</th>
+                                    <th>Selling price amount to seller</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td class="fw-bold text-dark">GR-${info.event.id.padStart(5, '0')}</td>
+                                    <td class="fw-bold text-dark">GR-${p.orderId.padStart(5, '0')}</td>
                                     <td>${p.date}</td>
                                     <td>${p.time}</td>
                                     <td class="${p.security !== '-' ? 'text-danger fw-bold' : ''}">${p.security}</td>
@@ -342,7 +346,7 @@
                     </div>
                 `;
                 document.getElementById('eventModalBody').innerHTML = tableHtml;
-                document.getElementById('viewOrderBtn').href = `/admin/orders?search=${info.event.id}`;
+                document.getElementById('viewOrderBtn').href = `/admin/orders?search=${p.orderId}`;
                 new bootstrap.Modal(document.getElementById('eventModal')).show();
             }
         });

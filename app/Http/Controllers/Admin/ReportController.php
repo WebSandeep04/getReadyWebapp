@@ -31,7 +31,7 @@ class ReportController extends Controller
                 
                 // --- PRICING DATA SOURCE ---
                 if ($item->base_rent !== null) {
-                    $isPurchase = $item->base_rent == 0 && $item->price > 0;
+                    $isPurchase = $item->purchase_type === 'buy';
                     $basePrice = (float)$item->base_rent;
                     $mrp = $cloth->mrp ?? 0;
                     $security = $cloth->security_deposit ?? 0;
@@ -43,13 +43,17 @@ class ReportController extends Controller
                     $rentGst = (float)$item->rent_gst;
                     $tcs = (float)$item->tcs_amount;
 
-                    // Platform Revenue (Net Commissions)
-                    $platformRevenue = $sellerComm + $buyerComm;
+                    // Platform Revenue (Net Commissions + Retained Fee for Unreg)
+                    $retainedTax = !$item->is_seller_gst ? $rentGst : 0;
+                    $platformRevenue = $sellerComm + $buyerComm + $retainedTax;
                     
-                    // Payouts including Rent GST
-                    $totalBaseWithTax = $basePrice + $rentGst;
+                    // Simplified View for Report as requested
                     $payableToSeller = $basePrice - $sellerComm;
                     $receivableFromBuyer = $basePrice + $buyerComm;
+                    
+                    if ($isPurchase) {
+                        $security = 0;
+                    }
                 } else {
                     $isPurchase = $order->has_purchase_items && (!$order->has_rental_items || $pricePaid > ($cloth->rent_price * 2));
                     
@@ -144,7 +148,28 @@ class ReportController extends Controller
                       ->whereNotNull('rental_from');
             })
             ->orWhere('has_purchase_items', true)
-            ->get();
+            ->get()
+            ->map(function ($order) {
+                // Calculate Payouts
+                $rentPayableToSeller = 0;
+                $sellingPayableToSeller = 0;
+
+                foreach ($order->items as $item) {
+                    // Use new logic: Base Rent - Seller Commission
+                    $payout = ($item->base_rent ?? 0) - ($item->seller_commission ?? 0);
+                    
+                    if ($item->purchase_type === 'buy') {
+                        $sellingPayableToSeller += $payout;
+                    } else {
+                        $rentPayableToSeller += $payout;
+                    }
+                }
+                
+                $order->rent_payable_to_seller = $rentPayableToSeller;
+                $order->selling_price_payable_to_seller = $sellingPayableToSeller;
+                
+                return $order;
+            });
 
         return view('admin.screens.reports.calendar', compact('orders'));
     }

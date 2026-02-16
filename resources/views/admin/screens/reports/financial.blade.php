@@ -84,8 +84,8 @@
                                 <th>Base rent</th>
                                 <th>Rent GST</th>
                                 <th>Security</th>
-                                <th>Rent payable to seller</th>
-                                <th>Rent receivable from buyer</th>
+                                <th>Rent/SP payable to seller</th>
+                                <th>Rent/SP receivable from buyer</th>
                                 <th>Date on which amount is payable to seller</th>
                                 <th>Date on which security is payable to buyer</th>
 

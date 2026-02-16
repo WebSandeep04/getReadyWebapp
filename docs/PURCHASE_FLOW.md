@@ -59,7 +59,7 @@ Real-time status updates from the courier.
     *   When the courier status changes to **"Delivered"**:
         1.  Shipment `delivered_at` timestamp is set.
         2.  Order status transitions to **'Delivered'**.
-        3.  **Payout Eligibility**: The order is automatically flagged as "Eligible for Payout" (subject to a 3-day cooling period for disputes).
+        3.  **Payout Eligibility**: The order is **immediately** flagged as "Eligible for Payout".
 *   **Note**: The automated `orders:process-returns` command specifically skips purchase items, as no reverse pickup is needed.
 
 ### 💰 Payout Timing Difference
@@ -70,36 +70,29 @@ Real-time status updates from the courier.
 
 ## 6. Financial Settlement (20/20 Model)
 
-Purchases now follow the exact same financial structure as rentals to ensure platform consistency and transparency.
+Purchases follow the **Universal 20/20 Financial Structure**:
 
 *   **Seller Input**: The seller enters a **Base Selling Price** (e.g., ₹1,000).
-*   **Seller View**: The seller sees **Base Price - 20% Commission**.
-*   **Buyer View**: The buyer sees **Base Price + 20% Commission** (Marketplace Price).
-*   **Taxes**:
-    *   **Item Tax (18%)**: Always charged to the buyer on the Base Price.
-        *   If Seller is **GST Registered**: Credited to Seller.
-        *   If Seller is **Unregistered**: Retained by Platform as service fee.
-    *   **Commission GST (18%)**: Charged on both Buyer and Seller commissions.
-    *   **TCS (1%)**: Tax Collected at Source, deducted from GST registered sellers.
+*   **Display Price**: The buyer sees **₹1,200** (Base + 20% Comm) on the product page.
+*   **Final Price**: The buyer pays **₹1,416** (Display Price + 18% Tax on Base + 18% Tax on Comm) at checkout.
 
 ### 💰 Calculation Example (Base Selling Price: ₹1,000)
 
-| Component | Calculation Logic | Value |
+| Component | Logic | Value |
 | :--- | :--- | :--- |
-| **Seller Input** | Base Selling Price | **₹1,000** |
+| **BUYER PAYS** | | |
+| **(+) Display Price** | Base (1000) + Buyer Comm (200) | ₹1,200 |
+| **(+) Item Tax / Fee** | 18% of Base (Always Charged) | ₹180 |
+| **(+) Comm GST** | 18% of Buyer Comm (200) | ₹36 |
+| **(=) Final Pay** | Total charged at checkout | **₹1,416** |
 | | | |
-| **SELLER SIDE** | | |
-| **(-) Seller Comm** | 20% of ₹1,000 | ₹200 |
-| **(-) Comm GST** | 18% of ₹200 | ₹36 |
-| **(-) TCS** | 1% of ₹1,000 (Only if GST Registered) | ₹10 / ₹0 |
-| **(+) Item Tax Credit**| 18% of ₹1,000 (Only if GST Registered) | ₹180 / ₹0 |
-| **(=) Net Payout** | ₹1,000 - ₹200 - ₹36 - ₹10 (+ ₹180 if Reg) | **₹764** (Unreg) / **₹934** (Reg) |
-| | | |
-| **BUYER SIDE** | | |
-| **(+) Buyer Comm** | 20% of ₹1,000 | ₹200 |
-| **(+) Comm GST** | 18% of ₹200 | ₹36 |
-| **(+) Item Tax** | 18% of ₹1,000 (Always Charged) | ₹180 |
-| **(=) Final Pay** | ₹1,000 + ₹200 + ₹36 + ₹180 | **₹1,416** |
+| **SELLER EARNS** | | |
+| **(+) Base Price** | Selling Price | ₹1,000 |
+| **(+) Tax Credit** | 18% of Base (Only if GST Reg) | ₹180 / ₹0 |
+| **(-) Seller Comm** | 20% of Base | ₹200 |
+| **(-) Comm GST** | 18% of Seller Comm | ₹36 |
+| **(-) TCS** | 1% of Base (Only if GST Reg) | ₹10 / ₹0 |
+| **(=) Net Payout** | | **₹934** (Reg) / **₹764** (Unreg) |
 | | | |
 | **PLATFORM REVENUE** | | |
 | **(+) Gross Comm** | ₹200 (Seller) + ₹200 (Buyer) | ₹400 |

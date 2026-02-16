@@ -3,59 +3,56 @@
 This document outlines the complete logic for product pricing, rental calculations, and revenue distribution.
 
 ## 1. Internal Constants (20/20 Revenue Model)
-- **Seller Commission Rate**: 20% of the rent entered by the seller (Deducted from payout).
-- **Buyer Commission Rate**: 20% of the rent entered by the seller (Added to the display price).
-- **Total Platform Revenue**: **40% of the Base Rent** (e.g., ₹200 + ₹200 = ₹400 on a ₹1,000 rent).
-- **GST Rate (Rent)**: 18% (Applicable only for GST Registered Sellers).
-- **GST Rate (Commission)**: 18% (Applicable to all commission fees).
-- **Minimum Rental Period**: 4 Days.
+- **Seller Commission Rate**: 20% of the Base Price (Deducted from payout).
+- **Buyer Commission Rate**: 20% of the Base Price (Added to the total).
+- **Item Tax / Fee**: **18% of the Base Price** (Charged to Buyer).
+    - If Seller is **GST Registered**: This is "IGST/CGST" credited to the Seller.
+    - If Seller is **Unregistered**: This is a "Service Fee" retained by the Platform.
+- **Commission GST**: 18% (Applicable to all commission fees).
+- **TCS**: 1% (Tax Collected at Source, deducted from GST registered sellers).
 
 ---
 
-## 2. Case 1: GST Registered Seller (`is_gst = 1`)
-When a seller is registered under GST, taxes are applied to both the rent and the platform fees.
+## 2. Universal Pricing Structure
+The platform ensures a consistent price for the buyer regardless of the seller's tax status.
 
-### A. Prices & Display
-- **Seller Input (Rent)**: ₹1,000
-- **Marketplace Display (Buyer)**: **₹1,200** (Rent ₹1,000 + Buyer Commission ₹200)
-- **Seller Dashboard View**: **₹800** (Rent ₹1,000 - Seller Commission ₹200)
+### A. For Buyers
+The price breakdown is always:
+1.  **Base Price** (Set by Seller)
+2.  **(+) Buyer Commission** (20% of Base)
+3.  **(+) Item Tax / Fee** (18% of Base)
+4.  **(+) GST on Buyer Comm** (18% of Comm)
+5.  **(=) Total Payable**
 
-### B. Buyer Checkout Breakdown
-| Component | Amount | Logic |
-| :--- | :--- | :--- |
-| **Base Rent** | ₹1,000 | Seller Entered Price |
-| **Buyer Commission** | ₹200 | 20% of Base Rent |
-| **GST on Rent (18%)** | ₹180 | Collected for Seller |
-| **GST on Buyer Comm (18%)** | ₹36 | 18% of ₹200 |
-| **Total (Excl. Security)** | **₹1,416** | 1000 + 200 + 180 + 36 |
-| **Security Deposit** | ₹1,000 | Refundable |
-
----
-
-## 3. Case 2: Non-GST Registered Seller (`is_gst = 0`)
-When a seller is NOT registered, no GST is charged on the rent portion.
-
-### A. Prices & Display
-- **Seller Input (Rent)**: ₹1,000
-- **Marketplace Display (Buyer)**: **₹1,200** (Rent ₹1,000 + Buyer Commission ₹200)
-- **Seller Dashboard View**: **₹800** (Rent ₹1,000 - Seller Commission ₹200)
-
-### B. Buyer Checkout Breakdown
-| Component | Amount | Logic |
-| :--- | :--- | :--- |
-| **Base Rent** | ₹1,000 | Seller Entered Price |
-| **Buyer Commission** | ₹200 | 20% of Base Rent |
-| **GST on Rent** | ₹0 | Not Applicable |
-| **GST on Buyer Comm (18%)** | ₹36 | 18% of ₹200 |
-| **Total (Excl. Security)** | **₹1,236** | 1000 + 200 + 36 |
-| **Security Deposit** | ₹1,000 | Refundable |
+### B. For Sellers
+The payout depends on registration status:
+1.  **Base Price**
+2.  **(+) Item Tax Credit** (18% of Base) *[Only if GST Registered]*
+3.  **(-) Seller Commission** (20% of Base)
+4.  **(-) GST on Seller Comm** (18% of Comm)
+5.  **(-) TCS** (1% of Base) *[Only if GST Registered]*
+6.  **(=) Net Payout**
 
 ---
 
-## 4. Rental Duration & Extensions
-The logic above applies to the **Base Period (4 Days)**. For longer durations:
-- **Rent Extension**: `Additional Days * (Rent / 4)`
-- All commissions and GST calculations apply to the **Total Rental Cost** (Base + Extension).
+## 3. Calculation Examples (Base Price: ₹1,000)
+
+### Case 1: GST Registered Seller (`is_gst = 1`)
+*   **Buyer Pays**: ₹1,000 + ₹200 (Comm) + ₹180 (Item Tax) + ₹36 (Comm GST) = **₹1,416**
+*   **Seller Earns**: (₹1,000 + ₹180) - (₹200 + ₹36 + ₹10) = **₹934**
+*   **Platform Net**: ₹400 (Gross Comm) - Expenses.
+
+### Case 2: Non-GST Registered Seller (`is_gst = 0`)
+*   **Buyer Pays**: ₹1,000 + ₹200 (Comm) + ₹180 (Service Fee) + ₹36 (Comm GST) = **₹1,416**
+*   **Seller Earns**: ₹1,000 - (₹200 + ₹36) = **₹764**
+*   **Platform Net**: ₹400 (Gross Comm) + ₹180 (Service Fee) - Expenses.
+
+---
+
+## 4. Rental vs Purchase Context
+The logic above applies to both:
+*   **Rent**: Base Price = Rent for 4 Days.
+*   **Purchase**: Base Price = Selling Price.
 
 ---
 

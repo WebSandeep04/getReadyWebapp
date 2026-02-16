@@ -25,58 +25,47 @@ Allows administrators to filter report data based on the **Order Creation Date**
 
 ## 3. Data Logic & Calculations
 
-The report processes data at the **Order Item** level. Each row in the table represents an individual item within an order.
+The report processes data at the **Order Item** level, using the stored financial snapshots in `order_items` (e.g., `base_rent`, `buyer_commission`, `rent_gst`).
 
-### A. Pricing Data Source
-The system uses the `OrderItem` financial snapshots (created during checkout) to ensure report accuracy even if product prices change later.
-
-#### Formulas for Rental Items:
+### A. Pricing Components (20/20 Model)
 | Field | Formula / Logic |
 | :--- | :--- |
-| **Base Rent** | The core price of the rental. |
-| **Rent Payable to Seller** | `Base Rent - Seller Commission (20%)` |
-| **Rent Receivable from Buyer** | `Base Rent + Buyer Commission (20%)` |
-| **Security** | Refundable deposit amount. |
+| **Base Price** | Seller entered price (Rent or Selling Price). |
+| **Item Tax / Fee** | 18% of Base Price (Always charged to Buyer). |
+| **Buyer Commission** | 20% of Base Price. |
+| **Seller Commission** | 20% of Base Price. |
+| **Comm GST** | 18% on both commissions. |
+| **TCS** | 1% of Base (Deducted if Seller GST Registered). |
 
-#### Formulas for Platform Revenue:
-| Component | Logic |
+### B. Revenue & Payout Formulas
+| Metric | Formula |
 | :--- | :--- |
-| **Seller Commission** | 20% of Base Rent. |
-| **Buyer Commission** | 20% of Base Rent. |
-| **Total Revenue** | `Seller Commission + Buyer Commission` (Total 40% of Base Rent) |
+| **Total Inflow (Buyer Pays)** | `Base + Item Tax + Buyer Comm + Comm GST` |
+| **Net Payout (Seller Earns)** | `Base + Item Tax (if Reg) - Seller Comm - Comm GST - TCS` |
+| **Platform Revenue** | `Buyer Comm + Seller Comm + Item Tax (if Unreg)` |
+| **Net Profit** | `Platform Revenue - Expenses (PG + Delivery)` |
 
 ---
 
-### B. Expense Tracking
-To calculate true net profit, the system tracks operational costs (placeholders based on system averages):
-- **Payment Gateway (PG) Expense**: Set to **₹30** per transaction.
-- **Delivery Cost**: Set to **₹80** per transaction.
-- **Total Expense**: `₹30 (PG) + ₹80 (Delivery) = ₹110`.
+## 4. Calculation Example (Base Price: ₹1,000)
 
----
+The following table explains the derivation for a standard **₹1,000** transaction (Rent or Buy).
 
-### C. Payout & Refund Dates
-The report predicts when money should move:
-- **Date Payable to Seller**: 7 days after the order status becomes `Delivered`.
-- **Date Security Payable to Buyer**: 3 days after the order status becomes `Returned`.
-
----
-
-## 4. Calculation Example (Base Rent: ₹1,000)
-
-The following table explains how every column in the report is derived using a standard **₹1,000** rental example.
-
-| Component | Column Name | Formula / Logic | Example (₹1,000) |
-| :--- | :--- | :--- | :--- |
-| **Input** | Base Rent | Seller entered price | **₹1,000.00** |
-| **Payout** | Rent payable to seller | `Base Rent - Seller Comm` | **₹800.00** |
-| **Inflow** | Rent receivable from buyer | `Base Rent + Buyer Comm` | **₹1,200.00** |
-| **Revenue** | Commission from seller | `Base Rent * 20%` | **₹200.00** |
-| **Revenue** | Commission from buyer | `Base Rent * 20%` | **₹200.00** |
-| **Revenue** | **Total Revenue** | `Seller Comm + Buyer Comm` | **₹400.00** |
-| **Expense** | PG Expense | System Placeholder | **₹30.00** |
-| **Expense** | Delivery Cost | System Placeholder | **₹80.00** |
-| **Profit** | **Net Profit** | `Total Revenue - Expenses` | **₹290.00** |
+| Component | Seller: **Unregistered** | Seller: **Registered** |
+| :--- | :--- | :--- |
+| **BUYER PAYS** | **₹1,416** | **₹1,416** |
+| (Base + Tax + Comm + GST) | (1000 + 180 + 200 + 36) | (1000 + 180 + 200 + 36) |
+| | | |
+| **SELLER EARNS** | **₹764** | **₹934** |
+| (Base + TaxCredit - Deductions) | (1000 + 0 - 236) | (1000 + 180 - 246) |
+| | | |
+| **PLATFORM REVENUE** | **₹580** | **₹400** |
+| (Gross Comm + Retained Fee) | (400 + 180) | (400 + 0) |
+| | | |
+| **EXPENSES** | **₹110** | **₹110** |
+| (PG ₹30 + Delivery ₹80) | | |
+| | | |
+| **NET PROFIT** | **₹470** | **₹290** |
 
 ---
 
@@ -105,10 +94,12 @@ The system checks if the `OrderItem` has the `base_rent` column filled. If not (
 | **ORDER ID / Date** | System Order ID (GR-XXXXX) and the date it was placed. |
 | **Type** | "Rental" or "Purchase" badge. |
 | **MRP** | Manufacturer's Suggested Retail Price of the item. |
-| **Base Rent** | The rental price of the item. |
-| **Rent GST** | The GST component of the rental. |
-| **Security** | The refundable security deposit. |
-| **Commission from Seller** | The total cut taken from the seller's side (including tax/TCS). |
+| **Base rent** | The base price (Rent or Selling Price) set by the seller. |
+| **Rent GST** | The Item Tax / Fee (18% of Base). |
+| **Security** | The refundable security deposit (0 for Purchases). |
+| **Rent/SP payable to seller** | `Base Price - Seller Comm` (Simplified Gross View). |
+| **Rent/SP receivable from buyer** | `Base Price + Buyer Comm` (Simplified Gross View). |
+| **Commission from Seller** | The total cut taken from the seller's side. |
 | **Commission from Buyer** | The markup paid by the buyer above the base rent. |
 | **Net Profit** | The final profit for the platform after all payouts and expenses. |
 

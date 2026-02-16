@@ -38,7 +38,7 @@ Both flows utilize the **20/20 Commission Model** (20% from Seller + 20% from Bu
 | :--- | :--- | :--- |
 | **Base Price** | Set by Seller (per 4 days). | Set by Seller (Selling Price). |
 | **Buyer Pays** | Base + GST (18%) + Comm (20%) + **Security Deposit**. | Base + GST (18%) + Comm (20%). |
-| **Seller Earns** | Base + GST Credit - Comm (20%) - TCS. | Base + GST Credit - Comm (20%) - TCS. |
+| **Seller Earns** | Base + GST Credit (if Reg) - Comm (20%) - TCS. | Base + GST Credit (if Reg) - Comm (20%) - TCS. |
 | **Taxation** | 18% "Item Tax" (Service Fee if non-GST). | 18% "Item Tax" (Service Fee if non-GST). |
 | **Security** | **Yes** (Refundable). | **No**. |
 
@@ -77,8 +77,8 @@ This is the most significant difference between the two flows.
     *   **Rental**: Shows **[P] Pickup** (Start Date) and **[R] Return** (End Date) events.
     *   **Purchase**: Shows **[S] Sale** event on the dispatch date.
 *   **Payouts**:
-    *   **Rental**: Seller paid 7 days after **Return** is verified.
-    *   **Purchase**: Seller paid 7 days after **Delivery** is verified.
+    *   **Rental**: **Immediately Eligible** after item is **Returned**.
+    *   **Purchase**: **Immediately Eligible** after item is **Delivered**.
 
 ---
 

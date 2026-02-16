@@ -68,32 +68,38 @@
                 </div>
 
                 <div class="table-responsive mt-4 overflow-auto border">
-                    <table class="table table-bordered table-sm mb-0 text-center align-middle" style="min-width: 1500px; font-size: 0.7rem;">
+                    <table class="table table-bordered table-sm mb-0 text-center align-middle" style="min-width: 1800px; font-size: 0.7rem;">
                         <thead class="bg-light">
                             <tr>
-                                <th rowspan="2" class="align-middle">ORDER ID / Date</th>
-                                <th rowspan="2" class="align-middle">Type</th>
-                                <th rowspan="2" class="align-middle">MRP</th>
-                                <th rowspan="2" class="align-middle">Base Rent/Sale</th>
-                                <th rowspan="2" class="align-middle">Discount</th>
-                                <th rowspan="2" class="align-middle">Security</th>
-                                <th colspan="2" class="bg-secondary text-white border-bottom-0">Bank Entry</th>
+                                <th rowspan="2" class="align-middle bg-white">ORDER ID / Date</th>
+                                <th rowspan="2" class="align-middle bg-white">Type</th>
+                                <th colspan="8" class="bg-dark text-white border-bottom-0">Basic Info</th>
                                 <th colspan="4" class="bg-primary text-white border-bottom-0">Revenue</th>
-                                <th colspan="3" class="bg-danger text-white border-bottom-0">Expenses</th>
+                                <th colspan="4" class="bg-danger text-white border-bottom-0">Expenses</th>
                                 <th rowspan="2" class="align-middle bg-success text-white">Net Profit</th>
                             </tr>
                             <tr class="small fw-bold">
-                                <th>Payable to seller</th>
-                                <th>Receivable from buyer</th>
+                                {{-- Basic Info --}}
+                                <th>MRP</th>
+                                <th>Base rent</th>
+                                <th>Rent GST</th>
+                                <th>Security</th>
+                                <th>Rent payable to seller</th>
+                                <th>Rent receivable from buyer</th>
+                                <th>Date on which amount is payable to seller</th>
+                                <th>Date on which security is payable to buyer</th>
 
-                                <th>Commssion from seller <br>(20%)</th>
-                                <th>Commission from buyer <br>(20% of base)</th>
+                                {{-- Revenue --}}
+                                <th>Commission from seller</th>
+                                <th>Commission from buyer</th>
                                 <th>Return handling</th>
-                                <th>Total Rev</th>
+                                <th>Total</th>
 
-                                <th>PG Exp <br>(2%)</th>
+                                {{-- Expenses --}}
+                                <th>Payment gateway expense</th>
                                 <th>Delivery cost</th>
-                                <th>Total Cost</th>
+                                <th>Fraud cost</th>
+                                <th>Total</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -101,7 +107,7 @@
                                 @foreach($order['items'] as $item)
                                     <tr>
                                         @if($loop->first)
-                                            <td rowspan="{{ count($order['items']) }}" class="fw-bold">
+                                            <td rowspan="{{ count($order['items']) }}" class="fw-bold bg-white">
                                                 GR-{{ str_pad($order['order_id'], 5, '0', STR_PAD_LEFT) }}<br>
                                                 <small class="text-muted">{{ $order['created_at'] }}</small>
                                             </td>
@@ -113,27 +119,34 @@
                                                 <span class="badge bg-primary" style="font-size: 0.5rem;">Rental</span>
                                             @endif
                                         </td>
+                                        {{-- Basic Info --}}
                                         <td>₹{{ number_format($item['mrp'], 2) }}</td>
                                         <td>₹{{ number_format($item['base_price'], 2) }}</td>
-                                        <td class="{{ $item['discount'] > 0 ? 'text-danger' : '' }}">₹{{ number_format($item['discount'], 2) }}</td>
+                                        <td>₹{{ number_format($item['rent_gst'], 2) }}</td>
                                         <td>₹{{ number_format($item['security'], 2) }}</td>
                                         <td class="bg-light">₹{{ number_format($item['payable_to_seller'], 2) }}</td>
                                         <td class="bg-light">₹{{ number_format($item['receivable_from_buyer'], 2) }}</td>
+                                        <td class="text-muted">{{ $item['payable_to_seller_date'] }}</td>
+                                        <td class="text-muted">{{ $item['security_payable_date'] }}</td>
                                         
+                                        {{-- Revenue --}}
                                         <td>₹{{ number_format($item['revenue_seller_comm'], 2) }}</td>
                                         <td>₹{{ number_format($item['revenue_buyer_comm'], 2) }}</td>
                                         <td>₹{{ number_format($item['return_handling'], 2) }}</td>
-                                        <td class="fw-bold">₹{{ number_format($item['total_revenue'], 2) }}</td>
+                                        <td class="fw-bold bg-primary-subtle">₹{{ number_format($item['total_revenue'], 2) }}</td>
 
+                                        {{-- Expenses --}}
                                         <td>₹{{ number_format($item['exp_pg'], 2) }}</td>
                                         <td>₹{{ number_format($item['exp_delivery'], 2) }}</td>
-                                        <td class="fw-bold">₹{{ number_format($item['total_exp'], 2) }}</td>
+                                        <td>₹{{ number_format($item['exp_fraud'], 2) }}</td>
+                                        <td class="fw-bold bg-danger-subtle">₹{{ number_format($item['total_exp'], 2) }}</td>
+
                                         <td class="bg-success-subtle fw-bold">₹{{ number_format($item['net_profit'], 2) }}</td>
                                     </tr>
                                 @endforeach
                             @empty
                                 <tr>
-                                    <td colspan="15" class="py-4 text-muted">No financial data found for the selected range.</td>
+                                    <td colspan="19" class="py-4 text-muted">No financial data found for the selected range.</td>
                                 </tr>
                             @endforelse
                         </tbody>

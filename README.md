@@ -53,7 +53,14 @@ GetReady is a modern, comprehensive web application designed for the circular fa
 *   **System**: `Notification`, `FrontendSetting`, `AvailabilityBlock`, `Payment`
 
 ## 📚 Developer Documentation
-For a deep dive into the system architecture and database schema, see the [Codebase Overview](CODEBASE_OVERVIEW.md). To understand the platform's operational processes, refer to the [System Workflow](WORKFLOW.md) guide. Technical details regarding the rental and shipment life cycle can be found in the [End-to-End Rental Flow](RENTAL_FLOW.md).
+For the master guide and a brief overview of all system flows, see the **[Master System Guide](docs/SYSTEM_GUIDE.md)**.
+Detailed sub-documents:
+*   [Codebase & Tech Details](docs/CODEBASE_DETAILS.md)
+*   [Rental & Shipping Flow](docs/RENTAL_FLOW.md)
+*   [Purchase Flow](docs/PURCHASE_FLOW.md)
+*   [User & Admin Workflows](docs/USER_WORKFLOW.md)
+*   [Financial Report Logic](docs/reports/FINANCIAL_REPORT.md)
+*   [Design System (Zero Radius)](docs/DESIGN_SYSTEM.md)
 
 
 ## ⚙️ Installation & Setup

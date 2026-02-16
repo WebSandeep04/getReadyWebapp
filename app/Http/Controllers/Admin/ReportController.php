@@ -31,7 +31,6 @@ class ReportController extends Controller
                 
                 // --- PRICING DATA SOURCE ---
                 if ($item->base_rent !== null) {
-                    // NEW: Use stored columns
                     $isPurchase = $item->base_rent == 0 && $item->price > 0;
                     $basePrice = (float)$item->base_rent;
                     $mrp = $cloth->mrp ?? 0;
@@ -39,19 +38,19 @@ class ReportController extends Controller
                     
                     $sellerComm = (float)$item->seller_commission;
                     $buyerComm = (float)$item->buyer_commission;
-                    $rentGst = (float)$item->rent_gst;
-                    $buyerCommGst = (float)$item->buyer_commission_gst;
                     $sellerCommGst = (float)$item->seller_commission_gst;
+                    $buyerCommGst = (float)$item->buyer_commission_gst;
+                    $rentGst = (float)$item->rent_gst;
                     $tcs = (float)$item->tcs_amount;
 
+                    // Platform Revenue (Net Commissions)
                     $platformRevenue = $sellerComm + $buyerComm;
                     
-                    // Net Payout Calculation consistent with PriceCalculatorService
-                    $payableToSeller = ($basePrice + $rentGst) - ($sellerComm + $sellerCommGst + $tcs);
-                    $receivableFromBuyer = $pricePaid;
-                    $discount = 0;
+                    // Payouts including Rent GST
+                    $totalBaseWithTax = $basePrice + $rentGst;
+                    $payableToSeller = $basePrice - $sellerComm;
+                    $receivableFromBuyer = $basePrice + $buyerComm;
                 } else {
-                    // OLD: Heuristic to detect Purchase vs Rental
                     $isPurchase = $order->has_purchase_items && (!$order->has_rental_items || $pricePaid > ($cloth->rent_price * 2));
                     
                     if ($isPurchase) {
@@ -68,37 +67,51 @@ class ReportController extends Controller
                         $buyerCommRate = 0.20;
                     }
                     
-                    $sellerComm = $basePrice * $sellerCommRate;
-                    $buyerComm = max(0, $pricePaid - $basePrice);
-                    $discount = max(0, $basePrice - $pricePaid);
+                    $rentGst = 0;
+                    $grossSellerComm = $basePrice * $sellerCommRate;
+                    $grossBuyerComm = max(0, $pricePaid - $basePrice - $security);
                     
-                    $payableToSeller = $basePrice - $sellerComm;
-                    $receivableFromBuyer = $pricePaid;
-                    $platformRevenue = $sellerComm + $buyerComm;
+                    $payableToSeller = $basePrice - $grossSellerComm;
+                    $receivableFromBuyer = $basePrice + $grossBuyerComm;
+                    $platformRevenue = $grossSellerComm + $grossBuyerComm;
+
+                    $sellerComm = $grossSellerComm;
+                    $buyerComm = $grossBuyerComm;
                 }
                 
-                // Expenses
-                $pgFee = $pricePaid * 0.02; // 2% 
-                $deliveryCost = 100; // Placeholder
+                // Expenses (Based on reference spreadsheet)
+                $pgFee = 30; // Standard PG Fee placeholder
+                $deliveryCost = 80; // Standard Delivery placeholder
+                $fraudCost = 0; // Placeholder
                 
+                // Dates for report
+                $deliveredAt = $order->status === 'Delivered' || $order->status === 'Returned' ? $order->updated_at : null;
+                $returnedAt = $order->status === 'Returned' ? $order->updated_at : null;
+
+                $payableToSellerDate = $deliveredAt ? $deliveredAt->addDays(7)->format('d/m/Y') : '-';
+                $securityPayableDate = $returnedAt ? $returnedAt->addDays(3)->format('d/m/Y') : '-';
+
                 return [
                     'item_id' => $item->id,
                     'title' => $cloth->title ?? 'Deleted Item',
                     'is_purchase' => $isPurchase,
                     'mrp' => $mrp,
                     'base_price' => $basePrice,
-                    'discount' => $discount,
+                    'rent_gst' => $rentGst,
                     'security' => $security,
                     'payable_to_seller' => $payableToSeller,
                     'receivable_from_buyer' => $receivableFromBuyer,
+                    'payable_to_seller_date' => $payableToSellerDate,
+                    'security_payable_date' => $securityPayableDate,
                     'revenue_seller_comm' => $sellerComm,
                     'revenue_buyer_comm' => $buyerComm,
                     'return_handling' => 0,
                     'total_revenue' => $platformRevenue,
                     'exp_pg' => $pgFee,
                     'exp_delivery' => $deliveryCost,
-                    'total_exp' => $pgFee + $deliveryCost,
-                    'net_profit' => ($platformRevenue) - ($pgFee + $deliveryCost)
+                    'exp_fraud' => $fraudCost,
+                    'total_exp' => $pgFee + $deliveryCost + $fraudCost,
+                    'net_profit' => ($platformRevenue) - ($pgFee + $deliveryCost + $fraudCost)
                 ];
             });
 

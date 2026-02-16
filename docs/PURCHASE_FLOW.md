@@ -59,33 +59,53 @@ Real-time status updates from the courier.
     *   When the courier status changes to **"Delivered"**:
         1.  Shipment `delivered_at` timestamp is set.
         2.  Order status transitions to **'Delivered'**.
+        3.  **Payout Eligibility**: The order is automatically flagged as "Eligible for Payout" (subject to a 3-day cooling period for disputes).
 *   **Note**: The automated `orders:process-returns` command specifically skips purchase items, as no reverse pickup is needed.
+
+### 💰 Payout Timing Difference
+*   **Rentals**: Seller is paid ONLY after the item is **Returned** and verified.
+*   **Purchases**: Seller is paid after **Delivery** (No waiting for return).
 
 ---
 
 ## 6. Financial Settlement (20/20 Model)
 
-Purchases now follow the same financial model as rentals to ensure platform consistency.
+Purchases now follow the exact same financial structure as rentals to ensure platform consistency and transparency.
 
-*   **Commission Structure**: 20% from Seller + 20% from Buyer.
-*   **GST Handling**: If the seller is GST registered, the buyer pays the 18% GST on the item price, which is passed to the seller for compliance.
-*   **Formula (Non-GST Seller)**:
-    *   `Buyer Pays = Item Price + 20% Buyer Comm`
-    *   `Seller Receives = Item Price - 20% Seller Comm`
-*   **Formula (GST Registered Seller)**:
-    *   `Buyer Pays = Item Price + 18% GST + 20% Buyer Comm + 18% GST on Comm`
+*   **Seller Input**: The seller enters a **Base Selling Price** (e.g., ₹1,000).
+*   **Seller View**: The seller sees **Base Price - 20% Commission**.
+*   **Buyer View**: The buyer sees **Base Price + 20% Commission** (Marketplace Price).
+*   **Taxes**:
+    *   **Item Tax (18%)**: Always charged to the buyer on the Base Price.
+        *   If Seller is **GST Registered**: Credited to Seller.
+        *   If Seller is **Unregistered**: Retained by Platform as service fee.
+    *   **Commission GST (18%)**: Charged on both Buyer and Seller commissions.
+    *   **TCS (1%)**: Tax Collected at Source, deducted from GST registered sellers.
 
-### 💰 Calculation Example (Selling Price: ₹1,000)
+### 💰 Calculation Example (Base Selling Price: ₹1,000)
 
-| Component | Logic | Value |
+| Component | Calculation Logic | Value |
 | :--- | :--- | :--- |
-| **Input Price** | Seller entered price | **₹1,000** |
-| **Seller Payout** | ₹1,000 - ₹200 (20%) | **₹800** |
-| **Buyer Payment** | ₹1,000 + ₹200 (20%) | **₹1,200** |
-| **Platform Revenue** | ₹200 (Seller) + ₹200 (Buyer) | **₹400** |
-| **PG Expense** | Fixed Placeholder | **₹30** |
-| **Delivery Cost** | Fixed Placeholder | **₹80** |
-| **Net Profit** | ₹400 - (₹30 + ₹80) | **₹290** |
+| **Seller Input** | Base Selling Price | **₹1,000** |
+| | | |
+| **SELLER SIDE** | | |
+| **(-) Seller Comm** | 20% of ₹1,000 | ₹200 |
+| **(-) Comm GST** | 18% of ₹200 | ₹36 |
+| **(-) TCS** | 1% of ₹1,000 (Only if GST Registered) | ₹10 / ₹0 |
+| **(+) Item Tax Credit**| 18% of ₹1,000 (Only if GST Registered) | ₹180 / ₹0 |
+| **(=) Net Payout** | ₹1,000 - ₹200 - ₹36 - ₹10 (+ ₹180 if Reg) | **₹764** (Unreg) / **₹934** (Reg) |
+| | | |
+| **BUYER SIDE** | | |
+| **(+) Buyer Comm** | 20% of ₹1,000 | ₹200 |
+| **(+) Comm GST** | 18% of ₹200 | ₹36 |
+| **(+) Item Tax** | 18% of ₹1,000 (Always Charged) | ₹180 |
+| **(=) Final Pay** | ₹1,000 + ₹200 + ₹36 + ₹180 | **₹1,416** |
+| | | |
+| **PLATFORM REVENUE** | | |
+| **(+) Gross Comm** | ₹200 (Seller) + ₹200 (Buyer) | ₹400 |
+| **(+) Tax Margin** | Item Tax (If Seller Unregistered) | ₹180 / ₹0 |
+| **(-) Expenses** | PG Fee (₹30) + Delivery (₹80) | ₹110 |
+| **(=) Net Profit** | Revenue - Expenses | **₹470** (Unreg) / **₹290** (Reg) |
 
 ---
 

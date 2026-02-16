@@ -53,13 +53,15 @@ class XpressbeesWebhookController extends Controller
                 
                 if ($order->status !== $newStatus) {
                     if ($newStatus === 'Returned') {
-                        // Increment SKU for all returned items (Rental or Purchase)
+                        // Increment SKU ONLY for returned purchase items (as rentals don't decrement SKU)
                         foreach ($order->items as $item) {
-                            $cloth = $item->cloth;
-                            if ($cloth) { 
-                                $cloth->sku = $cloth->sku + 1;
-                                $cloth->is_available = true; // Make available again
-                                $cloth->save();
+                            if ($item->purchase_type === 'buy') {
+                                $cloth = $item->cloth;
+                                if ($cloth) { 
+                                    $cloth->sku = $cloth->sku + 1;
+                                    $cloth->is_available = true; // Make available again
+                                    $cloth->save();
+                                }
                             }
                         }
                     }

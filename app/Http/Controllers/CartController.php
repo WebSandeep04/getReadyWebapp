@@ -45,7 +45,6 @@ class CartController extends Controller
             $request->validate([
                 'cloth_id' => 'required|exists:clothes,id',
                 'purchase_type' => 'required|in:buy',
-                'total_selling_price' => 'required|numeric|min:0',
             ]);
             
             // Check if item is available for purchase
@@ -60,12 +59,17 @@ class CartController extends Controller
                 return response()->json(['success' => false, 'message' => 'Item is already in cart']);
             }
             
+            // Calculate Purchase Price securely
+            $priceService = new \App\Services\PriceCalculatorService();
+            $purchasePricing = $priceService->calculatePurchase($cloth);
+            $totalSellingPrice = $purchasePricing['total_buyer_pay'];
+
             // Add buy item to cart
             Auth::user()->cartItems()->create([
                 'cloth_id' => $request->cloth_id,
                 'quantity' => 1,
                 'purchase_type' => 'buy',
-                'total_selling_price' => $request->total_selling_price,
+                'total_selling_price' => $totalSellingPrice,
             ]);
             
             $message = 'Item added to cart for purchase';

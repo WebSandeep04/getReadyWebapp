@@ -149,6 +149,42 @@ class Cloth extends Model
         return $this->rent_price * 0.80;
     }
 
+    /**
+     * Get the marketplace display selling price (Base Selling Price + 20% Buyer Commission).
+     */
+    public function getDisplaySellingPriceAttribute()
+    {
+        return $this->selling_price * 1.20;
+    }
+
+    /**
+     * Get the selling price visible to seller (Base Selling Price - 20% Seller Commission).
+     */
+    public function getSellerSellingPriceAttribute()
+    {
+        return $this->selling_price * 0.80;
+    }
+
+    /**
+     * Get the estimated net payout for the seller from a purchase.
+     */
+    public function getNetSellerPurchasePayoutAttribute()
+    {
+        if (!$this->is_purchased) return 0;
+        $pricing = (new \App\Services\PriceCalculatorService())->calculatePurchase($this);
+        return $pricing['net_seller_payout'];
+    }
+
+    /**
+     * Get the total purchase price for the buyer (Base + Comm + Taxes).
+     */
+    public function getTotalPurchasePriceAttribute()
+    {
+        if (!$this->is_purchased) return 0;
+        $pricing = (new \App\Services\PriceCalculatorService())->calculatePurchase($this);
+        return $pricing['total_buyer_pay'];
+    }
+
     // Standard Relationships
     public function category() { return $this->belongsTo(Category::class, 'category_id'); }
     public function brand() { return $this->belongsTo(Brand::class, 'brand_id'); }

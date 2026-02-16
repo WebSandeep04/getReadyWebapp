@@ -21,16 +21,32 @@ class PayoutController extends Controller
     public function fetchData(Request $request)
     {
         $query = Order::with(['buyer', 'items.cloth.user'])
-            ->where('has_rental_items', true)
-            ->whereNull('return_reason') // Exclude issue-based returns (seller shouldn't be paid)
+            // ->where('has_rental_items', true) // Removed to include Purchase orders
+            ->whereNull('return_reason') // Exclude issue-based returns
             ->whereNotIn('status', ['Cancelled', 'Return Requested', 'Return In Progress']);
 
         if ($request->has('status') && $request->status) {
             $status = $request->status;
             if ($status === 'pending') {
-                $query->where('status', 'Returned')->where('is_seller_paid', false);
+                // Eligible for Payout: Rental Returned OR Purchase Delivered
+                $query->where('is_seller_paid', false)
+                      ->where(function($q) {
+                          $q->where(function($sq) {
+                              $sq->where('has_rental_items', true)->where('status', 'Returned');
+                          })->orWhere(function($sq) {
+                              $sq->where('has_purchase_items', true)->where('status', 'Delivered');
+                          });
+                      });
             } elseif ($status === 'processing') {
-                $query->where('status', '!=', 'Returned')->where('is_seller_paid', false);
+                // In Progress: Not yet eligible
+                $query->where('is_seller_paid', false)
+                      ->where(function($q) {
+                          $q->where(function($sq) {
+                              $sq->where('has_rental_items', true)->where('status', '!=', 'Returned');
+                          })->orWhere(function($sq) {
+                              $sq->where('has_purchase_items', true)->where('status', '!=', 'Delivered');
+                          });
+                      });
             } elseif ($status === 'completed') {
                 $query->where('is_seller_paid', true);
             }
@@ -83,7 +99,15 @@ class PayoutController extends Controller
         $sellerNames = [];
         foreach ($order->items as $item) {
             $sCommGst = ($item->seller_commission ?? 0) * 0.18;
-            $net = ($item->base_rent ?? 0) + ($item->rent_gst ?? 0) - (($item->seller_commission ?? 0) + $sCommGst + ($item->tcs_amount ?? 0));
+            
+            // For Buy items, rent_gst is Buyer's Tax (18%). Seller gets it only if GST registered.
+            // For Rent items, rent_gst is already Seller's Share.
+            $gstShare = ($item->rent_gst ?? 0);
+            if ($item->purchase_type === 'buy' && !$item->is_seller_gst) {
+                $gstShare = 0;
+            }
+            
+            $net = ($item->base_rent ?? 0) + $gstShare - (($item->seller_commission ?? 0) + $sCommGst + ($item->tcs_amount ?? 0));
             $totalSellerNet += $net;
             
             if ($item->cloth && $item->cloth->user) {
@@ -107,6 +131,7 @@ class PayoutController extends Controller
         $data['buyer_name'] = $order->buyer ? $order->buyer->name : 'Unknown';
         $data['created_at_formatted'] = $order->created_at->format('d M Y');
         $data['seller_paid_at_formatted'] = $order->seller_paid_at ? $order->seller_paid_at->format('d M Y') : null;
+        $data['is_purchase'] = $order->has_purchase_items;
         
         return $data;
     }
@@ -134,18 +159,37 @@ class PayoutController extends Controller
                 $q->where('is_seller_paid', false);
             })->get()->sum(function($item) {
                 $sCommGst = (float)($item->seller_commission_gst ?? (($item->seller_commission ?? 0) * 0.18));
-                return ($item->base_rent ?? 0) + ($item->rent_gst ?? 0) - (($item->seller_commission ?? 0) + $sCommGst + ($item->tcs_amount ?? 0));
+                
+                $gstShare = ($item->rent_gst ?? 0);
+                if ($item->purchase_type === 'buy' && !$item->is_seller_gst) {
+                    $gstShare = 0;
+                }
+                
+                return ($item->base_rent ?? 0) + $gstShare - (($item->seller_commission ?? 0) + $sCommGst + ($item->tcs_amount ?? 0));
             });
 
         // 2. Need to Pay (Returned items, not yet paid)
         $needToPay = Order::with('items')
-            ->where('status', 'Returned')
             ->where('is_seller_paid', false)
             ->whereNull('return_reason')
+            ->where(function($q) {
+                // Rental Returned OR Purchase Delivered
+                $q->where(function($sq) {
+                    $sq->where('status', 'Returned')->where('has_rental_items', true);
+                })->orWhere(function($sq) {
+                    $sq->where('status', 'Delivered')->where('has_purchase_items', true);
+                });
+            })
             ->get()->sum(function($order) {
                 return $order->items->sum(function($item) {
                     $sCommGst = (float)($item->seller_commission_gst ?? (($item->seller_commission ?? 0) * 0.18));
-                    return ($item->base_rent ?? 0) + ($item->rent_gst ?? 0) - (($item->seller_commission ?? 0) + $sCommGst + ($item->tcs_amount ?? 0));
+                    
+                    $gstShare = ($item->rent_gst ?? 0);
+                    if ($item->purchase_type === 'buy' && !$item->is_seller_gst) {
+                        $gstShare = 0;
+                    }
+                    
+                    return ($item->base_rent ?? 0) + $gstShare - (($item->seller_commission ?? 0) + $sCommGst + ($item->tcs_amount ?? 0));
                 });
             });
 
@@ -155,7 +199,13 @@ class PayoutController extends Controller
             ->get()->sum(function($order) {
                 return $order->items->sum(function($item) {
                     $sCommGst = (float)($item->seller_commission_gst ?? (($item->seller_commission ?? 0) * 0.18));
-                    return ($item->base_rent ?? 0) + ($item->rent_gst ?? 0) - (($item->seller_commission ?? 0) + $sCommGst + ($item->tcs_amount ?? 0));
+                    
+                    $gstShare = ($item->rent_gst ?? 0);
+                    if ($item->purchase_type === 'buy' && !$item->is_seller_gst) {
+                        $gstShare = 0;
+                    }
+                    
+                    return ($item->base_rent ?? 0) + $gstShare - (($item->seller_commission ?? 0) + $sCommGst + ($item->tcs_amount ?? 0));
                 });
             });
 

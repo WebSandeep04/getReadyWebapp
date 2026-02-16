@@ -15,14 +15,14 @@
         @if($order->is_seller_paid)
             <span class="badge bg-success">Paid</span><br>
             <small class="text-muted">{{ $order->seller_paid_at->format('d M Y') }}</small>
-        @elseif($order->status === 'Returned')
+        @elseif($order->status === 'Returned' || ($order->has_purchase_items && $order->status === 'Delivered'))
             <span class="badge bg-warning text-dark">Eligible for Payout</span>
         @else
             <span class="badge bg-light text-dark border">Order {{ $order->status }}</span>
         @endif
     </td>
     <td class="text-end">
-        @if(!$order->is_seller_paid && $order->status === 'Returned')
+        @if(!$order->is_seller_paid && ($order->status === 'Returned' || ($order->has_purchase_items && $order->status === 'Delivered')))
             <button class="btn btn-sm btn-dark" onclick="confirmSellerPayout({{ $order->id }}, {{ $order->total_seller_net }}, '{{ $order->seller_display_name }}')">
                 Mark as Paid
             </button>

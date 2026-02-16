@@ -254,8 +254,13 @@ class AdminController extends Controller
             }
         }
         
-        // Limit for dashboard table
-        $clothesLimited = $query->latest()->limit(5)->get();
+        if ($request->has('limit')) {
+            $query->limit($request->limit);
+        }
+        // If no limit is provided, we return all (for approval page) checking if we should paginate or just get()
+        // The frontend expects a list for client-side pagination in approval page
+        
+        $clothesLimited = $query->latest()->get();
         
         // Convert objects to display format efficiently
         $formattedClothes = $clothesLimited->map(function ($cloth) {
@@ -299,11 +304,23 @@ class AdminController extends Controller
             $data['condition'] = $cloth->condition_name;
             $data['user_name'] = $cloth->user ? $cloth->user->name : 'Unknown';
             
-            // Full Pricing Breakdown for Admin (using 4 days as standard)
+            // Full Pricing Breakdown for Admin (using 4 days as standard for Rent)
             $pricing = (new \App\Services\PriceCalculatorService())->calculate($cloth, 4);
             $data['display_rent_price'] = $pricing['total_buyer_pay'];
             $data['seller_rent'] = $pricing['net_seller_payout'];
             $data['base_rent'] = $pricing['base_rent'];
+            
+            // Purchase Pricing
+            if ($cloth->is_purchased) {
+                $purchasePricing = (new \App\Services\PriceCalculatorService())->calculatePurchase($cloth);
+                $data['display_selling_price'] = $purchasePricing['total_buyer_pay'];
+                $data['seller_selling_price'] = $purchasePricing['net_seller_payout'];
+                $data['base_selling_price'] = $cloth->selling_price;
+            } else {
+                $data['display_selling_price'] = null;
+                $data['seller_selling_price'] = null;
+                $data['base_selling_price'] = null;
+            }
             
             // Intermediate prices for transparency
             $data['buyer_see_rent'] = $cloth->display_rent_price;
@@ -321,6 +338,7 @@ class AdminController extends Controller
             'rejected' => Cloth::where('is_approved', -1)->count(),
             'total_rent' => Cloth::sum('rent_price'),
             'total_security' => Cloth::sum('security_deposit'),
+            'total_purchase' => Cloth::where('is_purchased', 1)->sum('selling_price'),
         ];
         
         return response()->json([
@@ -357,6 +375,7 @@ class AdminController extends Controller
             // Flags for UI buttons
             $data['shipment_missing'] = !$order->shipments->where('type', 'forward')->first() && $order->status === 'Confirmed';
             $data['is_rental'] = (bool) $order->has_rental_items;
+            $data['is_purchase'] = (bool) $order->has_purchase_items;
             
             return $data;
         });
@@ -417,8 +436,14 @@ class AdminController extends Controller
                     $buyerCommGst += $bCommGst;
                     $sellerCommGst += $sCommGst;
                     
+                    // For Buy items, rent_gst is Buyer's Tax (18%). Seller gets it only if GST registered.
+                    $gstShare = ($item->rent_gst ?? 0);
+                    if ($item->purchase_type === 'buy' && !$item->is_seller_gst) {
+                        $gstShare = 0;
+                    }
+                    
                     // Net for Seller calculation
-                    $sellerNet += ($item->base_rent ?? 0) + ($item->rent_gst ?? 0) - (($item->seller_commission ?? 0) + $sCommGst + ($item->tcs_amount ?? 0));
+                    $sellerNet += ($item->base_rent ?? 0) + $gstShare - (($item->seller_commission ?? 0) + $sCommGst + ($item->tcs_amount ?? 0));
                 }
             }
             
@@ -461,7 +486,13 @@ class AdminController extends Controller
         
         $sellerPayouts = $orderItems->sum(function($item) {
             $sCommGst = (float)($item->seller_commission_gst ?? (($item->seller_commission ?? 0) * 0.18));
-            return ($item->base_rent ?? 0) + ($item->rent_gst ?? 0) - (($item->seller_commission ?? 0) + $sCommGst + ($item->tcs_amount ?? 0));
+            
+            $gstShare = ($item->rent_gst ?? 0);
+            if ($item->purchase_type === 'buy' && !$item->is_seller_gst) {
+                $gstShare = 0;
+            }
+            
+            return ($item->base_rent ?? 0) + $gstShare - (($item->seller_commission ?? 0) + $sCommGst + ($item->tcs_amount ?? 0));
         });
 
         $stats = [

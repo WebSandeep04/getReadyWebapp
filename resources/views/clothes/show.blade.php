@@ -243,7 +243,7 @@
 
               @if($cloth->is_purchased)
                 <button class="buy-button add-to-cart-buy-btn w-100 mt-2" data-cloth-id="{{ $cloth->id }}" id="productBuyBtn">
-                  <i class="bi bi-bag-check me-2"></i>Buy once - ₹{{ number_format($cloth->selling_price) }}
+                  <i class="bi bi-bag-check me-2"></i>Buy once - ₹{{ number_format($cloth->display_selling_price) }}
                 </button>
               @endif
             @else
@@ -619,6 +619,7 @@
 const clothData = {
     id: {{ $cloth->id }},
     rentPrice: {{ $cloth->rent_price }},
+    purchasePrice: {{ $cloth->display_selling_price ?? 0 }},
     securityDeposit: {{ $cloth->security_deposit }},
     isSellerGst: {{ $cloth->user && $cloth->user->is_gst ? 'true' : 'false' }},
     availableBlocks: @json($cloth->availabilityBlocks->where('type', 'available')->values()),
@@ -877,7 +878,7 @@ $(document).ready(function() {
          const requestData = {
              cloth_id: clothId,
              purchase_type: 'buy',
-             total_selling_price: {{ $cloth->selling_price }},
+             total_selling_price: clothData.purchasePrice,
              _token: $('meta[name="csrf-token"]').attr('content')
          };
          
@@ -1157,7 +1158,7 @@ function updateAllBuyButtons(clothId, isPurchased) {
             const $rentBtn = $(`.add-to-cart-btn[data-cloth-id="${clothId}"]`);
             $rentBtn.prop('disabled', true).text('RENTED');
         } else {
-            $btn.html('<i class="bi bi-bag-check me-2"></i>BUY NOW - ₹{{ number_format($cloth->selling_price) }}')
+            $btn.html('<i class="bi bi-bag-check me-2"></i>BUY NOW - ₹' + parseInt(clothData.purchasePrice).toLocaleString())
                 .removeClass('btn-success')
                 .addClass('btn-primary')
                 .prop('disabled', false)

@@ -59,6 +59,10 @@
                 <div class="fs-3 fw-semibold" id="totalRentSum">₹0</div>
             </div>
             <div>
+                <div class="text-uppercase small text-white-50">Purchase Volume</div>
+                <div class="fs-3 fw-semibold" id="totalPurchaseSum">₹0</div>
+            </div>
+            <div>
                 <div class="text-uppercase small text-white-50">Security Held</div>
                 <div class="fs-3 fw-semibold" id="totalDepositSum">₹0</div>
             </div>
@@ -132,9 +136,9 @@
                         <th>User Type</th>
                         <th>Size</th>
                         <th>Condition</th>
-                        <th>Base Rent (₹)</th>
-                        <th>Buyer See (₹)</th>
-                        <th>Seller See (₹)</th>
+                        <th>Base Price (₹)</th>
+                        <th>Buyer Pays (₹)</th>
+                        <th>Seller Earns (₹)</th>
                         <th>Deposit (₹)</th>
                         <th>Status</th>
                         <th class="text-center">Actions</th>
@@ -306,10 +310,10 @@
                         <th>Order</th>
                         <th>Payer</th>
                         <th>Total (₹)</th>
-                        <th>Base Rent</th>
+                        <th>Base Amt</th>
                         <th>Buyer Comm</th>
                         <th>Seller Comm</th>
-                        <th>Rent GST</th>
+                        <th>Item Tax/GST</th>
                         <th>Buyer GST</th>
                         <th>Seller GST</th>
                         <th>Total GST</th>
@@ -591,8 +595,11 @@ $(function() {
     function loadClothes() {
         let status = $('#statusFilter').val();
         let url = "{{ route('clothes.fetch') }}";
+        
         if (status) {
-            url += `?status=${status}`;
+            url += `?status=${status}&limit=5`;
+        } else {
+            url += `?limit=5`;
         }
         
         $.get(url, function(response) {
@@ -608,6 +615,7 @@ $(function() {
                 $('#reapprovalCount').text(stats.reapproval || '0');
                 $('#rejectedCount').text(stats.rejected || '0');
                 $('#totalRentSum').text(`₹${Math.round(stats.total_rent || 0).toLocaleString('en-IN')}`);
+                $('#totalPurchaseSum').text(`₹${Math.round(stats.total_purchase || 0).toLocaleString('en-IN')}`);
                 $('#totalDepositSum').text(`₹${Math.round(stats.total_security || 0).toLocaleString('en-IN')}`);
             }
 
@@ -640,6 +648,16 @@ $(function() {
                     rejectDisabled = false;
                 }
                 
+                // Accessor for Display Prices
+                const rentPrice = cloth.rent_price ? `<div><small class="text-muted">Rent:</small> ₹${cloth.rent_price}</div>` : '';
+                const buyPrice = cloth.base_selling_price ? `<div><small class="text-primary">Buy:</small> ₹${cloth.base_selling_price}</div>` : '';
+                
+                const buyerRent = cloth.buyer_see_rent ? `<div><small class="text-muted">Rent:</small> ₹${cloth.buyer_see_rent}</div>` : '';
+                const buyerBuy = cloth.display_selling_price ? `<div><small class="text-primary">Buy:</small> ₹${cloth.display_selling_price}</div>` : '';
+                
+                const sellerRent = cloth.seller_see_rent ? `<div><small class="text-muted">Rent:</small> ₹${cloth.seller_see_rent}</div>` : '';
+                const sellerBuy = cloth.seller_selling_price ? `<div><small class="text-primary">Buy:</small> ₹${cloth.seller_selling_price}</div>` : '';
+
                 rows += `<tr>
                     <td>${cloth.title}</td>
                     <td>${cloth.category}</td>
@@ -647,9 +665,9 @@ $(function() {
                     <td>${cloth.gender}</td>
                     <td>${cloth.size}</td>
                     <td>${cloth.condition}</td>
-                    <td>₹${cloth.rent_price}</td>
-                    <td class="fw-bold">₹${cloth.buyer_see_rent}</td>
-                    <td class="fw-bold">₹${cloth.seller_see_rent}</td>
+                    <td>${rentPrice}${buyPrice}</td>
+                    <td class="fw-bold">${buyerRent}${buyerBuy}</td>
+                    <td class="fw-bold">${sellerRent}${sellerBuy}</td>
                     <td>₹${cloth.security_deposit}</td>
                     <td>${statusBadge}</td>
                     <td class="text-center">
@@ -829,6 +847,11 @@ $(function() {
                 else if (order.status === 'Delivered') statusBadge = '<span class="badge bg-success">Delivered</span>';
                 else statusBadge = '<span class="badge bg-warning text-dark">' + (order.status || 'Processing') + '</span>';
 
+                let typeLabel = '';
+                if (order.is_rental && order.is_purchase) typeLabel = '<span class="badge bg-dark fw-normal" style="font-size:0.6rem;">Mixed</span>';
+                else if (order.is_rental) typeLabel = '<span class="badge bg-info text-dark fw-normal" style="font-size:0.6rem;">Rental</span>';
+                else if (order.is_purchase) typeLabel = '<span class="badge bg-primary fw-normal" style="font-size:0.6rem;">Purchase</span>';
+
                 if (order.shipment_missing) {
                     statusBadge += ' <i class="bi bi-exclamation-triangle-fill text-danger ms-1" title="Shipment missing"></i>';
                 }
@@ -868,7 +891,7 @@ $(function() {
                     <td>#${order.id}</td>
                     <td>${order.user_name}</td>
                     <td>${order.created_at_formatted}</td>
-                    <td>${order.items_count} Item(s)</td>
+                    <td>${order.items_count} Item(s) ${typeLabel}</td>
                     <td>₹${order.total_amount}</td>
                     <td>${statusBadge}</td>
                     <td class="text-end">${actionBtn}</td>
@@ -1331,7 +1354,7 @@ $(function() {
                 if (order.is_seller_paid) {
                     statusBadge = '<span class="badge bg-success">Paid to Seller</span>';
                     actionBtn = `<small class="text-muted">Paid on ${order.seller_paid_at}</small>`;
-                } else if (order.status === 'Returned') {
+                } else if (order.status === 'Returned' || (order.is_purchase && order.status === 'Delivered')) {
                     statusBadge = '<span class="badge bg-warning text-dark">Eligible for Payout</span>';
                     actionBtn = `
                         <button class="btn btn-sm btn-dark" onclick="confirmSellerPayout(${order.id}, ${order.amount}, '${order.seller_name}')" style="font-size: 0.7rem; border-radius: 0;">

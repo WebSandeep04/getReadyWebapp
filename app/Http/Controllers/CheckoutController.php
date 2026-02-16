@@ -43,11 +43,13 @@ class CheckoutController extends Controller
 
         foreach ($cartItems as $item) {
             if ($item->purchase_type === 'buy') {
-                $buySubtotal += (float) ($item->total_selling_price ?? 0);
+                $pricing = $priceService->calculatePurchase($item->cloth);
+                $buySubtotal += $pricing['total_buyer_pay'] * $item->quantity;
                 $detailedItems[] = [
                     'item' => $item,
                     'is_buy' => true,
-                    'price' => (float) ($item->total_selling_price ?? $item->cloth->selling_price ?? 0)
+                    'pricing' => $pricing,
+                    'price' => $pricing['total_buyer_pay']
                 ];
             } else {
                 $days = $item->rental_days ?? 4;
@@ -89,28 +91,24 @@ class CheckoutController extends Controller
         // Create Order Items
         foreach ($detailedItems as $dItem) {
             $item = $dItem['item'];
-            if ($dItem['is_buy']) {
-                \App\Models\OrderItem::create([
-                    'order_id' => $order->id,
-                    'cloth_id' => $item->cloth_id,
-                    'price' => $dItem['price'],
-                ]);
-            } else {
-                $pricing = $dItem['pricing'];
-                \App\Models\OrderItem::create([
-                    'order_id' => $order->id,
-                    'cloth_id' => $item->cloth_id,
-                    'price' => $pricing['total_buyer_pay'],
-                    'base_rent' => $pricing['base_rent'],
-                    'buyer_commission' => $pricing['buyer_comm'],
-                    'seller_commission' => $pricing['seller_comm'],
-                    'rent_gst' => $pricing['rent_gst'],
-                    'buyer_commission_gst' => $pricing['buyer_comm_gst'],
-                    'seller_commission_gst' => $pricing['seller_comm_gst'],
-                    'tcs_amount' => $pricing['tcs'],
-                    'is_seller_gst' => $pricing['is_seller_gst'],
-                ]);
-            }
+            $pricing = $dItem['pricing'];
+            
+            // For both Rent and Buy, we now populate the detailed breakdown
+            // Note: For Buy, base_rent maps to base_price (selling price)
+            \App\Models\OrderItem::create([
+                'order_id' => $order->id,
+                'cloth_id' => $item->cloth_id,
+                'purchase_type' => $dItem['is_buy'] ? 'buy' : 'rent',
+                'price' => $pricing['total_buyer_pay'],
+                'base_rent' => $pricing['base_price'] ?? $pricing['base_rent'],
+                'buyer_commission' => $pricing['buyer_comm'],
+                'seller_commission' => $pricing['seller_comm'],
+                'rent_gst' => $pricing['item_tax_fee'] ?? $pricing['rent_gst'], // 'rent_gst' column stores Item Tax
+                'buyer_commission_gst' => $pricing['buyer_comm_gst'],
+                'seller_commission_gst' => $pricing['seller_comm_gst'],
+                'tcs_amount' => $pricing['tcs'],
+                'is_seller_gst' => $pricing['is_seller_gst'],
+            ]);
         }
 
         // --- HANDLE COD vs ONLINE ---
@@ -244,7 +242,8 @@ class CheckoutController extends Controller
                     ]);
                 }
 
-                if ($cloth->sku > 0) {
+                // Decrement SKU ONLY if it is a purchase
+                if ($item->purchase_type === 'buy' && $cloth->sku > 0) {
                     $newSku = max(0, $cloth->sku - $item->quantity);
                     $cloth->sku = $newSku;
                     if ($newSku == 0) $cloth->is_available = false;

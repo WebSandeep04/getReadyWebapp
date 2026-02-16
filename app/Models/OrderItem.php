@@ -21,6 +21,7 @@ class OrderItem extends Model
         'seller_commission_gst',
         'tcs_amount',
         'is_seller_gst',
+        'purchase_type',
     ];
 
     public function order()

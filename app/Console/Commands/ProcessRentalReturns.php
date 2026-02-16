@@ -53,9 +53,13 @@ class ProcessRentalReturns extends Command
         foreach ($orders as $order) {
             $this->info("Processing Order #{$order->id} (Buyer: {$order->buyer->name})");
 
-            // Group items by Seller
+            // Group items by Seller (Exclude Purchases)
             $itemsBySeller = [];
             foreach ($order->items as $item) {
+                if ($item->purchase_type === 'buy') {
+                    continue; // Skip purchase items
+                }
+
                 if ($item->cloth && $item->cloth->user) {
                     $itemsBySeller[$item->cloth->user_id][] = $item;
                 }

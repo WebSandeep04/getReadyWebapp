@@ -163,9 +163,9 @@
                                     <th>User Type</th>
                                     <th>Size</th>
                                     <th>Condition</th>
-                                    <th>Base Rent (₹)</th>
-                                    <th>Buyer See (₹)</th>
-                                    <th>Seller See (₹)</th>
+                                    <th>Base Price (₹)</th>
+                                    <th>Buyer Pays (₹)</th>
+                                    <th>Seller Earns (₹)</th>
                                     <th>Deposit (₹)</th>
                                     <th>Status</th>
                                     <th class="text-center">Actions</th>
@@ -293,27 +293,39 @@
                             </div>
                         </div>
 
-                        <h6 class="text-muted fw-bold mb-3">Financials</h6>
+                        <h6 class="text-muted fw-bold mb-3 border-bottom pb-2">Rent Financials</h6>
                         <div class="row g-2 mb-3">
                              <div class="col-4">
                                 <small class="text-muted d-block">Base Rent</small>
                                 <span class="fw-bold" id="detailRent">-</span>
                             </div>
                             <div class="col-4">
-                                <small class="text-muted d-block">Buyer Sees Rent</small>
+                                <small class="text-muted d-block">Buyer Pays</small>
                                 <span class="fw-bold text-primary" id="detailBuyerSeeRent">-</span>
                             </div>
                             <div class="col-4">
-                                <small class="text-muted d-block">Seller Sees Rent</small>
+                                <small class="text-muted d-block">Seller Earns</small>
                                 <span class="fw-bold text-success" id="detailSellerSeeRent">-</span>
                             </div>
                              <div class="col-4">
                                 <small class="text-muted d-block">Security Deposit</small>
                                 <span class="fw-bold text-primary" id="detailDeposit">-</span>
                             </div>
+                        </div>
+
+                        <h6 class="text-muted fw-bold mb-3 border-bottom pb-2">Purchase Financials</h6>
+                        <div class="row g-2 mb-3">
                              <div class="col-4">
-                                <small class="text-muted d-block">Selling Price</small>
-                                <span class="fw-bold" id="detailPurchase">-</span>
+                                <small class="text-muted d-block">Base Price</small>
+                                <span class="fw-bold" id="detailBasePrice">-</span>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted d-block">Buyer Pays</small>
+                                <span class="fw-bold text-primary" id="detailBuyerSeePrice">-</span>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted d-block">Seller Earns</small>
+                                <span class="fw-bold text-success" id="detailSellerSeePrice">-</span>
                             </div>
                         </div>
                         
@@ -566,6 +578,17 @@ $(function() {
                 }
             }
 
+            
+            // Accessor for Display Prices
+            const rentPrice = cloth.rent_price ? `<div><small class="text-muted">Rent:</small> ₹${cloth.rent_price}</div>` : '';
+            const buyPrice = cloth.base_selling_price ? `<div><small class="text-primary">Buy:</small> ₹${cloth.base_selling_price}</div>` : '';
+            
+            const buyerRent = cloth.buyer_see_rent ? `<div><small class="text-muted">Rent:</small> ₹${cloth.buyer_see_rent}</div>` : '';
+            const buyerBuy = cloth.display_selling_price ? `<div><small class="text-primary">Buy:</small> ₹${cloth.display_selling_price}</div>` : '';
+            
+            const sellerRent = cloth.seller_see_rent ? `<div><small class="text-muted">Rent:</small> ₹${cloth.seller_see_rent}</div>` : '';
+            const sellerBuy = cloth.seller_selling_price ? `<div><small class="text-primary">Buy:</small> ₹${cloth.seller_selling_price}</div>` : '';
+
             return `<tr>
                 <td>${cloth.title}</td>
                 <td>${cloth.category}</td>
@@ -573,9 +596,9 @@ $(function() {
                 <td>${cloth.gender}</td>
                 <td>${cloth.size}</td>
                 <td>${cloth.condition}</td>
-                <td>₹${cloth.rent_price}</td>
-                <td class="fw-bold">₹${cloth.buyer_see_rent}</td>
-                <td class="fw-bold">₹${cloth.seller_see_rent}</td>
+                <td>${rentPrice}${buyPrice}</td>
+                <td class="fw-bold">${buyerRent}${buyerBuy}</td>
+                <td class="fw-bold">${sellerRent}${sellerBuy}</td>
                 <td>₹${cloth.security_deposit}</td>
                     <td>${statusBadge}</td>
                     <td class="text-center">
@@ -773,7 +796,11 @@ $(function() {
         $('#detailBuyerSeeRent').text(cloth.buyer_see_rent ? '₹' + cloth.buyer_see_rent : '-');
         $('#detailSellerSeeRent').text(cloth.seller_see_rent ? '₹' + cloth.seller_see_rent : '-');
         $('#detailDeposit').text(cloth.security_deposit ? '₹' + cloth.security_deposit : '-');
-        $('#detailPurchase').text(cloth.selling_price ? '₹' + cloth.selling_price : 'Not for sale');
+        
+        // Purchase Financials
+        $('#detailBasePrice').text(cloth.base_selling_price ? '₹' + cloth.base_selling_price : 'N/A');
+        $('#detailBuyerSeePrice').text(cloth.display_selling_price ? '₹' + cloth.display_selling_price : 'N/A');
+        $('#detailSellerSeePrice').text(cloth.seller_selling_price ? '₹' + cloth.seller_selling_price : 'N/A');
         
         // Defects
         $('#detailDefects').text(cloth.defects || 'None');

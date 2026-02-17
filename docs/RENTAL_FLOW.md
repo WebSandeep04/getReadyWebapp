@@ -10,7 +10,7 @@ When a user decides to rent an item, the process begins in the frontend and pers
 *   **Technical Component**: `CartController`, `CartItem` Model.
 *   **Database**: `cart_items` table.
 *   **Workflow**:
-    1.  User selects "Rent" and chooses a **Date Range** (Start Date to End Date).
+    1.  User selects "Rent" and chooses a **Date Range** (must be within explicitly provided "Available Blocks").
     2.  An AJAX request is sent to `cart.add`.
     3.  `cart_items` record is created/updated with `rental_start_date`, `rental_end_date`, and `purchase_type = 'rent'`.
 *   **Migration**: `2025_08_01_120809_add_rental_dates_to_cart_items.php`.

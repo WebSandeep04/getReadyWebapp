@@ -10,7 +10,7 @@ The platform supports both direct sales and rentals. Users can monetize their wa
 
 1.  **Submission**: A user navigates to the "Sell" section and provides product details (images, category, brand, sizing, and specific attributes).
 2.  **AI Assistance**: The system integrates with **Google Gemini API** to optionally generate high-quality product descriptions based on user-provided titles and attributes.
-3.  **Availability Management**: For rental items, users can define "Availability Blocks" to prevent bookings during specific periods.
+3.  **Availability Management**: For rental items, users **must** define "Available Blocks" (dates) when they are willing to rent the item. If no blocks are defined, the item is considered unavailable.
 4.  **Admin Review**: Every submission enters a "Pending" state and is not visible to other users until an administrator reviews and approves it.
 5.  **Rejection/Correction**: If an item is rejected, the user receives a specific reason and can resubmit the item with corrections.
 

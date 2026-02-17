@@ -97,8 +97,8 @@ The system checks if the `OrderItem` has the `base_rent` column filled. If not (
 | **Base rent** | The base price (Rent or Selling Price) set by the seller. |
 | **Rent GST** | The Item Tax / Fee (18% of Base). |
 | **Security** | The refundable security deposit (0 for Purchases). |
-| **Rent/SP payable to seller** | `Base Price - Seller Comm` (Simplified Gross View). |
-| **Rent/SP receivable from buyer** | `Base Price + Buyer Comm` (Simplified Gross View). |
+| **Seller See** | `Base Price - Seller Comm` (Simplified Gross View). |
+| **Buyer See** | `Base Price + Buyer Comm` (Simplified Gross View). |
 | **Commission from Seller** | The total cut taken from the seller's side. |
 | **Commission from Buyer** | The markup paid by the buyer above the base rent. |
 | **Net Profit** | The final profit for the platform after all payouts and expenses. |

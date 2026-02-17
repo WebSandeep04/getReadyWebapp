@@ -23,7 +23,7 @@ This document provides a comparative analysis of the **Rental** and **Purchase**
 
 *   **Rental**:
     *   **Logic**: The user *must* select a rental duration.
-    *   **Validation**: Checks availability against existing bookings (`availability_blocks`).
+    *   **Validation**: Checks if dates fall within explicitly defined "Available Blocks" and do not overlap with bookings.
     *   **Cart Data**: Stores `rental_start_date`, `rental_end_date`, and `purchase_type='rent'`.
 *   **Purchase**:
     *   **Logic**: The user purchases the item outright.

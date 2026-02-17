@@ -68,7 +68,7 @@ class ClothController extends Controller
             ->get();
         
         $showFilters = false;
-        return view('clothes.show', compact('cloth', 'showFilters', 'userReview', 'canReview', 'relatedClothes', 'categoryId'));
+        return view('clothes.show', compact('cloth','showFilters', 'userReview', 'canReview', 'relatedClothes', 'categoryId'));
     }
 
     public function index()

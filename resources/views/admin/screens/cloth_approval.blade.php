@@ -164,9 +164,9 @@
                                     <th>Size</th>
                                     <th>Condition</th>
                                     <th>Base Price (₹)</th>
-                                    <th>Buyer Pays (₹)</th>
-                                    <th>Seller Earns (₹)</th>
-                                    <th>Deposit (₹)</th>
+                                    <th>Buyer See (₹)</th>
+                                    <th>Seller See (₹)</th>
+                                    <th>Security (₹)</th>
                                     <th>Status</th>
                                     <th class="text-center">Actions</th>
                                 </tr>
@@ -300,11 +300,11 @@
                                 <span class="fw-bold" id="detailRent">-</span>
                             </div>
                             <div class="col-4">
-                                <small class="text-muted d-block">Buyer Pays</small>
+                                <small class="text-muted d-block">Buyer See</small>
                                 <span class="fw-bold text-primary" id="detailBuyerSeeRent">-</span>
                             </div>
                             <div class="col-4">
-                                <small class="text-muted d-block">Seller Earns</small>
+                                <small class="text-muted d-block">Seller See</small>
                                 <span class="fw-bold text-success" id="detailSellerSeeRent">-</span>
                             </div>
                              <div class="col-4">
@@ -320,11 +320,11 @@
                                 <span class="fw-bold" id="detailBasePrice">-</span>
                             </div>
                             <div class="col-4">
-                                <small class="text-muted d-block">Buyer Pays</small>
+                                <small class="text-muted d-block">Buyer See</small>
                                 <span class="fw-bold text-primary" id="detailBuyerSeePrice">-</span>
                             </div>
                             <div class="col-4">
-                                <small class="text-muted d-block">Seller Earns</small>
+                                <small class="text-muted d-block">Seller See</small>
                                 <span class="fw-bold text-success" id="detailSellerSeePrice">-</span>
                             </div>
                         </div>

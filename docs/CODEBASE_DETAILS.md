@@ -85,7 +85,7 @@ This is the central entity of the marketplace.
 *   **Alert Calendar**: A tactical dashboard for daily operations.
     *   Generates dual alerts for every order: **Pickup [P]** (Start Date) and **Return [R]** (End Date).
     *   Includes **Sale [S]** alerts for direct purchases.
-    *   Features a detailed table-based modal tracking Order IDs, Security Deposits, and Rent Payouts.
+    *   Features a detailed table-based modal tracking Order IDs, Security Deposits, and Seller Payouts (Rent/Sale).
 *   **Financial Reporting**: A deep-dive analytical screen for profitability.
     *   Tracks: Total Revenue, Security Held, Payouts, and Net Profit.
     *   Logic: Automatically handles platform commission on base prices and adjusts for PG expenses (2%) and delivery costs.

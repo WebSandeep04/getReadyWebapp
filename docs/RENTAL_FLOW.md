@@ -120,7 +120,7 @@ To maintain the efficiency of the rental cycle, a dedicated monitoring tool is p
 *   **Workflow**:
     1.  **Daily Plan**: Admins check the **Alert Calendar** to see all scheduled **Pickups [P]** and **Returns [R]**.
     2.  **Daily Alerts**: The calendar automatically calculates the "After 8:00 PM" pickup and "After 2:00 PM" return windows.
-    3.  **Financial Check**: Each alert identifies the **Security Deposit** status and **Rent Payable** to ensure financial accuracy before shipping or marking as returned.
+    3.  **Financial Check**: Each alert identifies the **Security Deposit** status and **Seller Payout (Rent/Sale)** to ensure financial accuracy before shipping or marking as returned.
 *   **Aesthetic**: Follows the "Zero Radius" monochrome design system for a focused, professional workspace.
 
 ---

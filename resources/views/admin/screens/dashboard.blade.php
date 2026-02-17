@@ -137,9 +137,9 @@
                         <th>Size</th>
                         <th>Condition</th>
                         <th>Base Price (₹)</th>
-                        <th>Buyer Pays (₹)</th>
-                        <th>Seller Earns (₹)</th>
-                        <th>Deposit (₹)</th>
+                        <th>Buyer See (₹)</th>
+                        <th>Seller See (₹)</th>
+                        <th>Security (₹)</th>
                         <th>Status</th>
                         <th class="text-center">Actions</th>
                     </tr>

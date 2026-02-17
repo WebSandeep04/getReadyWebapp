@@ -70,6 +70,21 @@
         <td>{{ $order->created_at->format('d/m/Y, h:i A') }}</td>
         <td>
             <div class="d-flex gap-2">
+                @if($order->invoices && $order->invoices->isNotEmpty())
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Download Invoices">
+                            <i class="bi bi-file-earmark-pdf"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            @foreach($order->invoices as $inv)
+                                <li><a class="dropdown-item" href="{{ route('invoices.download', $inv->id) }}" target="_blank">
+                                    <small>{{ strtoupper(str_replace('_', ' ', $inv->type)) }}</small><br>
+                                    {{ $inv->invoice_number }}
+                                </a></li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
                 @if($order->buyer && $order->buyer->email)
                     <a href="mailto:{{ $order->buyer->email }}" class="btn btn-sm btn-outline-secondary" title="Email Buyer">
                         <i class="bi bi-envelope"></i>

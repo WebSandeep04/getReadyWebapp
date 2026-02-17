@@ -66,7 +66,8 @@ class AdminController extends Controller
             'payments' => function ($paymentQuery) {
                 $paymentQuery->latest();
             },
-            'shipments'
+            'shipments',
+            'invoices'
         ]);
 
         if ($status = $request->get('status')) {

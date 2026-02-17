@@ -117,6 +117,28 @@
                                     </td>
                                     <td>{{ $order->created_at->format('d/m/Y') }}</td>
                                     <td>
+                                        @php
+                                            $sellerInvoices = $order->invoices->filter(function($inv) {
+                                                return $inv->issued_by_id == auth()->id() || ($inv->type == 'platform_fee_seller' && $inv->issued_to_id == auth()->id());
+                                            });
+                                        @endphp
+                                        @if($sellerInvoices->isNotEmpty())
+                                            <div class="dropdown d-inline-block mb-2">
+                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
+                                                    <i class="bi bi-file-earmark-text me-1"></i>Invoices
+                                                </button>
+                                                <div class="dropdown-menu">
+                                                    @foreach($sellerInvoices as $inv)
+                                                        <a class="dropdown-item" href="{{ route('invoices.download', $inv->id) }}">
+                                                            @if($inv->type == 'rent_sale') Tax Invoice (to Buyer)
+                                                            @elseif($inv->type == 'platform_fee_seller') Commission Invoice
+                                                            @else Invoice #{{ $inv->invoice_number }} @endif
+                                                        </a>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        @endif
+
                                         @if($canRate)
                                             @if($hasRated)
                                                 <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Rated</span>

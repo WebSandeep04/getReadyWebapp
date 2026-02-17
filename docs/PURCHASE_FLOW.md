@@ -11,7 +11,7 @@ Sellers decide which items are available for direct sale during the listing proc
 *   **Database Column**: `is_purchased` (Boolean)
 *   **Logic**:
     *   If `is_purchased` is true, the seller must provide a `selling_price`.
-    *   The system suggests `rent_price` be ~20% of `selling_price` for consistency.
+    *   **Enforcement**: `rent_price` **cannot exceed 20%** of the `selling_price`.
     *   **SKU**: Direct sales are limited by the physical stock provided by the seller.
 
 ---

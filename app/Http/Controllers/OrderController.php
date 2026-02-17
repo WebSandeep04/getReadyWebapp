@@ -11,7 +11,7 @@ class OrderController extends Controller
     {
         $showFilters = false;
 
-        $orders = Order::with(['payments', 'shipments'])
+        $orders = Order::with(['payments', 'shipments', 'invoices'])
             ->where('buyer_id', Auth::id())
             ->latest()
             ->paginate(10);
@@ -35,7 +35,7 @@ class OrderController extends Controller
                 })->with(['cloth' => function($q) {
                     $q->with(['category', 'brand', 'size', 'color', 'fabric', 'condition', 'fitType', 'bottomType']);
                 }]);
-            }, 'buyer', 'payments'])
+            }, 'buyer', 'payments', 'invoices'])
             ->latest()
             ->paginate(10);
 

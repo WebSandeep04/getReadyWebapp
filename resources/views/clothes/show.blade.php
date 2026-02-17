@@ -624,7 +624,7 @@ const clothData = {
     isSellerGst: {{ $cloth->user && $cloth->user->is_gst ? 'true' : 'false' }},
     availableBlocks: @json($cloth->availabilityBlocks->where('type', 'available')->values()),
     blockedBlocks: @json($cloth->availabilityBlocks->where('type', 'blocked')->values()),
-    isAlwaysAvailable: {{ $cloth->availabilityBlocks->where('type', 'available')->count() == 0 ? 'false' : 'true' }}
+    isAlwaysAvailable: {{ $cloth->availabilityBlocks->where('type', 'available')->count() == 0 ? 'true' : 'false' }}
 };
 $(document).ready(function() {
     

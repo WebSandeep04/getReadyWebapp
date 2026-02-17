@@ -278,3 +278,6 @@ Route::middleware(['auth'])->group(function () {
     
    
 });
+
+// Invoice Download
+Route::get('/invoices/{id}/download', [App\Http\Controllers\InvoiceController::class, 'download'])->name('invoices.download');

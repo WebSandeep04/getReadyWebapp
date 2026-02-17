@@ -144,6 +144,26 @@
                                     </td>
                                     <td>{{ $order->created_at->format('d/m/Y, h:i A') }}</td>
                                     <td>
+                                        @php
+                                            $relevantInvoices = $order->invoices->where('issued_to_id', auth()->id());
+                                        @endphp
+                                        @if($relevantInvoices->isNotEmpty())
+                                            <div class="dropdown d-inline-block mb-2">
+                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
+                                                    <i class="bi bi-file-earmark-text me-1"></i>Invoices
+                                                </button>
+                                                <div class="dropdown-menu">
+                                                    @foreach($relevantInvoices as $inv)
+                                                        <a class="dropdown-item" href="{{ route('invoices.download', $inv->id) }}">
+                                                            @if($inv->type == 'rent_sale') Tax Invoice (Items)
+                                                            @elseif($inv->type == 'platform_fee_buyer') Service Fee (Platform)
+                                                            @else Invoice #{{ $inv->invoice_number }} @endif
+                                                        </a>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        @endif
+
                                         @if($canRate || $order->status === 'Delivered')
                                             <div class="d-flex flex-column gap-2">
                                                 @if($hasRated)

@@ -254,6 +254,14 @@ class CheckoutController extends Controller
 
         // 5. Clear Cart
         $user->cartItems()->delete();
+
+        // 6. Generate Invoices
+        try {
+            $invoiceService = new \App\Services\InvoiceService();
+            $invoiceService->generateOrderInvoices($order);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Invoice Generation Failed for Order #{$order->id}: " . $e->getMessage());
+        }
     }
 
     private function createShipment($order, $user, $paymentType)

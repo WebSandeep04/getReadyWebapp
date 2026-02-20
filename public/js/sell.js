@@ -93,31 +93,15 @@ function updateButtons() {
 }
 
 // Next button functionality
-// Next button functionality
 nextBtn.addEventListener("click", () => {
-  // Validate current step
-  const currentStepEl = steps[currentStep];
-  const requiredInputs = currentStepEl.querySelectorAll('input[required], select[required], textarea[required]');
-  let isValid = true;
+  if (currentStep < steps.length - 1) {
+    steps[currentStep].classList.remove("active");
+    indicators[currentStep].classList.remove("active");
+    currentStep++;
 
-  for (const input of requiredInputs) {
-    if (!input.checkValidity()) {
-      input.reportValidity();
-      isValid = false;
-      break;
-    }
-  }
-
-  if (isValid) {
-    if (currentStep < steps.length - 1) {
-      steps[currentStep].classList.remove("active");
-      indicators[currentStep].classList.remove("active");
-      currentStep++;
-
-      steps[currentStep].classList.add("active");
-      indicators[currentStep].classList.add("active");
-      updateButtons();
-    }
+    steps[currentStep].classList.add("active");
+    indicators[currentStep].classList.add("active");
+    updateButtons();
   }
 });
 
@@ -134,12 +118,85 @@ prevBtn.addEventListener("click", () => {
   }
 });
 
+// Make indicators clickable to jump between steps freely
+indicators.forEach((indicator, index) => {
+  indicator.style.cursor = "pointer";
+  indicator.addEventListener("click", () => {
+    steps[currentStep].classList.remove("active");
+    indicators[currentStep].classList.remove("active");
+    currentStep = index;
+
+    steps[currentStep].classList.add("active");
+    indicators[currentStep].classList.add("active");
+    updateButtons();
+  });
+});
+
+// Form submission validation
+const form = document.getElementById("form");
+if (form) {
+  form.setAttribute('novalidate', true);
+  form.addEventListener("submit", function (e) {
+    let isValid = true;
+    let firstInvalidStep = -1;
+    const allInputs = form.querySelectorAll('input, select, textarea');
+
+    // Clear previous highlights
+    allInputs.forEach(input => input.classList.remove('is-invalid'));
+
+    allInputs.forEach(input => {
+      // We skip disabled or hidden input if they don't apply to current flow
+      // But they're visible if their section container is visible, they are standard inputs.
+      if (!input.checkValidity()) {
+        isValid = false;
+        input.classList.add('is-invalid');
+        if (firstInvalidStep === -1) {
+          const stepParent = input.closest('.step-content');
+          steps.forEach((stepEl, index) => {
+            if (stepEl === stepParent) firstInvalidStep = index;
+          });
+        }
+      }
+    });
+
+    if (!isValid) {
+      e.preventDefault(); // Stop submission
+      if (firstInvalidStep !== -1 && firstInvalidStep !== currentStep) {
+        steps[currentStep].classList.remove("active");
+        indicators[currentStep].classList.remove("active");
+        currentStep = firstInvalidStep;
+        steps[currentStep].classList.add("active");
+        indicators[currentStep].classList.add("active");
+        updateButtons();
+      }
+
+      // Optionally focus the first invalid input if helpful
+      const firstInvalid = document.querySelector('.is-invalid');
+      if (firstInvalid) {
+        setTimeout(() => firstInvalid.focus(), 100);
+      }
+    }
+  });
+}
+
 // Initialize button visibility
 updateButtons();
 
 // Availability management functionality
 let availableCounter = 0;
 let blockedCounter = 0;
+
+// Remove validation formatting on input or change
+document.addEventListener('input', function (e) {
+  if (e.target.classList && e.target.classList.contains('is-invalid')) {
+    e.target.classList.remove('is-invalid');
+  }
+});
+document.addEventListener('change', function (e) {
+  if (e.target.classList && e.target.classList.contains('is-invalid')) {
+    e.target.classList.remove('is-invalid');
+  }
+});
 
 function addAvailabilityBlock(type) {
   const container = document.getElementById(type === 'available' ? 'available-dates' : 'blocked-dates');

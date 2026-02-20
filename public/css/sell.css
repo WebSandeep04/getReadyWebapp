@@ -100,6 +100,13 @@ textarea {
   font-size: 1rem;
 }
 
+input.is-invalid,
+select.is-invalid,
+textarea.is-invalid {
+  border-color: red !important;
+  box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+}
+
 input[type="radio"],
 input[type="checkbox"] {
   width: auto;

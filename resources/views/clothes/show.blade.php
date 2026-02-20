@@ -1028,8 +1028,12 @@ function validateAndCalculateRental() {
     
     let costBreakdown = `
         <div class="d-flex justify-content-between mb-1 small text-muted">
-          <span>Marketplace Rent (${daysDiff} days)</span>
-          <span>₹${Math.round(displayRentTotal).toLocaleString()}</span>
+          <span>Rent (${daysDiff} days)</span>
+          <span>₹${Math.round(totalRent).toLocaleString()}</span>
+        </div>
+        <div class="d-flex justify-content-between mb-1 small text-muted">
+          <span>20% Buyer Platform Comm</span>
+          <span>₹${Math.round(buyerCommission).toLocaleString()}</span>
         </div>
         ${rentGst > 0 ? `
         <div class="d-flex justify-content-between mb-1 small text-muted">

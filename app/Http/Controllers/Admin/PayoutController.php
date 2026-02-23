@@ -20,7 +20,7 @@ class PayoutController extends Controller
 
     public function fetchData(Request $request)
     {
-        $query = Order::with(['buyer', 'items.cloth.user'])
+        $query = Order::with(['buyer', 'items.cloth.user', 'extensions'])
             // ->where('has_rental_items', true) // Removed to include Purchase orders
             ->whereNull('return_reason') // Exclude issue-based returns
             ->whereNotIn('status', ['Cancelled', 'Return Requested', 'Return In Progress']);
@@ -115,6 +115,9 @@ class PayoutController extends Controller
             }
         }
         
+        // Add extension payouts
+        $totalSellerNet += (float) $order->extensions->where('status', 'paid')->sum('seller_net_amount');
+        
         $order->seller_display_name = count(array_unique($sellerNames)) > 1 ? 'Multiple Sellers' : (count($sellerNames) > 0 ? $sellerNames[0] : 'Unknown');
         $order->total_seller_net = round($totalSellerNet, 2);
         
@@ -167,9 +170,18 @@ class PayoutController extends Controller
                 
                 return ($item->base_rent ?? 0) + $gstShare - (($item->seller_commission ?? 0) + $sCommGst + ($item->tcs_amount ?? 0));
             });
+            
+        // 2b. Add extensions to totalHeld
+        $extensionHeld = \App\Models\OrderExtension::whereIn('order_id', $validOrderIds)
+            ->where('status', 'paid')
+            ->whereHas('order', function($q) {
+                $q->where('is_seller_paid', false);
+            })->sum('seller_net_amount');
+        
+        $totalHeld += $extensionHeld;
 
-        // 2. Need to Pay (Returned items, not yet paid)
-        $needToPay = Order::with('items')
+        // 3. Need to Pay (Returned items, not yet paid)
+        $needToPay = Order::with(['items', 'extensions'])
             ->where('is_seller_paid', false)
             ->whereNull('return_reason')
             ->where(function($q) {
@@ -181,32 +193,36 @@ class PayoutController extends Controller
                 });
             })
             ->get()->sum(function($order) {
-                return $order->items->sum(function($item) {
+                $itemSum = $order->items->sum(function($item) {
                     $sCommGst = (float)($item->seller_commission_gst ?? (($item->seller_commission ?? 0) * 0.18));
-                    
                     $gstShare = ($item->rent_gst ?? 0);
                     if ($item->purchase_type === 'buy' && !$item->is_seller_gst) {
                         $gstShare = 0;
                     }
-                    
                     return ($item->base_rent ?? 0) + $gstShare - (($item->seller_commission ?? 0) + $sCommGst + ($item->tcs_amount ?? 0));
                 });
+                
+                $extensionSum = (float) $order->extensions->where('status', 'paid')->sum('seller_net_amount');
+                
+                return $itemSum + $extensionSum;
             });
 
-        // 3. Paid to Sellers (Lifetime paid)
-        $paidToSellers = Order::with('items')
+        // 4. Paid to Sellers (Lifetime paid)
+        $paidToSellers = Order::with(['items', 'extensions'])
             ->where('is_seller_paid', true)
             ->get()->sum(function($order) {
-                return $order->items->sum(function($item) {
+                $itemSum = $order->items->sum(function($item) {
                     $sCommGst = (float)($item->seller_commission_gst ?? (($item->seller_commission ?? 0) * 0.18));
-                    
                     $gstShare = ($item->rent_gst ?? 0);
                     if ($item->purchase_type === 'buy' && !$item->is_seller_gst) {
                         $gstShare = 0;
                     }
-                    
                     return ($item->base_rent ?? 0) + $gstShare - (($item->seller_commission ?? 0) + $sCommGst + ($item->tcs_amount ?? 0));
                 });
+                
+                $extensionSum = (float) $order->extensions->where('status', 'paid')->sum('seller_net_amount');
+                
+                return $itemSum + $extensionSum;
             });
 
         return [

@@ -95,6 +95,27 @@ class ReportController extends Controller
                 $payableToSellerDate = $deliveredAt ? $deliveredAt->addDays(7)->format('d/m/Y') : '-';
                 $securityPayableDate = $returnedAt ? $returnedAt->addDays(3)->format('d/m/Y') : '-';
 
+                // Add Extension revenue for this specific item if available
+                $itemExtensionNet = 0;
+                $itemExtensionRevenue = 0;
+                $itemExtensionPayable = 0;
+
+                // Find paid extensions for this order
+                $paidExtensions = $order->extensions->where('status', 'paid');
+                foreach ($paidExtensions as $ext) {
+                    // For now, pro-rate the extension net/revenue across items if it's an order-level extension
+                    // Or better, if we have a way to match item_id, use it. 
+                    // Since calculateExtensionCost returns per-item, but we only store aggregate,
+                    // we'll re-calculate or distribute. 
+                    // Distribution by item base_rent share is a safe fallback.
+                    $orderBaseTotal = $order->items->sum('base_rent') ?: 1;
+                    $itemShare = ($item->base_rent ?? 0) / $orderBaseTotal;
+                    
+                    $itemExtensionNet += $ext->seller_net_amount * $itemShare;
+                    $itemExtensionRevenue += ($ext->buyer_commission + $ext->seller_commission) * $itemShare;
+                    $itemExtensionPayable += ($ext->base_rent_amount - $ext->seller_commission) * $itemShare;
+                }
+
                 return [
                     'item_id' => $item->id,
                     'title' => $cloth->title ?? 'Deleted Item',
@@ -103,19 +124,19 @@ class ReportController extends Controller
                     'base_price' => $basePrice,
                     'rent_gst' => $rentGst,
                     'security' => $security,
-                    'payable_to_seller' => $payableToSeller,
+                    'payable_to_seller' => $payableToSeller + $itemExtensionPayable,
                     'receivable_from_buyer' => $receivableFromBuyer,
                     'payable_to_seller_date' => $payableToSellerDate,
                     'security_payable_date' => $securityPayableDate,
                     'revenue_seller_comm' => $sellerComm,
                     'revenue_buyer_comm' => $buyerComm,
                     'return_handling' => 0,
-                    'total_revenue' => $platformRevenue,
+                    'total_revenue' => $platformRevenue + $itemExtensionRevenue,
                     'exp_pg' => $pgFee,
                     'exp_delivery' => $deliveryCost,
                     'exp_fraud' => $fraudCost,
                     'total_exp' => $pgFee + $deliveryCost + $fraudCost,
-                    'net_profit' => ($platformRevenue) - ($pgFee + $deliveryCost + $fraudCost)
+                    'net_profit' => ($platformRevenue + $itemExtensionRevenue) - ($pgFee + $deliveryCost + $fraudCost)
                 ];
             });
 
@@ -142,7 +163,7 @@ class ReportController extends Controller
     public function calendar(Request $request)
     {
         // Fetch all relevant orders for the calendar
-        $orders = Order::with(['buyer', 'items.cloth'])
+        $orders = Order::with(['buyer', 'items.cloth', 'extensions'])
             ->where(function($query) {
                 $query->where('has_rental_items', true)
                       ->whereNotNull('rental_from');
@@ -164,6 +185,9 @@ class ReportController extends Controller
                         $rentPayableToSeller += $payout;
                     }
                 }
+                
+                // Add extension payouts to rent payable
+                $rentPayableToSeller += (float) $order->extensions->where('status', 'paid')->sum('seller_net_amount');
                 
                 $order->rent_payable_to_seller = $rentPayableToSeller;
                 $order->selling_price_payable_to_seller = $sellingPayableToSeller;

@@ -12,25 +12,29 @@ use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return view('admin.screens.orders');
+        $statuses = ['Pending', 'Confirmed', 'Shipped', 'Delivered', 'Returned', 'Cancelled', 'Order Confirmed & Shipment Created', 'Return Requested', 'Return In Progress'];
+        $paymentStatuses = ['Paid', 'Pending', 'Failed', 'Refunded'];
+        $filters = $request->all();
+
+        $query = $this->buildOrdersQuery($request);
+        $orders = $query->paginate(10)->appends($request->query());
+
+        $stats = $this->getStats();
+
+        return view('admin.screens.orders', compact('orders', 'stats', 'statuses', 'paymentStatuses', 'filters'));
     }
 
     public function ordersData(Request $request)
     {
         $query = $this->buildOrdersQuery($request);
-        
-        // Paginate results (10 per page)
-        $orders = $query->paginate(10);
-
-        // Transform data for frontend
-        $orders->getCollection()->transform(function ($order) {
-            return $this->transformOrder($order);
-        });
+        $orders = $query->paginate(10)->appends($request->query());
 
         return response()->json([
-            'orders' => $orders
+            'table_html' => view('admin.components.orders-rows', compact('orders'))->render(),
+            'pagination_html' => view('admin.components.orders-pagination', compact('orders'))->render(),
+            'stats' => $this->getStats()
         ]);
     }
 
@@ -57,29 +61,92 @@ class OrderController extends Controller
 
     private function buildOrdersQuery(Request $request)
     {
-        $query = Order::with(['buyer', 'items.cloth', 'shipments', 'payments']);
+        $query = Order::with(['buyer', 'items.cloth', 'shipments', 'payments', 'invoices']);
 
-        // Search by Order ID or User Name/Email
-        if ($request->has('search') && !empty($request->search)) {
+        // Search by Order ID or User Name/Email or Amount
+        if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('id', 'like', "%{$search}%")
-                  ->orWhereHas('buyer', function($bq) use ($search) {
-                      $bq->where('name', 'like', "%{$search}%")
-                         ->orWhere('email', 'like', "%{$search}%");
-                  });
+            $query->where(function ($q) use ($search) {
+                if (is_numeric($search)) {
+                    $q->where('id', $search)->orWhere('total_amount', 'like', "%{$search}%");
+                }
+                $q->orWhereHas('buyer', function ($bq) use ($search) {
+                    $bq->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                });
             });
         }
 
         // Filter by Status
-        if ($request->has('status') && $request->status !== 'All' && !empty($request->status)) {
+        if ($request->filled('status')) {
             $query->where('status', $request->status);
+        }
+
+        // Filter by Type
+        if ($request->filled('type')) {
+            if ($request->type === 'rental') {
+                $query->where('has_rental_items', true)->where('has_purchase_items', false);
+            } elseif ($request->type === 'purchase') {
+                $query->where('has_purchase_items', true)->where('has_rental_items', false);
+            } elseif ($request->type === 'mixed') {
+                $query->where('has_rental_items', true)->where('has_purchase_items', true);
+            }
+        }
+
+        // Filter by Return State (Overdue, Due Soon, etc.)
+        if ($request->filled('return_state')) {
+            $today = now()->toDateString();
+            if ($request->return_state === 'overdue') {
+                $query->where('has_rental_items', true)
+                    ->where('rental_to', '<', $today)
+                    ->whereNotIn('status', ['Returned', 'Cancelled']);
+            } elseif ($request->return_state === 'due_soon') {
+                $threeDaysLater = now()->addDays(3)->toDateString();
+                $query->where('has_rental_items', true)
+                    ->whereBetween('rental_to', [$today, $threeDaysLater])
+                    ->whereNotIn('status', ['Returned', 'Cancelled']);
+            } elseif ($request->return_state === 'completed') {
+                $query->where('status', 'Returned');
+            }
+        }
+
+        // Filter by Payment Status
+        if ($request->filled('payment_status')) {
+            $ps = $request->payment_status;
+            $query->whereHas('payments', function ($pq) use ($ps) {
+                $pq->where('payment_status', $ps);
+            });
+        }
+
+        // Filter by Placement Date
+        if ($request->filled('placed_from')) {
+            $query->whereDate('created_at', '>=', $request->placed_from);
+        }
+        if ($request->filled('placed_to')) {
+            $query->whereDate('created_at', '<=', $request->placed_to);
         }
 
         // Sort by Date
         $query->orderBy('created_at', 'desc');
 
         return $query;
+    }
+
+    protected function getStats()
+    {
+        $today = now()->toDateString();
+
+        return [
+            'total' => Order::count(),
+            'overdue' => Order::where('has_rental_items', true)
+                ->where('rental_to', '<', $today)
+                ->whereNotIn('status', ['Returned', 'Cancelled'])
+                ->count(),
+            'due_today' => Order::where('rental_to', $today)
+                ->whereNotIn('status', ['Returned', 'Cancelled'])
+                ->count(),
+            'purchase' => Order::where('has_purchase_items', true)->count(),
+        ];
     }
 
     public function updateStatus(Request $request, $id)

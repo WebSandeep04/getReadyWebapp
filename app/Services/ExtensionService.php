@@ -46,13 +46,31 @@ class ExtensionService
      */
     public function calculateExtensionCost(Order $order, int $extraDays): array
     {
-        $totalAdditionalAmount = 0;
+        $aggregates = [
+            'total_additional_amount' => 0,
+            'base_rent_amount' => 0,
+            'buyer_commission' => 0,
+            'seller_commission' => 0,
+            'rent_gst' => 0,
+            'buyer_commission_gst' => 0,
+            'seller_commission_gst' => 0,
+            'seller_net_amount' => 0,
+        ];
         $breakdown = [];
 
         foreach ($order->items as $item) {
             if ($item->purchase_type === 'rent') {
                 $pricing = $this->priceService->calculateExtension($item->cloth, $extraDays);
-                $totalAdditionalAmount += $pricing['total_buyer_pay'];
+                
+                $aggregates['total_additional_amount'] += $pricing['total_buyer_pay'];
+                $aggregates['base_rent_amount'] += $pricing['base_rent'];
+                $aggregates['buyer_commission'] += $pricing['buyer_comm'];
+                $aggregates['seller_commission'] += $pricing['seller_comm'];
+                $aggregates['rent_gst'] += $pricing['rent_gst'];
+                $aggregates['buyer_commission_gst'] += $pricing['buyer_comm_gst'];
+                $aggregates['seller_commission_gst'] += $pricing['seller_comm_gst'];
+                $aggregates['seller_net_amount'] += $pricing['net_seller_payout'];
+
                 $breakdown[] = [
                     'item_id' => $item->id,
                     'cloth_title' => $item->cloth->title,
@@ -61,10 +79,11 @@ class ExtensionService
             }
         }
 
-        return [
-            'total_additional_amount' => round($totalAdditionalAmount, 2),
-            'items' => $breakdown
-        ];
+        foreach ($aggregates as $key => $val) {
+            $aggregates[$key] = round($val, 2);
+        }
+
+        return array_merge($aggregates, ['items' => $breakdown]);
     }
 
     /**

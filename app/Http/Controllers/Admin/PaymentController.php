@@ -91,7 +91,21 @@ class PaymentController extends Controller
         $sellerCommGst = 0;
         $sellerNet = 0;
         
-        if ($payment->order && $payment->order->items) {
+        // Handle Extension Payment
+        if ($payment->payment_method === 'razorpay_extension') {
+            $extension = \App\Models\OrderExtension::where('payment_id', $payment->id)->first();
+            if ($extension) {
+                $baseRent = (float) $extension->base_rent_amount;
+                $buyerComm = (float) $extension->buyer_commission;
+                $sellerComm = (float) $extension->seller_commission;
+                $rentGst = (float) $extension->rent_gst;
+                $buyerCommGst = (float) $extension->buyer_commission_gst;
+                $sellerCommGst = (float) $extension->seller_commission_gst;
+                $sellerNet = (float) $extension->seller_net_amount;
+            }
+        } 
+        // Handle Standard Order Payment
+        elseif ($payment->order && $payment->order->items) {
             foreach ($payment->order->items as $item) {
                 $baseRent += (float) ($item->base_rent ?? 0);
                 $buyerComm += (float) ($item->buyer_commission ?? 0);
@@ -124,7 +138,9 @@ class PaymentController extends Controller
         $payment->seller_comm_gst_total = round($sellerCommGst, 2);
         $payment->gst_total = round($rentGst + $buyerCommGst + $sellerCommGst, 2);
         $payment->seller_net_payout = round($sellerNet, 2);
-        $payment->security_amount = $payment->order ? ($payment->order->security_amount ?? 0) : 0;
+        
+        // Security logic: Extensions usually don't charge security again.
+        $payment->security_amount = ($payment->payment_method === 'razorpay_extension') ? 0 : ($payment->order ? ($payment->order->security_amount ?? 0) : 0);
         $payment->order_status = $payment->order ? $payment->order->status : 'Draft';
         
         return $payment;
@@ -144,6 +160,15 @@ class PaymentController extends Controller
         $sellerCommGstTotal = $orderItems->sum('seller_commission_gst');
         $buyerCommTotal = $orderItems->sum('buyer_commission');
         $sellerCommTotal = $orderItems->sum('seller_commission');
+
+        // Add Extension Components
+        $extensionBreakdown = \App\Models\OrderExtension::where('status', 'paid')->get();
+        $rentGstTotal += $extensionBreakdown->sum('rent_gst');
+        $buyerCommGstTotal += $extensionBreakdown->sum('buyer_commission_gst');
+        $sellerCommGstTotal += $extensionBreakdown->sum('seller_commission_gst');
+        $buyerCommTotal += $extensionBreakdown->sum('buyer_commission');
+        $sellerCommTotal += $extensionBreakdown->sum('seller_commission');
+
         $totalCommission = $buyerCommTotal + $sellerCommTotal;
         $totalGst = $rentGstTotal + $buyerCommGstTotal + $sellerCommGstTotal;
 
@@ -155,8 +180,13 @@ class PaymentController extends Controller
             }
             return ($item->base_rent ?? 0) + $gstShare - (($item->seller_commission ?? 0) + $sCommGst + ($item->tcs_amount ?? 0));
         });
+        
+        $sellerPayouts += $extensionBreakdown->sum('seller_net_amount');
 
         return [
+            'confirmed_count' => Payment::whereIn('payment_status', $paidStatus)->count(),
+            'confirmed_amount' => Payment::whereIn('payment_status', $paidStatus)->sum('amount'),
+            
             'paid_count' => Payment::whereIn('payment_status', $paidStatus)->count(),
             'paid_amount' => Payment::whereIn('payment_status', $paidStatus)->sum('amount'),
             

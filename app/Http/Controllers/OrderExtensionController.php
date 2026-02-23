@@ -81,6 +81,13 @@ class OrderExtensionController extends Controller
             'new_rental_to' => $newRentalTo,
             'extra_days' => $extraDays,
             'additional_amount' => $totalAmount,
+            'base_rent_amount' => $costBreakdown['base_rent_amount'],
+            'buyer_commission' => $costBreakdown['buyer_commission'],
+            'seller_commission' => $costBreakdown['seller_commission'],
+            'rent_gst' => $costBreakdown['rent_gst'],
+            'buyer_commission_gst' => $costBreakdown['buyer_commission_gst'],
+            'seller_commission_gst' => $costBreakdown['seller_commission_gst'],
+            'seller_net_amount' => $costBreakdown['seller_net_amount'],
             'status' => 'pending'
         ]);
 

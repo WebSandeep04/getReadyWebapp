@@ -96,11 +96,80 @@ document.addEventListener('DOMContentLoaded', function () {
                     purchaseValueInput.value = '';
                 }
             }
+            checkAndShowRentSuggestion();
         }
 
         // Add event listener
         isPurchasedCheckbox.addEventListener('change', togglePurchaseValueSection);
     }
+
+    const mrpInput = document.getElementById('mrp');
+    const rentPriceInput = document.getElementById('rent_price');
+    const rentPriceSuggestion = document.getElementById('rent-price-suggestion');
+    const maxRentAmount = document.getElementById('max-rent-amount');
+
+    function checkAndShowRentSuggestion() {
+        if (!mrpInput || !purchaseValueInput || !rentPriceInput) return;
+
+        const mrp = parseFloat(mrpInput.value) || 0;
+        const sellingPrice = parseFloat(purchaseValueInput.value) || 0;
+        const rentPrice = parseFloat(rentPriceInput.value) || 0;
+
+        const rentErrorMessage = document.getElementById('rent-error-message');
+        const spErrorMessage = document.getElementById('sp-error-message');
+
+        if (mrp > 0) {
+            const maxRent = mrp * 0.2; // 20% of MRP
+            if (maxRentAmount) maxRentAmount.textContent = Math.round(maxRent);
+
+            // Rent Price Validation
+            if (rentPrice > maxRent) {
+                if (rentPriceSuggestion) rentPriceSuggestion.style.display = 'block';
+                if (rentErrorMessage) {
+                    rentErrorMessage.textContent = `Rent price should not exceed 20% of MRP (₹${Math.round(maxRent)})`;
+                    rentErrorMessage.style.display = 'block';
+                }
+                rentPriceInput.classList.add('is-invalid');
+            } else {
+                if (rentPriceSuggestion) rentPriceSuggestion.style.display = 'none';
+                if (rentErrorMessage) rentErrorMessage.style.display = 'none';
+                rentPriceInput.classList.remove('is-invalid');
+            }
+
+            // Selling Price Validation
+            if (sellingPrice > mrp) {
+                if (spErrorMessage) {
+                    spErrorMessage.textContent = 'Selling price should not exceed MRP';
+                    spErrorMessage.style.display = 'block';
+                }
+                purchaseValueInput.classList.add('is-invalid');
+            } else {
+                if (spErrorMessage) spErrorMessage.style.display = 'none';
+                purchaseValueInput.classList.remove('is-invalid');
+            }
+        } else {
+            if (rentPriceSuggestion) rentPriceSuggestion.style.display = 'none';
+            if (rentErrorMessage) rentErrorMessage.style.display = 'none';
+            if (spErrorMessage) spErrorMessage.style.display = 'none';
+        }
+    }
+
+    if (mrpInput) mrpInput.addEventListener('input', checkAndShowRentSuggestion);
+    if (purchaseValueInput) purchaseValueInput.addEventListener('input', checkAndShowRentSuggestion);
+    if (rentPriceInput) {
+        rentPriceInput.addEventListener('input', checkAndShowRentSuggestion);
+
+        // Auto-update security deposit as per existing functionality in sell.js
+        rentPriceInput.addEventListener('input', function () {
+            const securityDepositInput = document.getElementById('security_deposit');
+            if (securityDepositInput) {
+                securityDepositInput.value = this.value;
+            }
+        });
+    }
+
+    // Initial check
+    checkAndShowRentSuggestion();
 });
 
 function addAvailabilityBlock(type) {

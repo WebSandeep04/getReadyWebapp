@@ -142,9 +142,31 @@ class ClothController extends Controller
             'condition' => 'required|exists:garment_conditions,id',
             'defects' => 'nullable|string',
             'is_cleaned' => 'boolean',
-            'rent_price' => 'required|numeric|min:0',
+            'rent_price' => [
+                'required',
+                'numeric',
+                'min:0',
+                function ($attribute, $value, $fail) use ($request) {
+                    $mrp = $request->input('mrp');
+                    if ($mrp && $value > ($mrp * 0.2)) {
+                        $maxRent = $mrp * 0.2;
+                        $fail("Rent price should not exceed 20% of MRP. Maximum allowed rent: ₹" . number_format($maxRent, 2));
+                    }
+                },
+            ],
             'is_purchased' => 'boolean',
-            'selling_price' => 'required_if:is_purchased,1|nullable|numeric|min:0',
+            'selling_price' => [
+                'required_if:is_purchased,1',
+                'nullable',
+                'numeric',
+                'min:0',
+                function ($attribute, $value, $fail) use ($request) {
+                    $mrp = $request->input('mrp');
+                    if ($mrp && $value > $mrp) {
+                        $fail("Selling price should not exceed MRP (Original Price).");
+                    }
+                },
+            ],
             'security_deposit' => 'required|numeric|min:0',
             'mrp' => 'nullable|numeric|min:0',
             'sku' => 'required|integer|min:1',
@@ -251,7 +273,18 @@ class ClothController extends Controller
             'condition' => 'required|exists:garment_conditions,id',
             'defects' => 'nullable|string',
             'is_purchased' => 'boolean',
-            'selling_price' => 'required_if:is_purchased,1|nullable|numeric|min:0',
+            'selling_price' => [
+                'required_if:is_purchased,1',
+                'nullable',
+                'numeric',
+                'min:0',
+                function ($attribute, $value, $fail) use ($request) {
+                    $mrp = $request->input('mrp');
+                    if ($mrp && $value > $mrp) {
+                        $fail("Selling price should not exceed MRP (Original Price).");
+                    }
+                },
+            ],
             'sku' => 'required|integer|min:1',
             'mrp' => 'nullable|numeric|min:0',
             'rent_price' => [
@@ -259,10 +292,10 @@ class ClothController extends Controller
                 'numeric',
                 'min:0',
                 function ($attribute, $value, $fail) use ($request) {
-                    $sellingPrice = $request->input('selling_price');
-                    if ($request->has('is_purchased') && $sellingPrice && $value > ($sellingPrice * 0.2)) {
-                        $maxRent = $sellingPrice * 0.2;
-                        $fail("Rent price should not exceed 20% of Selling Price. Maximum suggested rent: ₹" . number_format($maxRent, 2));
+                    $mrp = $request->input('mrp');
+                    if ($mrp && $value > ($mrp * 0.2)) {
+                        $maxRent = $mrp * 0.2;
+                        $fail("Rent price should not exceed 20% of MRP. Maximum allowed rent: ₹" . number_format($maxRent, 2));
                     }
                 },
             ],

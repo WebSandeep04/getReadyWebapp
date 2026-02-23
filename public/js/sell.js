@@ -10,26 +10,52 @@ let currentStep = 0;
 const purchaseValueInput = document.querySelector('input[name="selling_price"]');
 const rentPriceInput = document.querySelector('input[name="rent_price"]');
 const securityDepositInput = document.querySelector('input[name="security_deposit"]');
+const mrpInput = document.querySelector('input[name="mrp"]');
 const rentPriceSuggestion = document.getElementById('rent-price-suggestion');
 const maxRentAmount = document.getElementById('max-rent-amount');
 
 // Function to check if rent price exceeds suggested maximum and show/hide suggestion
 function checkAndShowRentSuggestion() {
+  const mrp = parseFloat(mrpInput.value) || 0;
   const sellingPrice = parseFloat(purchaseValueInput.value) || 0;
   const rentPrice = parseFloat(rentPriceInput.value) || 0;
 
-  if (sellingPrice > 0) {
-    const maxRent = sellingPrice * 0.2; // 20% of Selling Price
-    maxRentAmount.textContent = Math.round(maxRent);
+  const rentErrorMessage = document.getElementById('rent-error-message');
+  const spErrorMessage = document.getElementById('sp-error-message');
 
-    // Only show suggestion if entered rent price exceeds the suggested maximum
+  if (mrp > 0) {
+    const maxRent = mrp * 0.2; // 20% of MRP
+    if (maxRentAmount) maxRentAmount.textContent = Math.round(maxRent);
+
+    // Rent Price Validation
     if (rentPrice > maxRent) {
-      rentPriceSuggestion.style.display = 'block';
+      if (rentPriceSuggestion) rentPriceSuggestion.style.display = 'block';
+      if (rentErrorMessage) {
+        rentErrorMessage.textContent = `Rent price should not exceed 20% of MRP (₹${Math.round(maxRent)})`;
+        rentErrorMessage.style.display = 'block';
+      }
+      rentPriceInput.classList.add('is-invalid');
     } else {
-      rentPriceSuggestion.style.display = 'none';
+      if (rentPriceSuggestion) rentPriceSuggestion.style.display = 'none';
+      if (rentErrorMessage) rentErrorMessage.style.display = 'none';
+      rentPriceInput.classList.remove('is-invalid');
+    }
+
+    // Selling Price Validation
+    if (sellingPrice > mrp) {
+      if (spErrorMessage) {
+        spErrorMessage.textContent = 'Selling price should not exceed MRP';
+        spErrorMessage.style.display = 'block';
+      }
+      purchaseValueInput.classList.add('is-invalid');
+    } else {
+      if (spErrorMessage) spErrorMessage.style.display = 'none';
+      purchaseValueInput.classList.remove('is-invalid');
     }
   } else {
-    rentPriceSuggestion.style.display = 'none';
+    if (rentPriceSuggestion) rentPriceSuggestion.style.display = 'none';
+    if (rentErrorMessage) rentErrorMessage.style.display = 'none';
+    if (spErrorMessage) spErrorMessage.style.display = 'none';
   }
 }
 
@@ -59,6 +85,9 @@ if (isPurchasedCheckbox && sellingPriceSection) {
 if (purchaseValueInput && rentPriceInput && rentPriceSuggestion && maxRentAmount) {
   // Check when Selling Price changes
   purchaseValueInput.addEventListener('input', checkAndShowRentSuggestion);
+
+  // Check when MRP changes
+  mrpInput.addEventListener('input', checkAndShowRentSuggestion);
 
   // Check when rent price changes
   rentPriceInput.addEventListener('input', function () {

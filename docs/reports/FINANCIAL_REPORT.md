@@ -5,7 +5,7 @@ This document explains the logic, calculations, and interface of the **Financial
 ---
 
 ## 1. Overview
-The Financial Report is designed for administrators to track the flow of money for every order. It distinguishes between **Rental** and **Purchase** transactions and calculates the platform's net profit after accounting for seller payouts, buyer commissions, and operational expenses.
+The Financial Report is designed for administrators to track the flow of money for every order. It distinguishes between **Rental**, **Purchase**, and **Rental Extension** transactions and calculates the platform's net profit after accounting for seller payouts, buyer commissions, and operational expenses.
 
 ---
 
@@ -25,7 +25,10 @@ Allows administrators to filter report data based on the **Order Creation Date**
 
 ## 3. Data Logic & Calculations
 
-The report processes data at the **Order Item** level, using the stored financial snapshots in `order_items` (e.g., `base_rent`, `buyer_commission`, `rent_gst`).
+The report processes data at the **Order Item** level, combining stored financial snapshots in `order_items` with supplemental revenue from `order_extensions`.
+
+### A. Rental Extensions Integration
+Since extensions are processed at the Order level, their revenue (Base Rent, Commissions, Taxes) is distributed across the order's rental items pro-rata. This ensures that item-level reports accurately reflect the total lifecycle revenue of a product during its rental period.
 
 ### A. Pricing Components (20/20 Model)
 | Field | Formula / Logic |
@@ -79,11 +82,13 @@ The following table explains the derivation for a standard **₹1,000** transact
 ### Data Fetching
 The report uses Eloquent eager loading to minimize database queries:
 ```php
-Order::with(['buyer', 'items.cloth', 'payments', 'shipments']);
+Order::with(['buyer', 'items.cloth', 'payments', 'shipments', 'extensions']);
 ```
 
-### Calculation Pivot
-The system checks if the `OrderItem` has the `base_rent` column filled. If not (for older orders), it falls back to a legacy calculation based on current product prices.
+### Calculation Pivot & Fallbacks
+1. **Snapshots**: The system checks if the `OrderItem` has the `base_rent` column filled. If not, it falls back to legacy calculations.
+2. **Extensions**: Extension revenue is added to each item: `Item Share = (Item Base Rent / Total Order Base Rent) * Extension Amount`.
+3. **Stat Synchronization**: Controllers (Payment, Payout, Report) are standardized to provide both `confirmed` (for direct consumption) and `paid` (for dashboard legacy support) keys in their stats arrays to prevent "Undefined variable" errors.
 
 ---
 

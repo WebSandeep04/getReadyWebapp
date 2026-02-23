@@ -287,6 +287,8 @@
                                 <div class="form-group">
                                     <label for="rent_price">Rent Price (₹) *</label>
                                     <input type="number" class="form-control" id="rent_price" name="rent_price" value="{{ $cloth->rent_price }}" min="0" step="0.01" required>
+                                    <div id="rent-error-message" class="text-danger small mt-1" style="display: none;"></div>
+                                    <small class="text-muted" id="rent-price-suggestion" style="display: none;">Suggested maximum rent: ₹<span id="max-rent-amount">0</span></small>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -299,6 +301,7 @@
                                 <div class="form-group" id="selling_price_section" style="display: {{ $cloth->is_purchased ? 'block' : 'none' }};">
                                     <label for="selling_price">Selling Price (₹)</label>
                                     <input type="number" class="form-control" id="selling_price" name="selling_price" value="{{ $cloth->selling_price }}" min="0" step="0.01">
+                                    <div id="sp-error-message" class="text-danger small mt-1" style="display: none;"></div>
                                 </div>
                             </div>
                         </div>

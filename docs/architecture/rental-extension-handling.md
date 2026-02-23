@@ -14,7 +14,7 @@ This document outlines the architectural design and implementation strategy for 
 ## 1. Database Schema Implementation
 
 ### Model: `OrderExtension`
-Tracks extensions separately while updating the parent order for current state.
+Tracks extensions separately while updating the parent order for current state. Detailed financial snapshots are stored to ensure reporting accuracy.
 
 | Column | Type | Description |
 | :--- | :--- | :--- |
@@ -23,10 +23,28 @@ Tracks extensions separately while updating the parent order for current state.
 | `old_rental_to` | Date | Return date before this extension. |
 | `new_rental_to` | Date | Updated return date. |
 | `extra_days` | Integer | Additional days requested. |
-| `additional_amount`| Decimal | Total extra cost (Rent + Comm + Taxes). |
+| `total_additional_amount`| Decimal | Total extra cost paid by Buyer (Rent + Buyer Comm + Taxes). |
+| `base_rent_amount`| Decimal | Net rental portion added. |
+| `buyer_commission`| Decimal | Platform fee from buyer side. |
+| `seller_commission`| Decimal | Platform fee from seller side. |
+| `rent_gst` | Decimal | 18% GST on the base rent. |
+| `buyer_commission_gst`| Decimal | 18% GST on buyer commission. |
+| `seller_commission_gst`| Decimal | 18% GST on seller commission. |
+| `seller_net_amount`| Decimal | Final earning for seller from this extension. |
 | `payment_id` | Foreign Key | Link to the `payments` record. |
 | `status` | Enum | `pending`, `paid`, `cancelled`, `expired`. |
 | `is_admin_override`| Boolean | For manual/special extensions. |
+
+---
+
+## 2. Reporting & Financial Synchronization
+
+To maintain a "Single Source of Truth" for revenue, rental extensions are integrated into all financial modules:
+
+1.  **Payment Management**: The `PaymentController` detects `razorpay_extension` methods and retrieves the granular breakdown directly from the `OrderExtension` record instead of the order items.
+2.  **Seller Payouts**: The `PayoutController` eager loads `extensions` and adds `seller_net_amount` from all `paid` extensions to the seller's total earnings (`totalHeld`, `needToPay`).
+3.  **Financial Report**: The `ReportController` integrates extension revenue into item-level totals. Since extensions are order-level, revenue is distributed across order items pro-rata based on their `base_rent` share to maintain consistent item-level reporting.
+4.  **Calendar Report**: Extension payouts are added to the "Rent Payable" calculations for each order day to reflect accurate cash flow.
 
 ---
 

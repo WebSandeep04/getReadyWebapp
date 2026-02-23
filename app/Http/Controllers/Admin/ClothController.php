@@ -99,17 +99,17 @@ class ClothController extends Controller
             $data['condition'] = $cloth->condition_name;
             $data['user_name'] = $cloth->user ? $cloth->user->name : 'Unknown';
             
-            // Full Pricing Breakdown for Admin (using 4 days as standard for Rent)
+            // Full Pricing Breakdown for Admin (using standard 20/20 display model for simplicity)
             $pricing = (new PriceCalculatorService())->calculate($cloth, 4);
-            $data['display_rent_price'] = $pricing['total_buyer_pay'];
-            $data['seller_rent'] = $pricing['net_seller_payout'];
+            $data['display_rent_price'] = $pricing['base_rent'] + $pricing['buyer_comm'];
+            $data['seller_rent'] = $pricing['base_rent'] - $pricing['seller_comm'];
             $data['base_rent'] = $pricing['base_rent'];
             
             // Purchase Pricing
             if ($cloth->is_purchased) {
                 $purchasePricing = (new PriceCalculatorService())->calculatePurchase($cloth);
-                $data['display_selling_price'] = $purchasePricing['total_buyer_pay'];
-                $data['seller_selling_price'] = $purchasePricing['net_seller_payout'];
+                $data['display_selling_price'] = $purchasePricing['base_price'] + $purchasePricing['buyer_comm'];
+                $data['seller_selling_price'] = $purchasePricing['base_price'] - $purchasePricing['seller_comm'];
                 $data['base_selling_price'] = $cloth->selling_price;
             } else {
                 $data['display_selling_price'] = null;
@@ -118,8 +118,8 @@ class ClothController extends Controller
             }
             
             // Intermediate prices for transparency
-            $data['buyer_see_rent'] = $cloth->display_rent_price;
-            $data['seller_see_rent'] = $cloth->seller_rent;
+            $data['buyer_see_rent'] = $data['display_rent_price'];
+            $data['seller_see_rent'] = $data['seller_rent'];
             
             return $data;
         });

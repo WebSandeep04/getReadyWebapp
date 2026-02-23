@@ -207,6 +207,7 @@
       <div id="selling_price_section" style="display: {{ old('is_purchased') ? 'block' : 'none' }};">
         <label class="d-block text-left font-weight-bold mb-1">Selling Price <span class="text-danger">*</span></label>
         <input type="number" name="selling_price" placeholder="Selling Price (₹)" value="{{ old('selling_price') }}">
+        <div id="sp-error-message" class="text-danger small mt-1" style="display: none;"></div>
         @error('selling_price')<div class="text-danger small">{{ $message }}</div>@enderror
       </div>
 
@@ -258,6 +259,7 @@
       
       <label class="d-block text-left font-weight-bold mb-1">Rent Price <span class="text-danger">*</span></label>
       <input type="number" name="rent_price" placeholder="Rent Price (₹)" value="{{ old('rent_price') }}" required>
+      <div id="rent-error-message" class="text-danger small mt-1" style="display: none;"></div>
       <small class="text-muted" id="rent-price-suggestion" style="display: none;">Suggested maximum rent: ₹<span id="max-rent-amount">0</span></small>
       @error('rent_price')<div class="text-danger small">{{ $message }}</div>@enderror
       

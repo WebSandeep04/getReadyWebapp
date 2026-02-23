@@ -56,6 +56,14 @@ The logic above applies to both:
 
 ---
 
+## 5. Rental Extensions
+Rental extensions are calculated using the "4-day base rent model" pro-rata.
+
+1.  **Extension Base Rent**: `(Original Base Rent / 4) * Extra Days`.
+2.  **Logic**: All commissions (Buyer/Seller) and taxes (GST) are recalculated based on this new Extension Base Rent, following the exact same rules defined in Section 2.
+3.  **Storage**: These details are stored in the `order_extensions` table and aggregated for Payouts and Payments.
+
+---
 ---
 
 ## 6. Returns, Refunds & Disputed Orders

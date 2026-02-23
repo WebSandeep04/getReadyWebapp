@@ -78,7 +78,7 @@
                         <ul class="dropdown-menu">
                             @foreach($order->invoices as $inv)
                                 <li><a class="dropdown-item" href="{{ route('invoices.download', $inv->id) }}" target="_blank">
-                                    <small>{{ strtoupper(str_replace('_', ' ', $inv->type)) }}</small><br>
+                                    <small>{{ $inv->order_extension_id ? 'EXTENSION: ' : '' }}{{ strtoupper(str_replace('_', ' ', $inv->type)) }}</small><br>
                                     {{ $inv->invoice_number }}
                                 </a></li>
                             @endforeach

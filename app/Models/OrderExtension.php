@@ -39,4 +39,9 @@ class OrderExtension extends Model
     {
         return $this->belongsTo(Payment::class);
     }
+
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class);
+    }
 }

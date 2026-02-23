@@ -13,10 +13,12 @@ use Illuminate\Support\Str;
 class OrderExtensionController extends Controller
 {
     protected $extensionService;
+    protected $invoiceService;
 
-    public function __construct(ExtensionService $extensionService)
+    public function __construct(ExtensionService $extensionService, \App\Services\InvoiceService $invoiceService)
     {
         $this->extensionService = $extensionService;
+        $this->invoiceService = $invoiceService;
     }
 
     /**
@@ -134,6 +136,9 @@ class OrderExtensionController extends Controller
 
         // 2. Process Extension (Update dates and availability blocks)
         $this->extensionService->processExtension($extension->order, $extension);
+
+        // 3. Generate Invoices
+        $this->invoiceService->generateExtensionInvoices($extension);
 
         return response()->json([
             'success' => true,

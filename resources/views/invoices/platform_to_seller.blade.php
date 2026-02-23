@@ -14,9 +14,12 @@
 </head>
 <body>
     <div class="invoice-header">
-        <h1>Platform Service Fee Invoice</h1>
+        <h1>{{ isset($isExt) && $isExt ? 'Platform Service Fee (Extension)' : 'Platform Service Fee Invoice' }}</h1>
         <p><strong>Invoice Number:</strong> {{ $invoiceNumber }}</p>
         <p><strong>Date:</strong> {{ date('Y-m-d') }}</p>
+        @if(isset($isExt) && $isExt)
+            <p><strong>Extension Period:</strong> {{ $extension->extra_days }} days (Until {{ $extension->new_rental_to->format('d M Y') }})</p>
+        @endif
     </div>
     
     <div class="invoice-details">

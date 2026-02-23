@@ -34,7 +34,65 @@ class InvoiceService
         $this->generatePlatformToBuyerInvoice($order, $order->items);
     }
 
-    protected function generateSellerToBuyerInvoice(Order $order, $seller, $items)
+    /**
+     * Generate invoices for a rental extension.
+     */
+    public function generateExtensionInvoices(\App\Models\OrderExtension $extension)
+    {
+        $order = $extension->order->load(['buyer', 'items.cloth.user']);
+        
+        // We need the item-by-item breakdown to generate accurate seller invoices
+        $extensionService = app(\App\Services\ExtensionService::class);
+        $costData = $extensionService->calculateExtensionCost($order, $extension->extra_days);
+        
+        // Group by seller
+        $itemsBySeller = collect($costData['items'])->groupBy(function($item) {
+             $orderItem = \App\Models\OrderItem::find($item['item_id']);
+             return $orderItem->cloth->user_id;
+        });
+
+        foreach ($itemsBySeller as $sellerId => $extendedItems) {
+            $seller = \App\Models\User::find($sellerId);
+            
+            // Map the extendedItems to look like generic item objects for the views
+            $mappedItems = $extendedItems->map(function($extItem) {
+                $orderItem = \App\Models\OrderItem::find($extItem['item_id']);
+                return (object)[
+                    'cloth' => $orderItem->cloth,
+                    'base_rent' => $extItem['pricing']['base_rent'],
+                    'rent_gst' => $extItem['pricing']['rent_gst'],
+                    'is_seller_gst' => $orderItem->is_seller_gst,
+                    'buyer_commission' => $extItem['pricing']['buyer_comm'],
+                    'buyer_commission_gst' => $extItem['pricing']['buyer_comm_gst'],
+                    'seller_commission' => $extItem['pricing']['seller_comm'],
+                    'seller_commission_gst' => $extItem['pricing']['seller_comm_gst'],
+                    'tcs_amount' => $extItem['pricing']['tcs_amount'] ?? 0,
+                    'is_extension' => true // Tooltip/label hint
+                ];
+            });
+
+            // generate for this seller
+            $this->generateSellerToBuyerInvoice($order, $seller, $mappedItems, $extension);
+            $this->generatePlatformToSellerInvoice($order, $seller, $mappedItems, $extension);
+        }
+
+        // generate platform to buyer
+        $allMappedItems = collect($costData['items'])->map(function($extItem) {
+             $orderItem = \App\Models\OrderItem::find($extItem['item_id']);
+             return (object)[
+                    'cloth' => $orderItem->cloth,
+                    'base_rent' => $extItem['pricing']['base_rent'],
+                    'rent_gst' => $extItem['pricing']['rent_gst'],
+                    'is_seller_gst' => $orderItem->is_seller_gst,
+                    'buyer_commission' => $extItem['pricing']['buyer_comm'],
+                    'buyer_commission_gst' => $extItem['pricing']['buyer_comm_gst'],
+                    'is_extension' => true
+                ];
+        });
+        $this->generatePlatformToBuyerInvoice($order, $allMappedItems, $extension);
+    }
+
+    protected function generateSellerToBuyerInvoice(Order $order, $seller, $items, $extension = null)
     {
         // Calculate totals
         $totalBase = 0;
@@ -42,14 +100,8 @@ class InvoiceService
         $totalAmount = 0;
 
         foreach ($items as $item) {
-            $base = (float) $item->base_rent; // or base_price
+            $base = (float) $item->base_rent;
             $tax = (float) $item->rent_gst;
-            
-            // Logic: If seller is NOT GST registered, they cannot charge GST.
-            // The 'rent_gst' column contains the amount buyer paid as "Tax/Fee".
-            // If seller is unregistered, this amount is collected by Platform (Invoice C).
-            // So for Invoice A, we only include Tax if seller is GST registered.
-            
             $itemTax = $item->is_seller_gst ? $tax : 0;
             
             $totalBase += $base;
@@ -57,14 +109,19 @@ class InvoiceService
             $totalAmount += ($base + $itemTax);
         }
 
-        $invoiceNumber = 'INV-' . strtoupper(Str::random(8)); // In real app, use sequence
-        $pdf = Pdf::loadView('invoices.seller_to_buyer', compact('order', 'seller', 'items', 'totalBase', 'totalTax', 'totalAmount', 'invoiceNumber'));
+        $isExt = !is_null($extension);
+        $prefix = $isExt ? 'EXT-' : 'INV-';
+        $invoiceNumber = $prefix . strtoupper(Str::random(8)); 
         
-        $path = 'invoices/' . $order->id . '/' . $invoiceNumber . '_seller_buyer.pdf';
+        $pdf = Pdf::loadView('invoices.seller_to_buyer', compact('order', 'seller', 'items', 'totalBase', 'totalTax', 'totalAmount', 'invoiceNumber', 'isExt', 'extension'));
+        
+        $dir = 'invoices/' . $order->id;
+        $path = $dir . '/' . $invoiceNumber . '_seller_buyer.pdf';
         Storage::put('public/' . $path, $pdf->output());
 
         Invoice::create([
             'order_id' => $order->id,
+            'order_extension_id' => $extension?->id,
             'invoice_number' => $invoiceNumber,
             'type' => 'rent_sale',
             'amount' => $totalAmount,
@@ -75,7 +132,7 @@ class InvoiceService
         ]);
     }
 
-    protected function generatePlatformToSellerInvoice(Order $order, $seller, $items)
+    protected function generatePlatformToSellerInvoice(Order $order, $seller, $items, $extension = null)
     {
         // Calculate totals (Commission from Seller)
         $totalComm = 0;
@@ -85,23 +142,27 @@ class InvoiceService
         foreach ($items as $item) {
             $comm = (float) $item->seller_commission;
             $gst = (float) $item->seller_commission_gst;
-            $tcs = (float) $item->tcs_amount;
+            $tcs = (float) ($item->tcs_amount ?? 0);
 
             $totalComm += $comm;
             $totalCommGst += $gst;
             $totalTcs += $tcs;
         }
 
-        $totalAmount = $totalComm + $totalCommGst; // Invoice amount to be deducted
+        $totalAmount = $totalComm + $totalCommGst;
 
-        $invoiceNumber = 'GR-S-' . strtoupper(Str::random(8));
-        $pdf = Pdf::loadView('invoices.platform_to_seller', compact('order', 'seller', 'items', 'totalComm', 'totalCommGst', 'totalTcs', 'totalAmount', 'invoiceNumber'));
+        $isExt = !is_null($extension);
+        $prefix = $isExt ? 'GR-EXT-S-' : 'GR-S-';
+        $invoiceNumber = $prefix . strtoupper(Str::random(8));
+        
+        $pdf = Pdf::loadView('invoices.platform_to_seller', compact('order', 'seller', 'items', 'totalComm', 'totalCommGst', 'totalTcs', 'totalAmount', 'invoiceNumber', 'isExt', 'extension'));
 
         $path = 'invoices/' . $order->id . '/' . $invoiceNumber . '_platform_seller.pdf';
         Storage::put('public/' . $path, $pdf->output());
 
         Invoice::create([
             'order_id' => $order->id,
+            'order_extension_id' => $extension?->id,
             'invoice_number' => $invoiceNumber,
             'type' => 'platform_fee_seller',
             'amount' => $totalAmount,
@@ -112,50 +173,42 @@ class InvoiceService
         ]);
     }
 
-    protected function generatePlatformToBuyerInvoice(Order $order, $items)
+    protected function generatePlatformToBuyerInvoice(Order $order, $items, $extension = null)
     {
         // Calculate totals (Commission from Buyer + Unregistered Seller Fee)
         $totalComm = 0;
         $totalCommGst = 0;
-        $totalOtherFees = 0; // Fee from unregistered seller items
+        $totalOtherFees = 0; 
 
         foreach ($items as $item) {
             $comm = (float) $item->buyer_commission;
             $gst = (float) $item->buyer_commission_gst;
-            
-            // If seller is UNREGISTERED, the 'rent_gst' (18% of base) is retained by platform as a fee.
-            // This needs to be invoiced to Buyer by Platform.
-            $otherFee = 0;
-            if (!$item->is_seller_gst) {
-                $otherFee = (float) $item->rent_gst;
-            }
+            $otherFee = (!$item->is_seller_gst) ? (float) $item->rent_gst : 0;
 
             $totalComm += $comm;
             $totalCommGst += $gst;
             $totalOtherFees += $otherFee;
         }
 
-        // Note: The 'other fee' (rent_gst equivalent) is technically "Service Fee".
-        // Does it attract its own GST? In the pricing logic, it was 18% of base.
-        // So 18% of Base is the fee. It likely matches the tax rate.
-        // We will list it as "Additional Service Fee".
-
         $totalAmount = $totalComm + $totalCommGst + $totalOtherFees;
 
-        $invoiceNumber = 'GR-B-' . strtoupper(Str::random(8));
+        $isExt = !is_null($extension);
+        $prefix = $isExt ? 'GR-EXT-B-' : 'GR-B-';
+        $invoiceNumber = $prefix . strtoupper(Str::random(8));
         $buyer = $order->buyer;
         
-        $pdf = Pdf::loadView('invoices.platform_to_buyer', compact('order', 'buyer', 'items', 'totalComm', 'totalCommGst', 'totalOtherFees', 'totalAmount', 'invoiceNumber'));
+        $pdf = Pdf::loadView('invoices.platform_to_buyer', compact('order', 'buyer', 'items', 'totalComm', 'totalCommGst', 'totalOtherFees', 'totalAmount', 'invoiceNumber', 'isExt', 'extension'));
 
         $path = 'invoices/' . $order->id . '/' . $invoiceNumber . '_platform_buyer.pdf';
         Storage::put('public/' . $path, $pdf->output());
 
         Invoice::create([
             'order_id' => $order->id,
+            'order_extension_id' => $extension?->id,
             'invoice_number' => $invoiceNumber,
             'type' => 'platform_fee_buyer',
             'amount' => $totalAmount,
-            'tax_amount' => $totalCommGst, // + part of other fee if applicable, but keeping simple
+            'tax_amount' => $totalCommGst,
             'pdf_path' => $path,
             'issued_by_id' => null, // Platform
             'issued_to_id' => $order->buyer_id,

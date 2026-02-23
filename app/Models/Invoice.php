@@ -30,4 +30,9 @@ class Invoice extends Model
     {
         return $this->belongsTo(User::class, 'issued_by_id');
     }
+
+    public function orderExtension()
+    {
+        return $this->belongsTo(OrderExtension::class);
+    }
 }

@@ -41,5 +41,18 @@ class OrderController extends Controller
 
         return view('orders.sales', compact('orders', 'showFilters'));
     }
+
+    public function transactions()
+    {
+        $userId = Auth::id();
+        $payments = \App\Models\Payment::whereHas('order', function($q) use ($userId) {
+            $q->where('buyer_id', $userId);
+        })
+        ->with('order')
+        ->latest()
+        ->paginate(15);
+
+        return view('orders.transactions', compact('payments'));
+    }
 }
 

@@ -91,6 +91,8 @@
           <a class="dropdown-item" href="{{ route('listed.clothes') }}">Listed Clothes</a>
           <a class="dropdown-item" href="{{ route('orders.sales') }}">My Sales</a>
           <a class="dropdown-item" href="{{ route('orders.index') }}">My Orders</a>
+          <a class="dropdown-item" href="{{ route('invoices.index') }}">My Invoices</a>
+          <a class="dropdown-item" href="{{ route('transactions.index') }}">My Transactions</a>
           <a class="dropdown-item" href="{{ route('profile') }}">Profile</a>
           <div class="dropdown-divider"></div>
           <form action="{{ route('logout') }}" method="POST" class="dropdown-item p-0">

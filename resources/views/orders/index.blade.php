@@ -34,6 +34,20 @@
         </div>
     @endif
 
+    @if(request()->get('payment') === 'success')
+        <div class="alert alert-success alert-dismissible border-0 shadow-sm fade show" role="alert" style="background: #e6fffa; color: #234e52;">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-check-circle-fill mr-2 h4 mb-0"></i>
+                <div>
+                    <strong>Payment Successful!</strong> Your order has been placed successfully. You can track its status below.
+                </div>
+            </div>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    @endif
+
     @if(session('error'))
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             {{ session('error') }}

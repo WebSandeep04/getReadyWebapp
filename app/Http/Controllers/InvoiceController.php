@@ -9,6 +9,15 @@ use Illuminate\Support\Facades\Auth;
 
 class InvoiceController extends Controller
 {
+    public function index()
+    {
+        $invoices = Invoice::where('issued_to_id', Auth::id())
+            ->latest()
+            ->paginate(15);
+            
+        return view('invoices.index', compact('invoices'));
+    }
+
     public function download($id)
     {
         $invoice = Invoice::findOrFail($id);

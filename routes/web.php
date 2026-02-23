@@ -242,6 +242,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/checkout/verify', [CheckoutController::class, 'verifyPayment'])->name('checkout.verify');
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/my-sales', [OrderController::class, 'sales'])->name('orders.sales');
+    Route::get('/transactions', [OrderController::class, 'transactions'])->name('transactions.index');
+    Route::get('/invoices', [App\Http\Controllers\InvoiceController::class, 'index'])->name('invoices.index');
     Route::post('/ratings', [App\Http\Controllers\RatingController::class, 'store'])->name('ratings.store');
     Route::post('/orders/{id}/return-request', [App\Http\Controllers\OrderReturnController::class, 'store'])->name('orders.return-request');
 

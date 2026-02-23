@@ -796,7 +796,7 @@ $(function() {
 
     $('#downloadUsers').on('click', function() {
         if (!state.data.length) {
-            alert('No data to export.');
+            showAlert('No data to export.', 'warning');
             return;
         }
         const headers = ['ID','Name','Email','Phone','City','Address','Age','Gender','Business Type','GSTIN','Joined'];

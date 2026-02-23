@@ -26,6 +26,7 @@ class Order extends Model
         'return_details',
         'return_images',
         'admin_rejection_reason',
+        'delivered_at',
     ];
 
     protected $casts = [
@@ -38,6 +39,7 @@ class Order extends Model
         'is_seller_paid' => 'boolean',
         'seller_paid_at' => 'datetime',
         'return_images' => 'array',
+        'delivered_at' => 'datetime',
     ];
 
     public function buyer()

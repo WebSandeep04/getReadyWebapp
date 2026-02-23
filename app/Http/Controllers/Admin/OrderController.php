@@ -165,6 +165,9 @@ class OrderController extends Controller
         }
 
         $order->status = $newStatus;
+        if ($newStatus === 'Delivered' && !$order->delivered_at) {
+            $order->delivered_at = now();
+        }
         $order->save();
 
         return response()->json(['success' => true, 'message' => 'Order status updated to ' . $newStatus]);

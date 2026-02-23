@@ -228,6 +228,14 @@
                 toastNode.remove();
             });
         };
+
+        @if(session('success'))
+            showAlert("{{ session('success') }}", 'success');
+        @endif
+
+        @if(session('error'))
+            showAlert("{{ session('error') }}", 'danger');
+        @endif
     </script>
     
     @stack('scripts')

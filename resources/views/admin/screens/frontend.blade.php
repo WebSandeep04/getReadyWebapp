@@ -36,8 +36,7 @@
             </div>
         </div>
 
-        <!-- Alert Container -->
-        <div id="alertContainer" class="px-4 mt-3"></div>
+
 
         <div class="card-body">
             <!-- Tabs -->
@@ -302,16 +301,16 @@ window.saveSetting = function(key, button) {
         contentType: false,
         success: function(response) {
             if (response.success) {
-                showAlert('success', 'Saved successfully');
+                showAlert('Saved successfully', 'success');
                 if (type === 'image' && response.value) {
                     input.data('current-value', response.value);
                 }
             } else {
-                showAlert('danger', response.message || 'Failed to save');
+                showAlert(response.message || 'Failed to save', 'danger');
             }
         },
         error: function() {
-            showAlert('danger', 'Error saving setting');
+            showAlert('Error saving setting', 'danger');
         },
         complete: function() {
             setTimeout(() => {
@@ -365,27 +364,14 @@ window.saveAllSettings = function() {
     Promise.allSettled(promises).then(results => {
         const rejected = results.filter(r => r.status === 'rejected');
         if (rejected.length === 0) {
-            showAlert('success', 'All settings saved successfully');
+            showAlert('All settings saved successfully', 'success');
         } else {
-            showAlert('warning', `Saved with ${rejected.length} errors`);
+            showAlert(`Saved with ${rejected.length} errors`, 'warning');
         }
         $mainBtn.prop('disabled', false).html(originalText);
     });
 };
 
-function showAlert(type, message) {
-    const alertHtml = `
-        <div class="alert alert-${type} alert-dismissible fade show border-0 rounded-0 shadow-sm" role="alert">
-            <div class="d-flex align-items-center">
-                <i class="bi ${type === 'success' ? 'bi-check-circle' : 'bi-exclamation-circle'} me-2"></i>
-                <div>${message}</div>
-            </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    `;
-    
-    $('#alertContainer').html(alertHtml);
-    setTimeout(() => $('.alert').fadeOut(), 3000);
-}
+
 </script>
 @endpush

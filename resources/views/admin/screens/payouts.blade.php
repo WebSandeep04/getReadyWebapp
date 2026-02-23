@@ -192,7 +192,7 @@ $(function() {
                 btn.prop('disabled', false).text('Confirm');
                 if (res.success) {
                     fetchPayoutData();
-                    alert('Payout marked as completed successfully.');
+                    showAlert('Payout marked as completed successfully.', 'success');
                 }
             });
         });

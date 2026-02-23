@@ -795,21 +795,7 @@ $(function() {
         $(this).removeClass('is-invalid');
     });
 
-    // Show alert function
-    function showAlert(message, type) {
-        const alertHtml = `
-            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        `;
-        $('#alertBox').html(alertHtml);
-        
-        // Auto-dismiss after 5 seconds
-        setTimeout(function() {
-            $('.alert').fadeOut();
-        }, 5000);
-    }
+
 
     // Orders Logic
     function loadOrders() {
@@ -1167,7 +1153,7 @@ $(function() {
 
     $('#submitRejectBtn').on('click', function() {
         const reason = $('#rejectionReasonText').val();
-        if (!reason) return alert('Please provide a reason for rejection.');
+        if (!reason) return showAlert('Please provide a reason for rejection.', 'warning');
         
         const $btn = $(this);
         $btn.prop('disabled', true).html('Rejecting...');
@@ -1399,7 +1385,7 @@ $(function() {
                 if (res.success) {
                     loadSellerPayouts();
                     // Alert success
-                    alert('Payout marked as completed successfully.');
+                    showAlert('Payout marked as completed successfully.', 'success');
                 }
             });
         });

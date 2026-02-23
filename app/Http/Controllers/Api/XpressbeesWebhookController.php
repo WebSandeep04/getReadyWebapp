@@ -67,6 +67,9 @@ class XpressbeesWebhookController extends Controller
                     }
                     
                     $order->status = $newStatus;
+                    if ($newStatus === 'Delivered') {
+                        $order->delivered_at = now();
+                    }
                     $order->save();
                     Log::info("Webhook: Order #{$order->id} marked as {$newStatus} via {$shipment->type} Webhook and stock updated if needed.");
                 }

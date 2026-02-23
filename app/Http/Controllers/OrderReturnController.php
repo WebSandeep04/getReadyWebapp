@@ -23,6 +23,10 @@ class OrderReturnController extends Controller
             return back()->with('error', 'Only delivered orders can be reported for issues.');
         }
 
+        if (!$order->delivered_at || $order->delivered_at->addMinutes(2)->isPast()) {
+            return back()->with('error', 'The reporting period for this order has expired (limit: 2 minutes after delivery).');
+        }
+
         $imagePaths = [];
         if ($request->hasFile('return_images')) {
             foreach ($request->file('return_images') as $image) {

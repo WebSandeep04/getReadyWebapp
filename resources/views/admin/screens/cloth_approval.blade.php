@@ -884,18 +884,7 @@ $(function() {
         $(this).removeClass('is-invalid');
     });
 
-    function showAlert(message, type) {
-        const alertHtml = `
-            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        `;
-        $('#alertBox').html(alertHtml);
-        setTimeout(function() {
-            $('.alert').fadeOut();
-        }, 5000);
-    }
+
 });
 </script>
 @endpush

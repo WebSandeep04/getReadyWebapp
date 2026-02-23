@@ -650,7 +650,7 @@ $(function() {
 
     $('#submitRejectBtn').on('click', function() {
         const reason = $('#rejectionReasonText').val();
-        if (!reason) return alert('Please provide a reason for rejection.');
+        if (!reason) return showAlert('Please provide a reason for rejection.', 'warning');
         
         const $btn = $(this);
         $btn.prop('disabled', true).html('Rejecting...');

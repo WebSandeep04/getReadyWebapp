@@ -155,8 +155,14 @@
                                     <td>
                                         @php
                                             $relevantInvoices = $order->invoices->where('issued_to_id', auth()->id());
+                                            $showInvoices = $relevantInvoices->isNotEmpty();
+                                            if ($order->status === 'Delivered') {
+                                                $showInvoices = $showInvoices && ($order->delivered_at && $order->delivered_at->addMinutes(2)->isPast());
+                                            } elseif (in_array($order->status, ['Pending', 'Confirmed', 'Shipped', 'Order Confirmed & Shipment Created'])) {
+                                                $showInvoices = false;
+                                            }
                                         @endphp
-                                        @if($relevantInvoices->isNotEmpty())
+                                        @if($showInvoices)
                                             <div class="dropdown d-inline-block mb-2">
                                                 <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
                                                     <i class="bi bi-file-earmark-text me-1"></i>Invoices
@@ -183,11 +189,22 @@
                                                     </button>
                                                 @endif
 
-                                                 @if($order->status === 'Delivered')
-                                                    <button type="button" class="btn btn-sm btn-outline-danger" data-toggle="modal" data-target="#returnModal" data-order-id="{{ $order->id }}">
-                                                        <i class="bi bi-exclamation-triangle me-1"></i>Report Issue
-                                                    </button>
-                                                @elseif($order->status === 'Return Requested')
+                                                  @if($order->status === 'Delivered')
+                                                     @php
+                                                         $deliveredAt = $order->delivered_at;
+                                                         $canReport = $deliveredAt && $deliveredAt->addMinutes(2)->isFuture();
+                                                     @endphp
+                                                     
+                                                     @if($canReport)
+                                                        <button type="button" class="btn btn-sm btn-outline-danger" data-toggle="modal" data-target="#returnModal" data-order-id="{{ $order->id }}">
+                                                            <i class="bi bi-exclamation-triangle me-1"></i>Report Issue
+                                                        </button>
+                                                     @else
+                                                        <span class="text-muted small" title="Issue reporting is only available for 2 minutes after delivery">
+                                                            <i class="bi bi-info-circle me-1"></i>Reporting Period Expired
+                                                        </span>
+                                                     @endif
+                                                 @elseif($order->status === 'Return Requested')
                                                      <span class="badge bg-warning text-dark">Return Requested</span>
                                                 @endif
                                                 

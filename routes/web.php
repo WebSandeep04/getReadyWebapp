@@ -12,6 +12,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ClothController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\OrderExtensionController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\ReplyController;
@@ -243,6 +244,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/my-sales', [OrderController::class, 'sales'])->name('orders.sales');
     Route::post('/ratings', [App\Http\Controllers\RatingController::class, 'store'])->name('ratings.store');
     Route::post('/orders/{id}/return-request', [App\Http\Controllers\OrderReturnController::class, 'store'])->name('orders.return-request');
+
+    // Rental Extensions
+    Route::get('/orders/{id}/extension-quote', [OrderExtensionController::class, 'quote'])->name('orders.extension.quote');
+    Route::post('/orders/{id}/extend', [OrderExtensionController::class, 'extend'])->name('orders.extend');
+    Route::post('/orders/extension/verify', [OrderExtensionController::class, 'verifyPayment'])->name('orders.extension.verify');
 });
 
 // Get cart count (for header)

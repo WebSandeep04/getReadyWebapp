@@ -70,4 +70,4 @@ The admin panel uses a specialized "System UI" design system:
 👉 **[Read Technical Setup](CODEBASE_DETAILS.md)**
 
 ---
-*Last Updated: 2026-02-16*
+*Last Updated: 2026-02-23*

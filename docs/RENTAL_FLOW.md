@@ -125,8 +125,26 @@ To maintain the efficiency of the rental cycle, a dedicated monitoring tool is p
 
 ---
 
+## 9. Rental Period Extension
+The platform allows users to extend their active rental period seamlessly from the "My Orders" page.
+
+*   **Technical Component**: `OrderExtensionController`, `ExtensionService`, `AvailabilityService`.
+*   **Database**: `order_extensions` table.
+*   **Workflow**:
+    1.  **Request**: User selects a new return date using a calendar.
+    2.  **Quote**: The system provides a pro-rated price based on `base_rent / 4` per additional day.
+    3.  **Availability**: The system validates availability for the extra days + the shifting pickup buffer, using **excludeOrderId** to ignore the original order's data.
+    4.  **Payment**: Processed via Razorpay.
+    5.  **Synchronization**: Upon payment, the order's `rental_to` is updated, the old pickup buffer is deleted, and a new one is created at the new return date + 1.
+
+---
+
 ## Migration & Logic Summary
+*   **Availability Service**: Centralized all date blocking and checking logic.
+*   **Order-Aware Buffers**: Buffers now store Order IDs to identify own data during extensions.
+*   **Order Extension History**: `order_extensions` provides a full audit trail of all period updates.
 *   **Shipment Type**: Added `type` column (`forward`/`reverse`) to the `shipments` table.
 *   **Order Dispute**: Added `return_reason`, `return_details`, `return_images`, and `admin_rejection_reason` to the `orders` table.
 *   **Artisan Command**: `orders:process-returns` handles the heavy lifting of reverse logistics.
 *   **Relationship**: `Order` now has a `hasMany` relationship with `Shipment` to store both forward and return tracking data.
+

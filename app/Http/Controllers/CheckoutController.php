@@ -327,41 +327,8 @@ class CheckoutController extends Controller
 
     private function blockDates($cloth, $start, $end, $orderId)
     {
-        $startDate = \Carbon\Carbon::parse($start);
-        $endDate = \Carbon\Carbon::parse($end);
-        $fullBlockStart = $startDate->copy()->subDay();
-        $fullBlockEnd = $endDate->copy()->addDay();
-
-        // 1. Block Rental
-        \App\Models\AvailabilityBlock::create(['cloth_id' => $cloth->id, 'start_date' => $startDate->format('Y-m-d'), 'end_date' => $endDate->format('Y-m-d'), 'type' => 'blocked', 'reason' => 'Rented (Order #' . $orderId . ')']);
-        // 2. Block Delivery
-        \App\Models\AvailabilityBlock::create(['cloth_id' => $cloth->id, 'start_date' => $fullBlockStart->format('Y-m-d'), 'end_date' => $fullBlockStart->format('Y-m-d'), 'type' => 'blocked', 'reason' => 'Delivery buffer']);
-        // 3. Block Pickup
-        \App\Models\AvailabilityBlock::create(['cloth_id' => $cloth->id, 'start_date' => $fullBlockEnd->format('Y-m-d'), 'end_date' => $fullBlockEnd->format('Y-m-d'), 'type' => 'blocked', 'reason' => 'Pickup buffer']);
-
-        // 4. Update existing available blocks (Splitting/Shortening) logic omitted for brevity as it is unchanged from original
-        // Ideally this logic should also be moved to a Service or Model method properly
-        // For now, assume this helper method handles the basic blocking. The complex splitting logic should be preserved if not moving.
-        // RE-INSERTING COMPLEX LOGIC BELOW TO PRESERVE FUNCTIONALITY:
-
-        $availableBlocks = \App\Models\AvailabilityBlock::where('cloth_id', $cloth->id)->where('type', 'available')->get();
-        foreach ($availableBlocks as $available) {
-            $availStart = \Carbon\Carbon::parse($available->start_date);
-            $availEnd = \Carbon\Carbon::parse($available->end_date);
-
-            if ($availStart->lte($fullBlockEnd) && $availEnd->gte($fullBlockStart)) {
-                if ($fullBlockStart->lte($availStart) && $fullBlockEnd->gte($availEnd)) {
-                    $available->delete();
-                } elseif ($fullBlockStart->gt($availStart) && $fullBlockEnd->lt($availEnd)) {
-                    \App\Models\AvailabilityBlock::create(['cloth_id' => $cloth->id, 'start_date' => $availStart->format('Y-m-d'), 'end_date' => $fullBlockStart->copy()->subDay()->format('Y-m-d'), 'type' => 'available', 'reason' => $available->reason]);
-                    $available->update(['start_date' => $fullBlockEnd->copy()->addDay()->format('Y-m-d')]);
-                } elseif ($fullBlockEnd->gte($availStart) && $fullBlockEnd->lt($availEnd)) {
-                    $available->update(['start_date' => $fullBlockEnd->copy()->addDay()->format('Y-m-d')]);
-                } elseif ($fullBlockStart->gt($availStart) && $fullBlockStart->lte($availEnd)) {
-                    $available->update(['end_date' => $fullBlockStart->copy()->subDay()->format('Y-m-d')]);
-                }
-            }
-        }
+        $availabilityService = new \App\Services\AvailabilityService();
+        $availabilityService->blockRentalDates($cloth, $start, $end, $orderId);
     }
 }
 

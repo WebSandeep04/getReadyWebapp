@@ -2,6 +2,15 @@
 
 @section('title', 'My Orders')
 
+@section('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+    .table thead th {
+        letter-spacing: .06em;
+    }
+</style>
+@endsection
+
 @section('content')
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -174,12 +183,24 @@
                                                     </button>
                                                 @endif
 
-                                                @if($order->status === 'Delivered')
+                                                 @if($order->status === 'Delivered')
                                                     <button type="button" class="btn btn-sm btn-outline-danger" data-toggle="modal" data-target="#returnModal" data-order-id="{{ $order->id }}">
                                                         <i class="bi bi-exclamation-triangle me-1"></i>Report Issue
                                                     </button>
                                                 @elseif($order->status === 'Return Requested')
                                                      <span class="badge bg-warning text-dark">Return Requested</span>
+                                                @endif
+                                                
+                                                @php
+                                                    $isRentalEnded = \Carbon\Carbon::parse($order->rental_to)->isPast() && !\Carbon\Carbon::parse($order->rental_to)->isToday();
+                                                @endphp
+
+                                                @if($order->has_rental_items && !$isRentalEnded && !in_array($order->status, ['Cancelled', 'Returned']))
+                                                    <button type="button" class="btn btn-sm btn-outline-info" data-toggle="modal" data-target="#extensionModal" 
+                                                        data-order-id="{{ $order->id }}" 
+                                                        data-current-to="{{ \Carbon\Carbon::parse($order->rental_to)->format('d M Y') }}">
+                                                        <i class="bi bi-calendar-plus me-1"></i>Extend Rental
+                                                    </button>
                                                 @endif
                                             </div>
                                         @else
@@ -284,6 +305,66 @@
     </div>
 </div>
 
+<!-- Extension Modal -->
+<div class="modal fade" id="extensionModal" tabindex="-1" aria-labelledby="extensionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="extensionModalLabel"><i class="bi bi-calendar-plus me-2"></i>Extend Rental Period</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info small">
+                    <i class="bi bi-info-circle me-1"></i>Extensions are billed at the standard daily rate (Base Rent / 4).
+                </div>
+
+                <div class="mb-4">
+                    <label class="text-muted small text-uppercase fw-bold d-block mb-1">Current Return Date</label>
+                    <span id="current_return_date" class="h6 mb-0">—</span>
+                </div>
+
+                <div class="mb-3">
+                    <label for="extension_date" class="form-label fw-bold">Select New Return Date</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="bi bi-calendar-event"></i></span>
+                        <input type="text" id="extension_date" class="form-control bg-white" placeholder="Pick a date" readonly>
+                    </div>
+                </div>
+
+                <div id="quote_container" class="mt-4 p-3 border rounded bg-light d-none">
+                    <h6 class="mb-3 border-bottom pb-2">Price Breakdown</h6>
+                    <div id="quote_items"></div>
+                    <div class="d-flex justify-content-between font-weight-bold mt-2 pt-2 border-top">
+                        <span>Total Additional Amount:</span>
+                        <span id="total_extension_amount" class="text-primary">₹0.00</span>
+                    </div>
+                    <div class="mt-3 small text-muted">
+                        <span>New Return Date:</span>
+                        <span id="new_return_date" class="font-weight-bold ml-1">—</span>
+                    </div>
+                </div>
+
+                <div id="availability_alert" class="alert alert-danger mt-3 d-none">
+                    <i class="bi bi-calendar-x me-1"></i>Selected extension is not available for one or more items.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" id="proceed_extension" class="btn btn-warning" disabled>
+                    Proceed to Pay <i class="bi bi-arrow-right ms-1"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@endsection
+
+@section('scripts')
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         let activeOrderId = null;
@@ -392,6 +473,129 @@
             form.attr('action', `/orders/${orderId}/return-request`);
             form[0].reset();
         });
+
+        // Extension Logic
+        let selectedOrderId = null;
+        let selectedDays = null;
+        let extensionDatePicker = null;
+        let currentRentalToDate = null;
+
+        $('#extensionModal').on('show.bs.modal', function (event) {
+            const button = $(event.relatedTarget);
+            selectedOrderId = button.data('order-id');
+            const currentTo = button.data('current-to'); // E.g., "23 Feb 2026"
+            
+            const modal = $(this);
+            modal.find('#current_return_date').text(currentTo);
+            
+            // Parse current return date
+            currentRentalToDate = new Date(currentTo);
+            currentRentalToDate.setHours(0, 0, 0, 0);
+            
+            const minExtensionDate = new Date(currentRentalToDate);
+            minExtensionDate.setDate(minExtensionDate.getDate() + 1);
+
+            // Initialize or Refresh Flatpickr
+            if (extensionDatePicker) {
+                extensionDatePicker.destroy();
+            }
+
+            extensionDatePicker = flatpickr("#extension_date", {
+                minDate: minExtensionDate,
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "d M Y",
+                disableMobile: "true",
+                onChange: function(selectedDates, dateStr, instance) {
+                    if (selectedDates.length > 0) {
+                        const newDate = selectedDates[0];
+                        newDate.setHours(0, 0, 0, 0);
+                        const diffTime = Math.abs(newDate - currentRentalToDate);
+                        selectedDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+                        fetchQuote(selectedOrderId, selectedDays);
+                    }
+                }
+            });
+
+            // Reset state
+            selectedDays = null;
+            modal.find('#extension_date').val('');
+            $('#quote_container, #availability_alert').addClass('d-none');
+            $('#proceed_extension').prop('disabled', true);
+        });
+
+        function fetchQuote(orderId, days) {
+            $.get(`/orders/${orderId}/extension-quote`, { days: days }, function(response) {
+                if(response.success) {
+                    $('#quote_container').removeClass('d-none');
+                    $('#new_return_date').text(new Date(response.new_rental_to).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }));
+                    $('#total_extension_amount').text('₹' + response.quote.total_additional_amount.toLocaleString('en-IN', { minimumFractionDigits: 2 }));
+                    
+                    let itemsHtml = '';
+                    response.quote.items.forEach(item => {
+                        itemsHtml += `<div class="d-flex justify-content-between small mb-1">
+                            <span>${item.cloth_title}</span>
+                            <span>₹${item.pricing.total_buyer_pay}</span>
+                        </div>`;
+                    });
+                    $('#quote_items').html(itemsHtml);
+
+                    if(response.is_available) {
+                        $('#availability_alert').addClass('d-none');
+                        $('#proceed_extension').prop('disabled', false);
+                    } else {
+                        $('#availability_alert').removeClass('d-none');
+                        $('#proceed_extension').prop('disabled', true);
+                    }
+                }
+            });
+        }
+
+        $('#proceed_extension').on('click', function() {
+            const btn = $(this);
+            btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Processing...');
+
+            $.post(`/orders/${selectedOrderId}/extend`, { 
+                _token: $('meta[name="csrf-token"]').attr('content'),
+                days: selectedDays 
+            }, function(response) {
+                if(response.success) {
+                    const options = {
+                        "key": response.key,
+                        "amount": response.razorpay_order.amount,
+                        "currency": response.razorpay_order.currency,
+                        "name": "GetReady Rental Extension",
+                        "description": "Extend Rental Period by " + selectedDays + " days",
+                        "handler": function (paymentResponse) {
+                            verifyExtensionPayment(response.extension_id, paymentResponse.razorpay_payment_id);
+                        },
+                        "prefill": {
+                            "name": "{{ auth()->user()->name }}",
+                            "email": "{{ auth()->user()->email }}"
+                        },
+                        "theme": { "color": "#ffc107" }
+                    };
+                    const rzp = new Razorpay(options);
+                    rzp.open();
+                }
+            }).always(function() {
+                btn.prop('disabled', false).html('Proceed to Pay <i class="bi bi-arrow-right ms-1"></i>');
+            });
+        });
+
+        function verifyExtensionPayment(extensionId, paymentId) {
+            $.post('/orders/extension/verify', {
+                _token: $('meta[name="csrf-token"]').attr('content'),
+                extension_id: extensionId,
+                razorpay_payment_id: paymentId
+            }, function(response) {
+                if(response.success) {
+                    $('#extensionModal').modal('hide');
+                    alert(response.message);
+                    location.reload();
+                }
+            });
+        }
     });
 </script>
 

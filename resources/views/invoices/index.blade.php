@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'My Invoices')
 
@@ -67,10 +67,10 @@
                                             <span class="badge badge-warning ml-1">Extension</span>
                                         @endif
                                     </td>
-                                    <td class="font-weight-bold">₹{{ number_format($invoice->amount, 2) }}</td>
+                                    <td class="font-weight-bold">{{ number_format($invoice->amount, 2) }}</td>
                                     <td class="text-right">
-                                        <a href="{{ route('invoices.download', $invoice->id) }}" class="btn btn-sm btn-outline-dark">
-                                            <i class="bi bi-download mr-1"></i>Download PDF
+                                        <a href="{{ route('invoices.download', $invoice->id) }}" class="btn btn-sm btn-outline-dark border-0 px-2" title="Download PDF">
+                                            <i class="bi bi-download h6 mb-0"></i>
                                         </a>
                                     </td>
                                 </tr>
@@ -88,3 +88,4 @@
     @endif
 </div>
 @endsection
+

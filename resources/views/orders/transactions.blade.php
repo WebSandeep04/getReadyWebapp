@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'My Transactions')
 
@@ -86,7 +86,7 @@
                                             <span class="badge badge-secondary px-3 py-1">{{ $payment->payment_status }}</span>
                                         @endif
                                     </td>
-                                    <td class="font-weight-bold">₹{{ number_format($payment->amount, 2) }}</td>
+                                    <td class="font-weight-bold">{{ number_format($payment->amount, 2) }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -102,3 +102,4 @@
     @endif
 </div>
 @endsection
+

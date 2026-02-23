@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'My Orders')
 
@@ -97,7 +97,7 @@
                                 @endphp
                                 <tr>
                                     <td class="fw-semibold">GR-{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}</td>
-                                    <td>₹{{ number_format($order->total_amount, 2) }}</td>
+                                    <td>{{ number_format($order->total_amount, 2) }}</td>
                                     <td>
                                         @if($order->has_rental_items && $order->has_purchase_items)
                                             <span class="badge bg-primary">Mixed</span>
@@ -111,9 +111,9 @@
                                     </td>
                                     <td>
                                         @if($order->has_rental_items)
-                                            ₹{{ number_format($order->security_amount, 2) }}
+                                            {{ number_format($order->security_amount, 2) }}
                                         @else
-                                            <span class="text-muted">—</span>
+                                            <span class="text-muted">â€”</span>
                                         @endif
                                     </td>
                                     <td>
@@ -124,7 +124,7 @@
                                                 {{ \Carbon\Carbon::parse($order->rental_to)->format('d/m/Y') }}
                                             </span>
                                         @else
-                                            <span class="text-muted">—</span>
+                                            <span class="text-muted">â€”</span>
                                         @endif
                                     </td>
                                     <td>
@@ -152,7 +152,7 @@
                                                 </div>
                                             @endforeach
                                         @else
-                                            <span class="text-muted small">—</span>
+                                            <span class="text-muted small">â€”</span>
                                         @endif
                                     </td>
                                     <td>
@@ -166,7 +166,7 @@
                                         @endif
                                     </td>
                                     <td>{{ $order->created_at->format('d/m/Y, h:i A') }}</td>
-                                    <td>
+                                    <td class='text-nowrap'>
                                          @php
                                              $allInvoices = $order->invoices->where('issued_to_id', auth()->id());
                                              $mainInvoices = $allInvoices->whereNull('order_extension_id');
@@ -186,10 +186,11 @@
                                              if ($showMainInvoices) $visibleInvoices = $visibleInvoices->concat($mainInvoices);
                                              if ($showExtInvoices) $visibleInvoices = $visibleInvoices->concat($extInvoices);
                                          @endphp
-                                         @if($visibleInvoices->isNotEmpty())
-                                             <div class="dropdown d-inline-block mb-2">
-                                                 <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
-                                                     <i class="bi bi-file-earmark-text me-1"></i>Invoices
+                                         <div class="d-flex align-items-center gap-3">
+                                             @if($visibleInvoices->isNotEmpty())
+                                                 <div class="dropdown">
+                                                 <button class="btn btn-sm btn-outline-secondary px-2 border-0" type="button" data-toggle="dropdown" aria-expanded="false" title="Download Invoices">
+                                                     <i class="bi bi-file-earmark-text h5 mb-0"></i>
                                                  </button>
                                                  <div class="dropdown-menu">
                                                      @foreach($visibleInvoices as $inv)
@@ -208,12 +209,12 @@
                                          @endif
 
                                         @if($canRate || $order->status === 'Delivered')
-                                            <div class="d-flex flex-column gap-2">
+
                                                 @if($hasRated)
-                                                    <span class="badge bg-success mb-2"><i class="bi bi-check-circle me-1"></i>Rated</span>
+                                                    <span class="text-success h5 mb-0" title="Rated successfully"><i class="bi bi-check-circle-fill"></i></span>
                                                 @elseif($canRate)
-                                                    <button type="button" class="btn btn-sm btn-warning mb-2" data-toggle="modal" data-target="#rateModal" data-order-id="{{ $order->id }}">
-                                                        <i class="bi bi-star me-1"></i>Rate Seller
+                                                    <button type="button" class="btn btn-sm btn-warning rounded-circle shadow-sm px-2" data-toggle="modal" data-target="#rateModal" data-order-id="{{ $order->id }}" title="Rate Seller">
+                                                        <i class="bi bi-star"></i>
                                                     </button>
                                                 @endif
 
@@ -224,16 +225,12 @@
                                                      @endphp
                                                      
                                                      @if($canReport)
-                                                        <button type="button" class="btn btn-sm btn-outline-danger" data-toggle="modal" data-target="#returnModal" data-order-id="{{ $order->id }}">
-                                                            <i class="bi bi-exclamation-triangle me-1"></i>Report Issue
+                                                        <button type="button" class="btn btn-sm btn-outline-danger px-2 border-0" data-toggle="modal" data-target="#returnModal" data-order-id="{{ $order->id }}" title="Report Issue">
+                                                            <i class="bi bi-exclamation-triangle"></i>
                                                         </button>
-                                                     @else
-                                                        <span class="text-muted small" title="Issue reporting is only available for 2 minutes after delivery">
-                                                            <i class="bi bi-info-circle me-1"></i>Reporting Period Expired
-                                                        </span>
                                                      @endif
                                                  @elseif($order->status === 'Return Requested')
-                                                     <span class="badge bg-warning text-dark">Return Requested</span>
+                                                     <span class="badge bg-warning text-dark font-weight-normal px-2" style="font-size: 0.65rem;">Requested</span>
                                                 @endif
                                                 
                                                 @php
@@ -241,17 +238,18 @@
                                                 @endphp
 
                                                 @if($order->has_rental_items && !$isRentalEnded && !in_array($order->status, ['Cancelled', 'Returned']))
-                                                    <button type="button" class="btn btn-sm btn-outline-info" data-toggle="modal" data-target="#extensionModal" 
+                                                    <button type="button" class="btn btn-sm btn-outline-info px-2 border-0" data-toggle="modal" data-target="#extensionModal" title="Extend Rental" 
                                                         data-order-id="{{ $order->id }}" 
                                                         data-current-to="{{ \Carbon\Carbon::parse($order->rental_to)->format('d M Y') }}">
-                                                        <i class="bi bi-calendar-plus me-1"></i>Extend Rental
+                                                        <i class="bi bi-calendar-plus h5 mb-0"></i>
                                                     </button>
                                                 @endif
-                                            </div>
-                                        @else
-                                            <span class="text-muted small">Available after delivery</span>
-                                        @endif
-                                    </td>
+
+                                         @else
+                                             <span class="text-muted small">Available after delivery</span>
+                                         @endif
+                                         </div>
+                                     </td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -367,7 +365,7 @@
 
                 <div class="mb-4">
                     <label class="text-muted small text-uppercase fw-bold d-block mb-1">Current Return Date</label>
-                    <span id="current_return_date" class="h6 mb-0">—</span>
+                    <span id="current_return_date" class="h6 mb-0">â€”</span>
                 </div>
 
                 <div class="mb-3">
@@ -383,11 +381,11 @@
                     <div id="quote_items"></div>
                     <div class="d-flex justify-content-between font-weight-bold mt-2 pt-2 border-top">
                         <span>Total Additional Amount:</span>
-                        <span id="total_extension_amount" class="text-primary">₹0.00</span>
+                        <span id="total_extension_amount" class="text-primary">0.00</span>
                     </div>
                     <div class="mt-3 small text-muted">
                         <span>New Return Date:</span>
-                        <span id="new_return_date" class="font-weight-bold ml-1">—</span>
+                        <span id="new_return_date" class="font-weight-bold ml-1">â€”</span>
                     </div>
                 </div>
 
@@ -574,13 +572,13 @@
                 if(response.success) {
                     $('#quote_container').removeClass('d-none');
                     $('#new_return_date').text(new Date(response.new_rental_to).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }));
-                    $('#total_extension_amount').text('₹' + response.quote.total_additional_amount.toLocaleString('en-IN', { minimumFractionDigits: 2 }));
+                    $('#total_extension_amount').text('' + response.quote.total_additional_amount.toLocaleString('en-IN', { minimumFractionDigits: 2 }));
                     
                     let itemsHtml = '';
                     response.quote.items.forEach(item => {
                         itemsHtml += `<div class="d-flex justify-content-between small mb-1">
                             <span>${item.cloth_title}</span>
-                            <span>₹${item.pricing.total_buyer_pay}</span>
+                            <span>${item.pricing.total_buyer_pay}</span>
                         </div>`;
                     });
                     $('#quote_items').html(itemsHtml);
@@ -650,3 +648,5 @@
     }
 </style>
 @endsection
+                                     </td>
+

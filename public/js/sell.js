@@ -20,7 +20,7 @@ function checkAndShowRentSuggestion() {
   const sellingPrice = parseFloat(purchaseValueInput.value) || 0;
   const rentPrice = parseFloat(rentPriceInput.value) || 0;
 
-  const rentErrorMessage = document.getElementById('rent-error-message');
+  // const rentErrorMessage = document.getElementById('rent-error-message');
   const spErrorMessage = document.getElementById('sp-error-message');
 
   if (mrp > 0) {
@@ -30,14 +30,14 @@ function checkAndShowRentSuggestion() {
     // Rent Price Validation
     if (rentPrice > maxRent) {
       if (rentPriceSuggestion) rentPriceSuggestion.style.display = 'block';
-      if (rentErrorMessage) {
-        rentErrorMessage.textContent = `Rent price should not exceed 20% of MRP (₹${Math.round(maxRent)})`;
-        rentErrorMessage.style.display = 'block';
-      }
+      // if (rentErrorMessage) {
+      //   rentErrorMessage.textContent = `Rent price should not exceed 20% of MRP (₹${Math.round(maxRent)})`;
+      //   rentErrorMessage.style.display = 'block';
+      // }
       rentPriceInput.classList.add('is-invalid');
     } else {
       if (rentPriceSuggestion) rentPriceSuggestion.style.display = 'none';
-      if (rentErrorMessage) rentErrorMessage.style.display = 'none';
+      // if (rentErrorMessage) rentErrorMessage.style.display = 'none';
       rentPriceInput.classList.remove('is-invalid');
     }
 
@@ -54,7 +54,7 @@ function checkAndShowRentSuggestion() {
     }
   } else {
     if (rentPriceSuggestion) rentPriceSuggestion.style.display = 'none';
-    if (rentErrorMessage) rentErrorMessage.style.display = 'none';
+    // if (rentErrorMessage) rentErrorMessage.style.display = 'none';
     if (spErrorMessage) spErrorMessage.style.display = 'none';
   }
 }

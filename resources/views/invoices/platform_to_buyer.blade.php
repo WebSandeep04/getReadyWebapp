@@ -18,7 +18,11 @@
         <p><strong>Invoice Number:</strong> {{ $invoiceNumber }}</p>
         <p><strong>Date:</strong> {{ date('Y-m-d') }}</p>
         @if(isset($isExt) && $isExt)
-            <p><strong>Extension Period:</strong> {{ $extension->extra_days }} days (Until {{ $extension->new_rental_to->format('d M Y') }})</p>
+            <p><strong>Extension Period:</strong> {{ $extension->extra_days }} days (Until {{ \Carbon\Carbon::parse($extension->new_rental_to)->format('d M Y') }})</p>
+            <p><strong>New Return Date:</strong> {{ \Carbon\Carbon::parse($extension->new_rental_to)->addDay()->format('d M Y') }}</p>
+        @else
+            <p><strong>Rental Period:</strong> {{ \Carbon\Carbon::parse($order->rental_from)->format('d M Y') }} - {{ \Carbon\Carbon::parse($order->rental_to)->format('d M Y') }}</p>
+            <p><strong>Return Date:</strong> {{ ($order->return_date ?: \Carbon\Carbon::parse($order->rental_to)->addDay())->format('d M Y') }}</p>
         @endif
     </div>
     

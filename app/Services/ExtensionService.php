@@ -91,10 +91,11 @@ class ExtensionService
      */
     public function processExtension(Order $order, OrderExtension $extension): void
     {
-        // 1. Update Order's rental_to
+        // 1. Update Order's rental_to and return_date
         $oldRentalTo = $order->rental_to;
         $order->update([
-            'rental_to' => $extension->new_rental_to
+            'rental_to' => $extension->new_rental_to,
+            'return_date' => \Carbon\Carbon::parse($extension->new_rental_to)->addDay()
         ]);
 
         // 2. Update Availability Blocks for each item

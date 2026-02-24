@@ -75,6 +75,8 @@ class CheckoutController extends Controller
             return response()->json(['success' => false, 'message' => 'Unable to calculate order total'], 422);
         }
 
+        $rentalTo = !empty($rentalEndDates) ? max($rentalEndDates) : now()->addDays(3);
+
         // Create Order Record
         $order = Order::create([
             'buyer_id' => $user->id,
@@ -85,7 +87,8 @@ class CheckoutController extends Controller
             'status' => 'Pending',
             'delivery_address' => $deliveryAddress,
             'rental_from' => !empty($rentalStartDates) ? min($rentalStartDates) : now(),
-            'rental_to' => !empty($rentalEndDates) ? max($rentalEndDates) : now()->addDays(3),
+            'rental_to' => $rentalTo,
+            'return_date' => \Carbon\Carbon::parse($rentalTo)->addDay(),
         ]);
 
         // Create Order Items

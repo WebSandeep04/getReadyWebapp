@@ -261,15 +261,18 @@
                                 selling: '-'
                             }
                         },
+                        @php
+                            $returnDate = $order->return_date ?: \Carbon\Carbon::parse($order->rental_to)->addDay();
+                        @endphp
                         {
                             title: '[R] {{ addslashes($order->buyer->name ?? "Guest") }}',
-                            start: '{{ $order->rental_to->format("Y-m-d") }}',
+                            start: '{{ $returnDate->format("Y-m-d") }}',
                             classNames: ['ind-r'],
                             extendedProps: {
                                 type: 'Return',
                                 orderId: '{{ $order->id }}',
                                 customer: '{{ addslashes($order->buyer->name ?? "Guest") }}',
-                                date: '{{ $order->rental_to->format("d/M/Y") }}',
+                                date: '{{ $returnDate->format("d/M/Y") }}',
                                 time: 'Before 2:00 PM',
                                 security: '₹{{ number_format($order->security_amount, 2) }}',
                                 rent: '-',

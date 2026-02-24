@@ -166,6 +166,12 @@ const form = document.getElementById("form");
 if (form) {
   form.setAttribute('novalidate', true);
   form.addEventListener("submit", function (e) {
+    // Prevent double submission
+    if (form.getAttribute('data-submitting') === 'true') {
+      e.preventDefault();
+      return;
+    }
+
     let isValid = true;
     let firstInvalidStep = -1;
     const allInputs = form.querySelectorAll('input, select, textarea');
@@ -203,6 +209,13 @@ if (form) {
       const firstInvalid = document.querySelector('.is-invalid');
       if (firstInvalid) {
         setTimeout(() => firstInvalid.focus(), 100);
+      }
+    } else {
+      // Form is valid, mark as submitting and disable button
+      form.setAttribute('data-submitting', 'true');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
       }
     }
   });

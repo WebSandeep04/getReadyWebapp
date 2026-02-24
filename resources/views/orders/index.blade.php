@@ -118,11 +118,14 @@
                                     </td>
                                     <td>
                                         @if($order->has_rental_items)
-                                            <span class="badge bg-light text-dark">
-                                                {{ \Carbon\Carbon::parse($order->rental_from)->format('d/m/Y') }}
-                                                -
-                                                {{ \Carbon\Carbon::parse($order->rental_to)->format('d/m/Y') }}
-                                            </span>
+                                            <div class="d-flex flex-column align-items-center">
+                                                <span class="badge bg-light text-dark mb-1">
+                                                    {{ \Carbon\Carbon::parse($order->rental_from)->format('d/m/Y') }}
+                                                    -
+                                                    {{ \Carbon\Carbon::parse($order->rental_to)->format('d/m/Y') }}
+                                                </span>
+                                                <small class="text-muted" style="font-size: 0.7rem;">Return: {{ ($order->return_date ?: \Carbon\Carbon::parse($order->rental_to)->addDay())->format('d/m/Y') }}</small>
+                                            </div>
                                         @else
                                             <span class="text-muted">â€”</span>
                                         @endif
@@ -234,13 +237,15 @@
                                                 @endif
                                                 
                                                 @php
-                                                    $isRentalEnded = \Carbon\Carbon::parse($order->rental_to)->isPast() && !\Carbon\Carbon::parse($order->rental_to)->isToday();
+                                                    $returnDate = $order->return_date ? \Carbon\Carbon::parse($order->return_date) : \Carbon\Carbon::parse($order->rental_to)->addDay();
+                                                    $isRentalEnded = $returnDate->isPast() && !$returnDate->isToday();
                                                 @endphp
 
                                                 @if($order->has_rental_items && !$isRentalEnded && !in_array($order->status, ['Cancelled', 'Returned']))
                                                     <button type="button" class="btn btn-sm btn-outline-info px-2 border-0" data-toggle="modal" data-target="#extensionModal" title="Extend Rental" 
                                                         data-order-id="{{ $order->id }}" 
-                                                        data-current-to="{{ \Carbon\Carbon::parse($order->rental_to)->format('d M Y') }}">
+                                                        data-current-to="{{ ($order->return_date ?? \Carbon\Carbon::parse($order->rental_to)->addDay())->format('d M Y') }}"
+                                                        data-rental-to="{{ \Carbon\Carbon::parse($order->rental_to)->format('Y-m-d') }}">
                                                         <i class="bi bi-calendar-plus h5 mb-0"></i>
                                                     </button>
                                                 @endif
@@ -526,13 +531,14 @@
         $('#extensionModal').on('show.bs.modal', function (event) {
             const button = $(event.relatedTarget);
             selectedOrderId = button.data('order-id');
-            const currentTo = button.data('current-to'); // E.g., "23 Feb 2026"
+            const currentReturnDate = button.data('current-to'); // E.g., "28 Feb 2026"
+            const currentRentalTo = button.data('rental-to'); // E.g., "2026-02-27"
             
             const modal = $(this);
-            modal.find('#current_return_date').text(currentTo);
+            modal.find('#current_return_date').text(currentReturnDate);
             
-            // Parse current return date
-            currentRentalToDate = new Date(currentTo);
+            // Parse actual rental end date
+            currentRentalToDate = new Date(currentRentalTo);
             currentRentalToDate.setHours(0, 0, 0, 0);
             
             const minExtensionDate = new Date(currentRentalToDate);
@@ -571,7 +577,7 @@
             $.get(`/orders/${orderId}/extension-quote`, { days: days }, function(response) {
                 if(response.success) {
                     $('#quote_container').removeClass('d-none');
-                    $('#new_return_date').text(new Date(response.new_rental_to).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }));
+                    $('#new_return_date').text(new Date(response.new_return_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }));
                     $('#total_extension_amount').text('' + response.quote.total_additional_amount.toLocaleString('en-IN', { minimumFractionDigits: 2 }));
                     
                     let itemsHtml = '';

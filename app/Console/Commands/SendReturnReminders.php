@@ -34,7 +34,13 @@ class SendReturnReminders extends Command
         // 1. Check for orders due tomorrow
         $tomorrow = Carbon::tomorrow();
         $ordersDueTomorrow = Order::where('status', 'Delivered')
-            ->whereDate('rental_to', $tomorrow)
+            ->where(function($q) use ($tomorrow) {
+                $q->whereDate('return_date', $tomorrow)
+                  ->orWhere(function($sq) use ($tomorrow) {
+                      $sq->whereNull('return_date')
+                         ->whereDate('rental_to', $tomorrow->copy()->subDay()); // Original logic: rental_to was tomorrow, so return was rental_to+1
+                  });
+            })
             ->with('buyer') // Eager load buyer
             ->get();
 
@@ -49,7 +55,13 @@ class SendReturnReminders extends Command
         // 2. Check for orders due today
         $today = Carbon::today();
         $ordersDueToday = Order::where('status', 'Delivered')
-            ->whereDate('rental_to', $today)
+            ->where(function($q) use ($today) {
+                $q->whereDate('return_date', $today)
+                  ->orWhere(function($sq) use ($today) {
+                      $sq->whereNull('return_date')
+                         ->whereDate('rental_to', $today->copy()->subDay());
+                  });
+            })
             ->with('buyer')
             ->get();
 
@@ -64,7 +76,13 @@ class SendReturnReminders extends Command
         // 3. Optional: Check for overdue items (e.g. 1 day overdue) effectively reminding them they missed it
         $yesterday = Carbon::yesterday();
          $ordersOverdue = Order::where('status', 'Delivered')
-            ->whereDate('rental_to', $yesterday)
+            ->where(function($q) use ($yesterday) {
+                $q->whereDate('return_date', $yesterday)
+                  ->orWhere(function($sq) use ($yesterday) {
+                      $sq->whereNull('return_date')
+                         ->whereDate('rental_to', $yesterday->copy()->subDay());
+                  });
+            })
             ->with('buyer')
             ->get();
 

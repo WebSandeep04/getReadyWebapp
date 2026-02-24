@@ -4,9 +4,10 @@
         $isRental = (bool) $order->has_rental_items;
         $now = \Carbon\Carbon::now();
         $rentalEnd = $order->rental_to ? \Carbon\Carbon::parse($order->rental_to) : null;
-        $isOverdue = $isRental && $rentalEnd && $rentalEnd->isPast() && !in_array($order->status, ['Returned', 'Cancelled']);
-        $daysOverdue = $isOverdue ? (int) $rentalEnd->diffInDays($now) : null;
-        $daysAhead = (!$isOverdue && $rentalEnd && $rentalEnd->isFuture()) ? (int) $now->diffInDays($rentalEnd) : null;
+        $returnDate = $order->return_date ? \Carbon\Carbon::parse($order->return_date) : ($rentalEnd ? $rentalEnd->copy()->addDay() : null);
+        $isOverdue = $isRental && $returnDate && $returnDate->isPast() && !$returnDate->isToday() && !in_array($order->status, ['Returned', 'Cancelled']);
+        $daysOverdue = $isOverdue ? (int) $returnDate->diffInDays($now) : null;
+        $daysAhead = (!$isOverdue && $returnDate && $returnDate->isFuture()) ? (int) $now->diffInDays($returnDate) : null;
         $orderType = $order->has_rental_items && $order->has_purchase_items
             ? 'Mixed'
             : ($order->has_rental_items ? 'Rental' : 'Purchase');
@@ -35,6 +36,8 @@
             @if($order->has_rental_items && $order->rental_to)
                 <div class="d-flex flex-column">
                     <span>{{ \Carbon\Carbon::parse($order->rental_from)->format('d/m/Y') }} – {{ \Carbon\Carbon::parse($order->rental_to)->format('d/m/Y') }}</span>
+                    <small class="text-muted">Return: {{ ($order->return_date ?: \Carbon\Carbon::parse($order->rental_to)->addDay())->format('d/m/Y') }}</small>
+                </div>
                     @if($isOverdue)
                         <span class="timeline-flag overdue"><i class="bi bi-exclamation-octagon"></i>Overdue by {{ $daysOverdue }}d</span>
                     @elseif($rentalEnd && $rentalEnd->isToday())

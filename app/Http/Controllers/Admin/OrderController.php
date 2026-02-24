@@ -98,12 +98,26 @@ class OrderController extends Controller
             $today = now()->toDateString();
             if ($request->return_state === 'overdue') {
                 $query->where('has_rental_items', true)
-                    ->where('rental_to', '<', $today)
+                    ->where(function($q) use ($today) {
+                        $q->whereNotNull('return_date')
+                          ->where('return_date', '<', $today)
+                          ->orWhere(function($sq) use ($today) {
+                              $sq->whereNull('return_date')
+                                 ->where('rental_to', '<', $today);
+                          });
+                    })
                     ->whereNotIn('status', ['Returned', 'Cancelled']);
             } elseif ($request->return_state === 'due_soon') {
                 $threeDaysLater = now()->addDays(3)->toDateString();
                 $query->where('has_rental_items', true)
-                    ->whereBetween('rental_to', [$today, $threeDaysLater])
+                    ->where(function($q) use ($today, $threeDaysLater) {
+                        $q->whereNotNull('return_date')
+                          ->whereBetween('return_date', [$today, $threeDaysLater])
+                          ->orWhere(function($sq) use ($today, $threeDaysLater) {
+                              $sq->whereNull('return_date')
+                                 ->whereBetween('rental_to', [$today, $threeDaysLater]);
+                          });
+                    })
                     ->whereNotIn('status', ['Returned', 'Cancelled']);
             } elseif ($request->return_state === 'completed') {
                 $query->where('status', 'Returned');
@@ -139,10 +153,23 @@ class OrderController extends Controller
         return [
             'total' => Order::count(),
             'overdue' => Order::where('has_rental_items', true)
-                ->where('rental_to', '<', $today)
+                ->where(function($q) use ($today) {
+                    $q->whereNotNull('return_date')
+                      ->where('return_date', '<', $today)
+                      ->orWhere(function($sq) use ($today) {
+                          $sq->whereNull('return_date')
+                             ->where('rental_to', '<', $today);
+                      });
+                })
                 ->whereNotIn('status', ['Returned', 'Cancelled'])
                 ->count(),
-            'due_today' => Order::where('rental_to', $today)
+            'due_today' => Order::where(function($q) use ($today) {
+                    $q->where('return_date', $today)
+                      ->orWhere(function($sq) use ($today) {
+                          $sq->whereNull('return_date')
+                             ->where('rental_to', $today);
+                      });
+                })
                 ->whereNotIn('status', ['Returned', 'Cancelled'])
                 ->count(),
             'purchase' => Order::where('has_purchase_items', true)->count(),

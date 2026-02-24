@@ -29,6 +29,7 @@ During checkout, the system aggregates the rental costs and security deposits.
         *   `has_rental_items = true`
         *   `rental_from`: Earliest start date among items.
         *   `rental_to`: Latest end date among items.
+        *   `return_date`: The expected date for item return (automatically set to `rental_to + 1 day`).
     3.  **Payment Processing**:
         *   **Online**: Integrated with Razorpay. Upon success, `verifyPayment` updates order status to `Confirmed`.
         *   **COD**: Payment status is set to `Pending`, and order status is set to `Confirmed` immediately.
@@ -70,7 +71,8 @@ This phase is now fully automated to ensure timely returns without manual interv
 *   **Technical Component**: `ProcessRentalReturns` Artisan Command.
 *   **Trigger**: Scheduled to run daily at midnight via `routes/console.php`.
 *   **Workflow**:
-    1.  **Scan**: The system scans the `orders` table for records where `rental_to` matches today's date (or earlier) and the status is `Delivered`.
+    1.  **Scan**: The system scans the `orders` table for records where `return_date` matches today's date (or earlier) and the status is `Delivered`.
+    2.  **Logic**: The system uses the explicit `return_date` column for precise tracking, falling back to `rental_to + 1 day` for legacy records.
     2.  **Reverse Logistics**: For each eligible order, the system groups items by Seller and calls `XpressbeesService@createReturnOrder`.
     3.  **Addresses**:
         *   **Pickup**: Buyer's delivery address (where the item currently is).
@@ -131,11 +133,11 @@ The platform allows users to extend their active rental period seamlessly from t
 *   **Technical Component**: `OrderExtensionController`, `ExtensionService`, `AvailabilityService`.
 *   **Database**: `order_extensions` table.
 *   **Workflow**:
-    1.  **Request**: User selects a new return date using a calendar.
-    2.  **Quote**: The system provides a pro-rated price based on `base_rent / 4` per additional day.
+    1.  **Request**: User selects a new rental end date using a calendar.
+    2.  **Quote**: The system provides a pro-rated price based on `base_rent / 4` per additional day and displays the **New Return Date** (`new_rental_to + 1 day`).
     3.  **Availability**: The system validates availability for the extra days + the shifting pickup buffer, using **excludeOrderId** to ignore the original order's data.
     4.  **Payment**: Processed via Razorpay.
-    5.  **Synchronization**: Upon payment, the order's `rental_to` is updated, the old pickup buffer is deleted, and a new one is created at the new return date + 1.
+    5.  **Synchronization**: Upon payment, the order's `rental_to` AND `return_date` are updated. The old pickup buffer is deleted, and a new one is created at the new `return_date`.
 
 ---
 

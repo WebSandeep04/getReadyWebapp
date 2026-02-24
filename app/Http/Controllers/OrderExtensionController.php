@@ -46,7 +46,8 @@ class OrderExtensionController extends Controller
             'success' => true,
             'is_available' => $isAvailable,
             'quote' => $costBreakdown,
-            'new_rental_to' => \Carbon\Carbon::parse($order->rental_to)->addDays($extraDays)->format('Y-m-d')
+            'new_rental_to' => \Carbon\Carbon::parse($order->rental_to)->addDays($extraDays)->format('Y-m-d'),
+            'new_return_date' => \Carbon\Carbon::parse($order->rental_to)->addDays($extraDays + 1)->format('Y-m-d')
         ]);
     }
 

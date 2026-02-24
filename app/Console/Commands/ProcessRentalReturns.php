@@ -38,7 +38,14 @@ class ProcessRentalReturns extends Command
         // 2. Scheduled to be returned today OR earlier (catch up)
         // 3. Status is 'Delivered' (not yet 'Returned' or 'Processing Return')
         $orders = Order::where('has_rental_items', true)
-            ->where('rental_to', '<=', $today)
+            ->where(function($q) use ($today) {
+                $q->whereNotNull('return_date')
+                  ->where('return_date', '<=', $today)
+                  ->orWhere(function($sq) use ($today) {
+                      $sq->whereNull('return_date')
+                         ->where('rental_to', '<=', $today);
+                  });
+            })
             ->where('status', 'Delivered')
             ->with(['buyer', 'items.cloth.user'])
             ->get();

@@ -313,40 +313,11 @@ class ClothController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        // Create the cloth record
-        $cloth = Cloth::create([
-            'user_id' => Auth::id(),
-            'title' => $request->input('title'),
-            'description' => $request->input('description'),
-            'category_id' => $request->input('category'),
-            'gender' => $request->input('gender'),
-            'brand_id' => $request->input('brand'),
-            'fabric_id' => $request->input('fabric'),
-            'color_id' => $request->input('color'),
-            'size_id' => $request->input('size'),
-            'fit_type_id' => $request->input('body_type_fit'),
-            'condition_id' => $request->input('condition'),
-            'defects' => $request->input('defects'),
-            'selling_price' => $request->input('selling_price'),
-            'mrp' => $request->input('mrp'),
-            'sku' => $request->input('sku', 1),
-            'rent_price' => $request->input('rent_price'),
-            'is_purchased' => $request->has('is_purchased') ? 1 : 0,
-            'security_deposit' => $request->input('security_deposit'),
-            'is_available' => true,
-            'is_approved' => null, // Explicitly set to pending
-            'chest_bust' => $request->input('chest_bust'),
-            'waist' => $request->input('waist'),
-            'length' => $request->input('length'),
-            'shoulder' => $request->input('shoulder'),
-            'sleeve_length' => $request->input('sleeve_length'),
-        ]);
-
-        // Handle availability blocks
+        $availableBlocks = [];
+        $blockedBlocks = [];
+        
+        // Handle availability blocks validation
         if ($request->has('availability_blocks')) {
-            $availableBlocks = [];
-            $blockedBlocks = [];
-            
             // Separate available and blocked blocks
             foreach ($request->availability_blocks as $block) {
                 if (!empty($block['start_date']) && !empty($block['end_date'])) {
@@ -358,7 +329,7 @@ class ClothController extends Controller
                 }
             }
             
-            // Process available blocks first and auto-create delivery/pickup blocks
+            // Validate available blocks first
             foreach ($availableBlocks as $block) {
                 $startDate = \Carbon\Carbon::parse($block['start_date']);
                 $endDate = \Carbon\Carbon::parse($block['end_date']);
@@ -370,8 +341,41 @@ class ClothController extends Controller
                         ->withErrors(['availability_blocks' => "Minimum 4 days rental required. Selected period: {$daysDiff} day(s)."])
                         ->withInput();
                 }
-                
-                // Create the available block
+            }
+        }
+
+        return \DB::transaction(function() use ($request, $availableBlocks, $blockedBlocks) {
+            // Create the cloth record
+            $cloth = Cloth::create([
+                'user_id' => Auth::id(),
+                'title' => $request->input('title'),
+                'description' => $request->input('description'),
+                'category_id' => $request->input('category'),
+                'gender' => $request->input('gender'),
+                'brand_id' => $request->input('brand'),
+                'fabric_id' => $request->input('fabric'),
+                'color_id' => $request->input('color'),
+                'size_id' => $request->input('size'),
+                'fit_type_id' => $request->input('body_type_fit'),
+                'condition_id' => $request->input('condition'),
+                'defects' => $request->input('defects'),
+                'selling_price' => $request->input('selling_price'),
+                'mrp' => $request->input('mrp'),
+                'sku' => $request->input('sku', 1),
+                'rent_price' => $request->input('rent_price'),
+                'is_purchased' => $request->has('is_purchased') ? 1 : 0,
+                'security_deposit' => $request->input('security_deposit'),
+                'is_available' => true,
+                'is_approved' => null, // Explicitly set to pending
+                'chest_bust' => $request->input('chest_bust'),
+                'waist' => $request->input('waist'),
+                'length' => $request->input('length'),
+                'shoulder' => $request->input('shoulder'),
+                'sleeve_length' => $request->input('sleeve_length'),
+            ]);
+
+            // Create available blocks
+            foreach ($availableBlocks as $block) {
                 $cloth->availabilityBlocks()->create([
                     'start_date' => $block['start_date'],
                     'end_date' => $block['end_date'],
@@ -380,9 +384,8 @@ class ClothController extends Controller
                 ]);
             }
             
-            // Process manually added blocked blocks (excluding auto-created ones)
+            // Create blocked blocks
             foreach ($blockedBlocks as $block) {
-                // Skip if it's an auto-blocked block (already created above)
                 $reason = $block['reason'] ?? '';
                 if (strpos($reason, 'Auto-blocked') === false) {
                     $cloth->availabilityBlocks()->create([
@@ -393,32 +396,28 @@ class ClothController extends Controller
                     ]);
                 }
             }
-        }
 
-        // Handle image uploads
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $image) {
-                $path = $image->store('clothes', 'public');
-                
-                // Store image record in cloth_images table
-                $cloth->images()->create([
-                    'image_path' => $path,
-                ]);
+            // Handle image uploads
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $image) {
+                    $path = $image->store('clothes', 'public');
+                    $cloth->images()->create(['image_path' => $path]);
+                }
             }
-        }
 
-        // Send notification to user
-        \App\Models\Notification::create([
-            'user_id' => Auth::id(),
-            'title' => 'Item Listed Successfully Pending Approval',
-            'message' => "Your item '{$cloth->title}' has been listed successfully and is pending approval.",
-            'type' => 'success',
-            'icon' => 'bi-check2-circle',
-            'data' => ['cloth_id' => $cloth->id],
-            'read' => false
-        ]);
+            // Send notification to user
+            \App\Models\Notification::create([
+                'user_id' => Auth::id(),
+                'title' => 'Item Listed Successfully Pending Approval',
+                'message' => "Your item '{$cloth->title}' has been listed successfully and is pending approval.",
+                'type' => 'success',
+                'icon' => 'bi-check2-circle',
+                'data' => ['cloth_id' => $cloth->id],
+                'read' => false
+            ]);
 
-        return redirect()->route('listed.clothes')->with('success', 'Your item has been listed successfully!');
+            return redirect()->route('listed.clothes')->with('success', 'Your item has been listed successfully!');
+        });
     }
 
     public function destroyImage($imageId)

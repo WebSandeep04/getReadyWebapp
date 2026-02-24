@@ -2,6 +2,28 @@
 
 @section('title', 'My Transactions')
 
+@section('styles')
+<style>
+    .badge-soft-success {
+        background-color: rgba(40, 167, 69, 0.1);
+        padding: 0.35rem 0.6rem;
+        border-radius: 6px;
+    }
+    .badge-soft-danger {
+        background-color: rgba(220, 53, 69, 0.1);
+        padding: 0.35rem 0.6rem;
+        border-radius: 6px;
+    }
+    .font-weight-bold {
+        font-weight: 600;
+    }
+    .table th {
+        font-weight: 600;
+        background-color: #f8f9fa;
+    }
+</style>
+@endsection
+
 @section('content')
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -41,6 +63,8 @@
                             <tr>
                                 <th>Date</th>
                                 <th>Order ID</th>
+                                <th>Type</th>
+                                <th>Description</th>
                                 <th>Transaction ID</th>
                                 <th>Method</th>
                                 <th>Status</th>
@@ -50,43 +74,59 @@
                         <tbody>
                             @foreach($payments as $payment)
                                 <tr>
-                                    <td>{{ $payment->created_at->format('d M Y, h:i A') }}</td>
+                                    <td>{{ $payment->date->format('d M Y, h:i A') }}</td>
                                     <td>
                                         <a href="{{ route('orders.index') }}?search=GR-{{ str_pad($payment->order_id, 5, '0', STR_PAD_LEFT) }}" class="text-dark font-weight-bold">
                                             GR-{{ str_pad($payment->order_id, 5, '0', STR_PAD_LEFT) }}
                                         </a>
                                     </td>
                                     <td>
+                                        @if($payment->type == 'credit')
+                                            <span class="badge badge-soft-success text-success border-success">
+                                                <i class="bi bi-arrow-down-left-circle mr-1"></i>Credit
+                                            </span>
+                                        @else
+                                            <span class="badge badge-soft-danger text-danger border-danger">
+                                                <i class="bi bi-arrow-up-right-circle mr-1"></i>Debit
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <span class="small text-muted">{{ $payment->description ?? 'N/A' }}</span>
+                                    </td>
+                                    <td>
                                         <code class="text-muted small">{{ $payment->transaction_id ?? 'N/A' }}</code>
                                     </td>
                                     <td>
-                                        <span class="text-capitalize">
-                                            @if(str_contains($payment->payment_method, 'razorpay'))
+                                        <span class="text-capitalize small">
+                                            @if(str_contains($payment->method, 'razorpay'))
                                                 <i class="bi bi-shield-check text-primary mr-1"></i>
-                                                {{ str_replace('_', ' ', $payment->payment_method) }}
+                                                {{ str_replace('_', ' ', $payment->method) }}
                                             @else
-                                                {{ str_replace('_', ' ', $payment->payment_method) }}
+                                                {{ str_replace('_', ' ', $payment->method) }}
                                             @endif
                                         </span>
                                     </td>
                                     <td>
-                                        @if($payment->payment_status == 'Paid' || $payment->payment_status == 'Success')
-                                            <span class="badge badge-success px-3 py-1">
-                                                <i class="bi bi-check-circle mr-1"></i>{{ $payment->payment_status }}
+                                        @if($payment->status == 'Paid' || $payment->status == 'Success' || $payment->status == 'Confirmed')
+                                            <span class="badge badge-success px-3 py-1 small">
+                                                <i class="bi bi-check-circle mr-1"></i>{{ $payment->status }}
                                             </span>
-                                        @elseif($payment->payment_status == 'Refunded')
-                                            <span class="badge badge-info px-3 py-1">
+                                        @elseif($payment->status == 'Refunded')
+                                            <span class="badge badge-info px-3 py-1 small">
                                                 <i class="bi bi-arrow-counterclockwise mr-1"></i>Refunded
                                             </span>
-                                        @elseif($payment->payment_status == 'Failed')
-                                            <span class="badge badge-danger px-3 py-1">
+                                        @elseif($payment->status == 'Failed')
+                                            <span class="badge badge-danger px-3 py-1 small">
                                                 <i class="bi bi-x-circle mr-1"></i>Failed
                                             </span>
                                         @else
-                                            <span class="badge badge-secondary px-3 py-1">{{ $payment->payment_status }}</span>
+                                            <span class="badge badge-secondary px-3 py-1 small">{{ $payment->status }}</span>
                                         @endif
                                     </td>
-                                    <td class="font-weight-bold">{{ number_format($payment->amount, 2) }}</td>
+                                    <td class="font-weight-bold {{ $payment->type == 'credit' ? 'text-success' : 'text-danger' }}">
+                                        {{ $payment->type == 'credit' ? '+' : '-' }} ₹{{ number_format($payment->amount, 2) }}
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>

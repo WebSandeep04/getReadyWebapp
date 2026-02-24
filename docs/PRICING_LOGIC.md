@@ -91,3 +91,18 @@ If a buyer reports an issue (Wrong Item/Damaged) and the Admin approves:
 | **Seller Status** | Rent Received | **No Payment (fault)** |
 | **Platform Status** | Commission Kept | **Fee Reversed** |
 | **Stock Status** | Available (+1) | Available (+1) |
+
+---
+
+## 7. Transaction Reporting (Credits & Debits)
+To provide a secure and transparent financial history, the platform logs every inward and outward movement for both Buyers and Sellers.
+
+### A. For Buyers (Debits & Security Credits)
+- **Debit**: When an order is placed or extended (Razorpay payment).
+- **Credit**: When a security deposit is returned by the Admin (marked as `is_security_returned = true`).
+
+### B. For Sellers (Credit Earnings)
+- **Credit**: When an order payout is processed (marked as `is_seller_paid = true`).
+- **Calculation**: The amount shown is the **Net Payout** (Base Price - Fees) as defined in Section 2B. This includes earnings from both original rentals and extensions.
+
+👉 **Viewable at**: `/transactions` (Personal Dashboard)

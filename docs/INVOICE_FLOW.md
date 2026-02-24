@@ -89,4 +89,13 @@ How the money moves for this **₹1,000** transaction:
 
 ---
 
-*Document Created: 2026-02-17*
+## 5. Rental Extension Invoices
+When a user extends a rental period, the system generates a distinct supplementary set of the same three invoices (Sale, Seller Comm, Buyer Comm).
+
+- **Logic**: The amounts are calculated pro-rata based on the pro-rated Extension Base Rent.
+- **Reference**: Extension invoices are linked to both the original `order_id` and the specific `order_extension_id`.
+- **Visibility**: Buyers see these invoices in their order history alongside the original booking documents.
+
+---
+
+*Document Last Updated: 2026-02-24*

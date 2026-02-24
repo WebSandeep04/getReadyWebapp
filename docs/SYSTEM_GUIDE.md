@@ -50,6 +50,7 @@ Precise tracking of platform revenue and seller settlements.
 - **Revenue**: 20% Seller Comm + 20% Buyer Comm (40% Total).
 - **Expenses**: Fixed placeholders for PG (₹30) and Delivery (₹80).
 - **Payouts**: Net profit tracking after accounting for operational costs.
+- **Transaction History**: Real-time credit/debit visibility for users (Sales, Payments, Security Returns).
 👉 **[Read Financial Formulas](reports/FINANCIAL_REPORT.md)**
 
 ---
@@ -67,7 +68,8 @@ The admin panel uses a specialized "System UI" design system:
 - **Software Setup Mode**: Toggleable admin sidebar for master data.
 - **Logistics**: Xpressbees integration status.
 - **AI**: Gemini API configuration.
+- **Reverse Pickup**: Automated logic based on the `return_date` column.
 👉 **[Read Technical Setup](CODEBASE_DETAILS.md)**
 
 ---
-*Last Updated: 2026-02-23*
+*Last Updated: 2026-02-24*

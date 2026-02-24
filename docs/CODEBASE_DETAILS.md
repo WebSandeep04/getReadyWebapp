@@ -13,6 +13,7 @@
 *   **Integrations:**
     *   **Google Gemini:** AI-powered product description generation.
     *   **Xpressbees:** Logistics and shipping integration.
+    *   **Razorpay:** Secure payment processing for orders and extensions.
 
 ---
 
@@ -26,8 +27,8 @@ The project follows the standard Laravel directory structure with key applicatio
     *       *   `SecurityController`: Manages security deposit tracking, returns, and dashboard stats.
     *       *   `ReportController`: Handles tactical operations monitoring (Calendar) and financial performance analysis.
     *   **Api/**: API endpoints (e.g., `XpressbeesWebhookController`).
-    *   Specific feature controllers: `ClothController`, `OrderController`, `CartController`, `RejectionController`.
-*   **`app/Models/`**: Eloquent models representing database tables (`Cloth`, `User`, `Order`, `Role`, `Permission`, `Rejection`).
+    *   Specific feature controllers: `ClothController`, `OrderController`, `CartController`, `RejectionController`, `OrderExtensionController`.
+*   **`app/Models/`**: Eloquent models representing database tables (`Cloth`, `User`, `Order`, `OrderExtension`, `Payment`, `Role`, `Permission`).
 *   **`database/migrations/`**: Database schema definitions.
 *   **`resources/views/`**: Blade templates for the frontend UI.
     *   **admin/screens/reports/**: Contains Operation Alert Calendar and Financial Reporting screens.
@@ -90,6 +91,12 @@ This is the central entity of the marketplace.
     *   Tracks: Total Revenue, Security Held, Payouts, and Net Profit.
     *   Logic: Automatically handles platform commission on base prices and adjusts for PG expenses (2%) and delivery costs.
 *   **UI Standard**: Both modules follow a premium, high-contrast design system with sharp square components (zero border-radius).
+### 3.9 Rental Extensions
+Users can increase their rental duration for active orders.
+*   **Logic**: Pro-rated charging based on original base rent.
+*   **Availability**: Real-time checking (including pickup buffers) to prevent double bookings.
+*   **Invoicing**: Automates the generation of supplementary invoices for the extension cost.
+*   **History**: Tracks all changes in `order_extensions` with links to Razorpay transaction IDs.
 
 ---
 

@@ -137,11 +137,25 @@ The platform allows users to extend their active rental period seamlessly from t
     2.  **Quote**: The system provides a pro-rated price based on `base_rent / 4` per additional day and displays the **New Return Date** (`new_rental_to + 1 day`).
     3.  **Availability**: The system validates availability for the extra days + the shifting pickup buffer, using **excludeOrderId** to ignore the original order's data.
     4.  **Payment**: Processed via Razorpay.
-    5.  **Synchronization**: Upon payment, the order's `rental_to` AND `return_date` are updated. The old pickup buffer is deleted, and a new one is created at the new `return_date`.
+    5.  **Synchronization**: Upon payment, the order's `rental_to` AND `return_date` are updated. The automated return scan will now use this new date.
+    6.  **Invoices**: A new set of 3 invoices (Seller Rent, Seller Commission, Buyer Commission) is generated specifically for the extension amount.
 
 ---
 
-## Migration & Logic Summary
+### 10. Financial Transparency (My Transactions)
+Users (Buyers and Sellers) can track all monetary movements in a unified transaction dashboard.
+
+*   **URL**: `/transactions`
+*   **Technical Component**: `OrderController@transactions`, `transactions.blade.php`.
+*   **Flow**:
+    1.  **Debits**: Logged immediately when a user pays for an order or an extension. Shown in **Red** as a negative transaction.
+    2.  **Credits (Seller Earnings)**: Logged when the Admin marks a payout as "Paid" in the Payout Dashboard. Calculated as `Base Rent + Tax Credit - (Comm + Comm GST + TCS)`. Shown in **Green** as a positive transaction.
+    3.  **Credits (Security Returns)**: Logged when the Admin returns the security deposit. Shown in **Green** as a positive transaction.
+*   **AWB References**: Every transaction is linked to its parent Order ID (e.g., `GR-00001`) for easy cross-referencing.
+
+---
+
+## 11. Migration & Logic Summary
 *   **Availability Service**: Centralized all date blocking and checking logic.
 *   **Order-Aware Buffers**: Buffers now store Order IDs to identify own data during extensions.
 *   **Order Extension History**: `order_extensions` provides a full audit trail of all period updates.

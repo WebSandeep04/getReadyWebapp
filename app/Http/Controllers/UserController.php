@@ -7,6 +7,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Models\State;
+use App\Models\City;
 
 class UserController extends Controller
 {
@@ -61,12 +63,14 @@ class UserController extends Controller
         return response()->json(['success' => true]);
     }
 
-    // Show user profile page
     public function profile()
     {
         $user = Auth::user();
+        $states = State::where('status', 1)->get();
+        // Get cities if user already has a state selected
+        $cities = $user->state_id ? City::where('state_id', $user->state_id)->where('status', 1)->get() : collect();
         $showFilters = false;
-        return view('profile', compact('user', 'showFilters'));
+        return view('profile', compact('user', 'showFilters', 'states', 'cities'));
     }
 
     // Update user profile (AJAX)
@@ -79,6 +83,8 @@ class UserController extends Controller
             'email' => 'required|email|max:255|unique:users,email,' . $user->id,
             'phone' => 'required|string|max:20|unique:users,phone,' . $user->id,
             'address' => 'nullable|string|max:255',
+            'state_id' => 'nullable|exists:states,id',
+            'city_id' => 'nullable|exists:cities,id',
             'is_gst' => 'required|boolean',
             'gstin' => 'required_if:is_gst,1|nullable|string|max:15|regex:/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/',
             'gender' => 'required|in:Boy,Girl,Men,Women',
@@ -89,7 +95,7 @@ class UserController extends Controller
             return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
-        $data = $request->only(['name', 'email', 'phone', 'address', 'gstin', 'gender', 'is_gst']);
+        $data = $request->only(['name', 'email', 'phone', 'address', 'gstin', 'gender', 'is_gst', 'state_id', 'city_id']);
         $data['gst_number'] = $data['gstin'] ?? null;
 
         // Handle profile image upload

@@ -94,9 +94,40 @@
 
                         <div class="form-group mb-3">
                             <label for="address" class="form-label fw-bold">Address</label>
-                            <textarea class="form-control" id="address" name="address" rows="3" 
+                            <textarea class="form-control" id="address" name="address" rows="2" 
                                       placeholder="Enter your address">{{ $user->address }}</textarea>
                             <div class="invalid-feedback" id="address-error"></div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="state_id" class="form-label fw-bold">State</label>
+                                    <select class="form-control" id="state_id" name="state_id">
+                                        <option value="">Select State</option>
+                                        @foreach($states as $state)
+                                            <option value="{{ $state->id }}" {{ $user->state_id == $state->id ? 'selected' : '' }}>
+                                                {{ $state->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div class="invalid-feedback" id="state_id-error"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="city_id" class="form-label fw-bold">City</label>
+                                    <select class="form-control" id="city_id" name="city_id">
+                                        <option value="">Select City</option>
+                                        @foreach($cities as $city)
+                                            <option value="{{ $city->id }}" {{ $user->city_id == $city->id ? 'selected' : '' }}>
+                                                {{ $city->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div class="invalid-feedback" id="city_id-error"></div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="form-group mb-3">
@@ -177,6 +208,35 @@ $(document).ready(function() {
             }
             reader.readAsDataURL(file);
         }
+    });
+
+    // Load cities when state changes
+    $('#state_id').change(function() {
+        const stateId = $(this).val();
+        const $citySelect = $('#city_id');
+        
+        $citySelect.prop('disabled', true).html('<option value="">Loading...</option>');
+        
+        if (!stateId) {
+            $citySelect.prop('disabled', false).html('<option value="">Select City</option>');
+            return;
+        }
+        
+        $.ajax({
+            url: '{{ route("cities.json") }}',
+            type: 'GET',
+            data: { state_id: stateId },
+            success: function(cities) {
+                let html = '<option value="">Select City</option>';
+                cities.forEach(function(city) {
+                    html += `<option value="${city.id}">${city.name}</option>`;
+                });
+                $citySelect.prop('disabled', false).html(html);
+            },
+            error: function() {
+                $citySelect.prop('disabled', false).html('<option value="">Select City</option>');
+            }
+        });
     });
 
     // Form submission
@@ -261,6 +321,19 @@ function resetForm() {
         $('#profile-preview').html(`<img src="{{ asset('storage/' . $user->profile_image) }}" alt="Profile" class="rounded-circle profile-image">`);
     } else {
         $('#profile-preview').html(`<div class="rounded-circle profile-image bg-secondary text-white d-flex align-items-center justify-content-center">{{ strtoupper(substr($user->name, 0, 1)) }}</div>`);
+    }
+
+    // Reset cities dropdown
+    const originalStateId = '{{ $user->state_id }}';
+    if (originalStateId) {
+        $('#state_id').val(originalStateId).trigger('change');
+        // Note: The actual city selection will happen in the change event's success callback
+        // This is a bit tricky with reset, but since it's an AJAX call, we'll manually set it after a delay
+        setTimeout(() => {
+            $('#city_id').val('{{ $user->city_id }}');
+        }, 500);
+    } else {
+        $('#city_id').html('<option value="">Select City</option>');
     }
     
     // Clear errors

@@ -155,7 +155,12 @@
       <select name="size" required>
         <option value="">Select Size</option>
         @foreach($sizes as $size)
-          <option value="{{ $size->id }}" {{ old('size') == $size->id ? 'selected' : '' }}>
+          <option value="{{ $size->id }}" {{ old('size') == $size->id ? 'selected' : '' }}
+            data-chest="{{ $size->chest_bust }}"
+            data-waist="{{ $size->waist }}"
+            data-length="{{ $size->length }}"
+            data-shoulder="{{ $size->shoulder }}"
+            data-sleeve="{{ $size->sleeve_length }}">
             {{ $size->name }}
           </option>
         @endforeach

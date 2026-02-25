@@ -565,3 +565,29 @@ function removeAvailabilityBlock(button) {
 
   block.remove();
 }
+
+// Auto-fill measurements when size is selected
+document.addEventListener('change', function (e) {
+  if (e.target && e.target.name === 'size') {
+    const selectedOption = e.target.options[e.target.selectedIndex];
+    if (selectedOption) {
+      const chest = selectedOption.getAttribute('data-chest') || '';
+      const waist = selectedOption.getAttribute('data-waist') || '';
+      const length = selectedOption.getAttribute('data-length') || '';
+      const shoulder = selectedOption.getAttribute('data-shoulder') || '';
+      const sleeve = selectedOption.getAttribute('data-sleeve') || '';
+
+      const chestInput = document.querySelector('input[name="chest_bust"]');
+      const waistInput = document.querySelector('input[name="waist"]');
+      const lengthInput = document.querySelector('input[name="length"]');
+      const shoulderInput = document.querySelector('input[name="shoulder"]');
+      const sleeveInput = document.querySelector('input[name="sleeve_length"]');
+
+      if (chestInput) chestInput.value = chest;
+      if (waistInput) waistInput.value = waist;
+      if (lengthInput) lengthInput.value = length;
+      if (shoulderInput) shoulderInput.value = shoulder;
+      if (sleeveInput) sleeveInput.value = sleeve;
+    }
+  }
+});

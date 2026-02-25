@@ -25,8 +25,13 @@ class SizeController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255|unique:sizes,name',
+            'chest_bust' => 'nullable|string|max:255',
+            'waist' => 'nullable|string|max:255',
+            'length' => 'nullable|string|max:255',
+            'shoulder' => 'nullable|string|max:255',
+            'sleeve_length' => 'nullable|string|max:255',
         ]);
-        $size = Size::create(['name' => $request->name]);
+        $size = Size::create($request->all());
         return response()->json(['success' => true, 'size' => $size]);
     }
 
@@ -34,9 +39,14 @@ class SizeController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255|unique:sizes,name,' . $id,
+            'chest_bust' => 'nullable|string|max:255',
+            'waist' => 'nullable|string|max:255',
+            'length' => 'nullable|string|max:255',
+            'shoulder' => 'nullable|string|max:255',
+            'sleeve_length' => 'nullable|string|max:255',
         ]);
         $size = Size::findOrFail($id);
-        $size->update(['name' => $request->name]);
+        $size->update($request->all());
         return response()->json(['success' => true, 'size' => $size]);
     }
 

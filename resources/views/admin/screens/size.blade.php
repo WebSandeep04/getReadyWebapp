@@ -43,6 +43,11 @@
                         <tr>
                             <th class="ps-4">ID</th>
                             <th>Name</th>
+                            <th>Chest/Bust</th>
+                            <th>Waist</th>
+                            <th>Length</th>
+                            <th>Shoulder</th>
+                            <th>Sleeve</th>
                             <th>Created At</th>
                             <th class="text-end pe-4">Actions</th>
                         </tr>
@@ -80,6 +85,28 @@
                         <div class="mb-3">
                             <label class="form-label fw-bold small text-uppercase text-muted">Name</label>
                             <input type="text" class="form-control" id="sizeName" required placeholder="e.g. XL">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold small text-uppercase text-muted">Chest/Bust (inches)</label>
+                                <input type="text" class="form-control" id="sizeChestBust" placeholder="e.g. 40">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold small text-uppercase text-muted">Waist (inches)</label>
+                                <input type="text" class="form-control" id="sizeWaist" placeholder="e.g. 34">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold small text-uppercase text-muted">Length (inches)</label>
+                                <input type="text" class="form-control" id="sizeLength" placeholder="e.g. 28">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold small text-uppercase text-muted">Shoulder (inches)</label>
+                                <input type="text" class="form-control" id="sizeShoulder" placeholder="e.g. 18">
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label fw-bold small text-uppercase text-muted">Sleeve Length (inches)</label>
+                                <input type="text" class="form-control" id="sizeSleeveLength" placeholder="e.g. 24">
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer border-top-0">
@@ -337,6 +364,11 @@ $(function() {
             <tr>
                 <td class="fw-bold text-muted small ps-4">#${item.id}</td>
                 <td><div class="fw-bold text-dark">${item.name}</div></td>
+                <td class="small text-muted">${item.chest_bust || '-'}</td>
+                <td class="small text-muted">${item.waist || '-'}</td>
+                <td class="small text-muted">${item.length || '-'}</td>
+                <td class="small text-muted">${item.shoulder || '-'}</td>
+                <td class="small text-muted">${item.sleeve_length || '-'}</td>
                 <td class="small text-muted">${date}</td>
                 <td class="text-end pe-4">${btns}</td>
             </tr>
@@ -364,6 +396,11 @@ $(function() {
         const item = $(this).data('item');
         $('#sizeId').val(item.id);
         $('#sizeName').val(item.name);
+        $('#sizeChestBust').val(item.chest_bust);
+        $('#sizeWaist').val(item.waist);
+        $('#sizeLength').val(item.length);
+        $('#sizeShoulder').val(item.shoulder);
+        $('#sizeSleeveLength').val(item.sleeve_length);
         $('#sizeModalLabel').text('Edit Size');
         sizeModal.show();
     });
@@ -384,6 +421,11 @@ $(function() {
             type: method,
             data: {
                 name: $('#sizeName').val(),
+                chest_bust: $('#sizeChestBust').val(),
+                waist: $('#sizeWaist').val(),
+                length: $('#sizeLength').val(),
+                shoulder: $('#sizeShoulder').val(),
+                sleeve_length: $('#sizeSleeveLength').val(),
                 _token: csrf,
             }
         })

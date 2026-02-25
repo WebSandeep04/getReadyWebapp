@@ -9,7 +9,7 @@ class Size extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'chest_bust', 'waist', 'length', 'shoulder', 'sleeve_length'];
 
     public function clothes()
     {

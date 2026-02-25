@@ -163,39 +163,80 @@ indicators.forEach((indicator, index) => {
 
 // Form submission validation
 const form = document.getElementById("form");
+const imageInputs = document.querySelectorAll('.cloth-image-input');
+const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+
+// Image preview logic for multiple separate inputs
+if (imageInputs.length > 0) {
+  imageInputs.forEach((input) => {
+    input.addEventListener('change', function () {
+      refreshImagePreviews();
+    });
+  });
+}
+
+function refreshImagePreviews() {
+  imagePreviewContainer.innerHTML = '';
+  imageInputs.forEach(input => {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.className = 'summary-image-preview';
+        img.style.width = '80px';
+        img.style.height = '80px';
+        img.style.margin = '5px';
+        imagePreviewContainer.appendChild(img);
+      }
+      reader.readAsDataURL(input.files[0]);
+    }
+  });
+}
+
 if (form) {
   form.setAttribute('novalidate', true);
   form.addEventListener("submit", function (e) {
+    e.preventDefault(); // Always prevent default first
+
     // Prevent double submission
     if (form.getAttribute('data-submitting') === 'true') {
-      e.preventDefault();
       return;
     }
 
     let isValid = true;
     let firstInvalidStep = -1;
-    const allInputs = form.querySelectorAll('input, select, textarea');
+    const allInputs = form.querySelectorAll('input:not([type="file"]), select, textarea');
 
     // Clear previous highlights
     allInputs.forEach(input => input.classList.remove('is-invalid'));
 
     allInputs.forEach(input => {
-      // We skip disabled or hidden input if they don't apply to current flow
-      // But they're visible if their section container is visible, they are standard inputs.
-      if (!input.checkValidity()) {
+      if (input.hasAttribute('required') && !input.value.trim()) {
         isValid = false;
         input.classList.add('is-invalid');
-        if (firstInvalidStep === -1) {
-          const stepParent = input.closest('.step-content');
-          steps.forEach((stepEl, index) => {
-            if (stepEl === stepParent) firstInvalidStep = index;
-          });
-        }
+      } else if (input.checkValidity && !input.checkValidity()) {
+        isValid = false;
+        input.classList.add('is-invalid');
+      }
+
+      if (input.classList.contains('is-invalid') && firstInvalidStep === -1) {
+        const stepParent = input.closest('.step-content');
+        steps.forEach((stepEl, index) => {
+          if (stepEl === stepParent) firstInvalidStep = index;
+        });
       }
     });
 
+    // Special check for images - Check if at least one image is uploaded (first input is required)
+    const firstImageInput = imageInputs[0];
+    if (firstImageInput && firstImageInput.required && firstImageInput.files.length === 0) {
+      isValid = false;
+      firstImageInput.classList.add('is-invalid');
+      if (firstInvalidStep === -1) firstInvalidStep = 3; // Images step is index 3
+    }
+
     if (!isValid) {
-      e.preventDefault(); // Stop submission
       if (firstInvalidStep !== -1 && firstInvalidStep !== currentStep) {
         steps[currentStep].classList.remove("active");
         indicators[currentStep].classList.remove("active");
@@ -205,19 +246,155 @@ if (form) {
         updateButtons();
       }
 
-      // Optionally focus the first invalid input if helpful
       const firstInvalid = document.querySelector('.is-invalid');
       if (firstInvalid) {
-        setTimeout(() => firstInvalid.focus(), 100);
+        setTimeout(() => firstInvalid.focus(), 1000);
       }
     } else {
-      // Form is valid, mark as submitting and disable button
-      form.setAttribute('data-submitting', 'true');
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
-      }
+      // Form is valid, show summary modal
+      showSummary();
     }
+  });
+}
+
+function showSummary() {
+  const summaryContent = document.getElementById('summaryContent');
+  let html = '';
+
+  const getSelectText = (name) => {
+    const el = form.querySelector(`[name="${name}"]`);
+    return el ? el.options[el.selectedIndex].text : '';
+  };
+
+  const getValue = (name) => {
+    const el = form.querySelector(`[name="${name}"]`);
+    return el ? el.value : '';
+  };
+
+  // Section 1: Basic Info
+  html += '<div class="summary-section-title"><i class="fas fa-tag mr-2"></i> Outfit Info</div>';
+  html += '<div class="summary-grid-container">';
+  html += `<div class="summary-item"><span class="summary-label">Title</span><span class="summary-value">${getValue('title')}</span></div>`;
+  html += `<div class="summary-item"><span class="summary-label">Category</span><span class="summary-value">${getSelectText('category')}</span></div>`;
+  html += `<div class="summary-item"><span class="summary-label">User Type</span><span class="summary-value">${getSelectText('gender')}</span></div>`;
+  html += `<div class="summary-item"><span class="summary-label">Brand</span><span class="summary-value">${getSelectText('brand')}</span></div>`;
+  html += '</div>';
+
+  // Section 2: Specifications
+  html += '<div class="summary-section-title"><i class="fas fa-tshirt mr-2"></i> Specifications</div>';
+  html += '<div class="summary-grid-container">';
+  html += `<div class="summary-item"><span class="summary-label">Fabric</span><span class="summary-value">${getSelectText('fabric')}</span></div>`;
+  html += `<div class="summary-item"><span class="summary-label">Color</span><span class="summary-value">${getSelectText('color')}</span></div>`;
+  html += `<div class="summary-item"><span class="summary-label">Size</span><span class="summary-value">${getSelectText('size')}</span></div>`;
+  html += `<div class="summary-item"><span class="summary-label">Condition</span><span class="summary-value">${getSelectText('condition')}</span></div>`;
+
+  const defects = getValue('defects');
+  if (defects) {
+    html += `<div class="summary-item" style="grid-column: span 2;"><span class="summary-label">Defects</span><span class="summary-value">${defects}</span></div>`;
+  }
+  html += '</div>';
+
+  // Measurements
+  const chest = getValue('chest_bust');
+  const waist = getValue('waist');
+  const length = getValue('length');
+  const shoulder = getValue('shoulder');
+  const sleeve = getValue('sleeve_length');
+  const bodyFit = getSelectText('body_type_fit');
+
+  if (chest || waist || length || shoulder || sleeve || bodyFit) {
+    html += '<div class="summary-section-title"><i class="fas fa-ruler-combined mr-2"></i> Fit & Measurements</div>';
+    html += '<div class="summary-grid-container">';
+    if (bodyFit) html += `<div class="summary-item"><span class="summary-label">Body Fit</span><span class="summary-value">${bodyFit}</span></div>`;
+    if (chest) html += `<div class="summary-item"><span class="summary-label">Chest/Bust</span><span class="summary-value">${chest} inches</span></div>`;
+    if (waist) html += `<div class="summary-item"><span class="summary-label">Waist</span><span class="summary-value">${waist} inches</span></div>`;
+    if (length) html += `<div class="summary-item"><span class="summary-label">Length</span><span class="summary-value">${length} inches</span></div>`;
+    if (shoulder) html += `<div class="summary-item"><span class="summary-label">Shoulder</span><span class="summary-value">${shoulder} inches</span></div>`;
+    if (sleeve) html += `<div class="summary-item"><span class="summary-label">Sleeve Length</span><span class="summary-value">${sleeve} inches</span></div>`;
+    html += '</div>';
+  }
+
+  // Section 3: Pricing & Availability
+  html += '<div class="summary-section-title"><i class="fas fa-hand-holding-usd mr-2"></i> Pricing</div>';
+  html += '<div class="summary-grid-container">';
+  const isPurchased = document.getElementById('is_purchased').checked;
+  html += `<div class="summary-item"><span class="summary-label">For Purchase</span><span class="summary-value">${isPurchased ? 'Yes' : 'No'}</span></div>`;
+  if (isPurchased) {
+    html += `<div class="summary-item"><span class="summary-label">Selling Price</span><span class="summary-value">₹${getValue('selling_price')}</span></div>`;
+  }
+  html += `<div class="summary-item"><span class="summary-label">MRP</span><span class="summary-value">₹${getValue('mrp')}</span></div>`;
+  html += `<div class="summary-item"><span class="summary-label">Rent Price</span><span class="summary-value">₹${getValue('rent_price')}</span></div>`;
+  html += `<div class="summary-item"><span class="summary-label">Quantity</span><span class="summary-value">${getValue('sku')}</span></div>`;
+  html += '</div>';
+
+  // Section: Availability Dates
+  const availableBlocks = document.querySelectorAll('#available-dates .availability-block');
+  const blockedBlocks = document.querySelectorAll('#blocked-dates .availability-block');
+
+  if (availableBlocks.length > 0 || blockedBlocks.length > 0) {
+    html += '<div class="summary-section-title"><i class="fas fa-calendar-alt mr-2"></i> Availability Schedule</div>';
+    html += '<div class="summary-grid-container">';
+    if (availableBlocks.length > 0) {
+      html += '<div class="summary-item" style="grid-column: span 2;"><span class="summary-label">Available Dates</span>';
+      availableBlocks.forEach(block => {
+        const start = block.querySelector('[name*="[start_date]"]').value;
+        const end = block.querySelector('[name*="[end_date]"]').value;
+        html += `<span class="summary-value small">• ${start} to ${end}</span>`;
+      });
+      html += '</div>';
+    }
+
+    if (blockedBlocks.length > 0) {
+      html += '<div class="summary-item" style="grid-column: span 2;"><span class="summary-label">Blocked Dates</span>';
+      blockedBlocks.forEach(block => {
+        const start = block.querySelector('[name*="[start_date]"]').value;
+        const end = block.querySelector('[name*="[end_date]"]').value;
+        const reason = block.querySelector('[name*="[reason]"]').value;
+        html += `<span class="summary-value small">• ${start} to ${end} ${reason ? `(${reason})` : ''}</span>`;
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+
+  // Section 4: Images & Description
+  html += '<div class="summary-section-title"><i class="fas fa-align-left mr-2"></i> Description & Images</div>';
+  html += '<div class="summary-item mb-3">';
+  html += '<span class="summary-label">Description</span>';
+  html += `<div class="summary-desc-box">${getValue('description')}</div>`;
+  html += '</div>';
+
+  // Images summary
+  html += '<div class="summary-item">';
+  html += '<span class="summary-label">Selected Images</span>';
+  html += '<div class="d-flex flex-wrap mt-2">';
+  const previewImgs = imagePreviewContainer.querySelectorAll('img');
+  if (previewImgs.length > 0) {
+    previewImgs.forEach(img => {
+      html += `<img src="${img.src}" class="summary-image-preview">`;
+    });
+  } else {
+    html += '<span class="text-muted small">No images selected</span>';
+  }
+  html += '</div></div>';
+
+  summaryContent.innerHTML = html;
+  $('#summaryModal').modal('show');
+}
+
+// Final submission from modal
+const finalSubmitBtn = document.getElementById('finalSubmitBtn');
+if (finalSubmitBtn) {
+  finalSubmitBtn.addEventListener('click', function () {
+    form.setAttribute('data-submitting', 'true');
+    this.disabled = true;
+    this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+
+    // Disable cancel button in modal
+    const modalCancelBtn = document.querySelector('#summaryModal .btn-secondary');
+    if (modalCancelBtn) modalCancelBtn.disabled = true;
+
+    form.submit();
   });
 }
 

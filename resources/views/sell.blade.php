@@ -269,10 +269,11 @@
 
     <div class="step-content">
       <div class="mb-2 text-left font-weight-bold">Upload up to 4 images (at least 1 required) <span class="text-danger">*</span>:</div>
-      <input type="file" name="images[]" accept="image/*" required>
-      <input type="file" name="images[]" accept="image/*">
-      <input type="file" name="images[]" accept="image/*">
-      <input type="file" name="images[]" accept="image/*">
+      <input type="file" name="images[]" class="cloth-image-input" accept="image/*" required>
+      <input type="file" name="images[]" class="cloth-image-input" accept="image/*">
+      <input type="file" name="images[]" class="cloth-image-input" accept="image/*">
+      <input type="file" name="images[]" class="cloth-image-input" accept="image/*">
+      <div id="imagePreviewContainer" class="d-flex flex-wrap gap-2 mb-3"></div>
       <small class="text-muted">You can upload up to 4 images. At least 1 is required.</small>
       @error('images.*')<div class="text-danger small">{{ $message }}</div>@enderror
 
@@ -295,6 +296,146 @@
 
 
 <style>
+/* Summary Modal Styles - Slim & Grid */
+#summaryModal .modal-content {
+    border-radius: 0;
+    border: none;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+}
+
+#summaryModal .modal-header {
+    background: #fff;
+    border-bottom: 2px solid #f78c1c;
+    padding: 12px 20px;
+}
+
+#summaryModal .modal-title {
+    font-weight: 700;
+    color: #333;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#summaryModal .modal-body {
+    padding: 20px;
+    max-height: 75vh;
+    overflow-y: auto;
+    background: #fff;
+    text-align: left;
+}
+
+#summaryModal .modal-footer {
+    border-top: 1px solid #eee;
+    padding: 12px 20px;
+    background: #f9f9f9;
+}
+
+#summaryModal .btn {
+    border-radius: 0;
+    font-size: 0.8rem;
+    padding: 8px 16px;
+    font-weight: 600;
+}
+
+#summaryModal .btn-primary {
+    background-color: #f78c1c;
+    border-color: #f78c1c;
+}
+
+#summaryModal .btn-primary:hover {
+    background-color: #e87b11;
+    border-color: #e87b11;
+}
+
+#summaryModal .btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+.summary-grid-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 576px) {
+    .summary-grid-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+.summary-item {
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    border-bottom: none;
+    text-align: left;
+    align-items: flex-start;
+}
+
+.summary-label {
+    font-weight: 800;
+    color: #444;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 2px;
+    text-align: left;
+}
+
+.summary-value {
+    font-size: 0.85rem;
+    color: #333;
+    font-weight: 600;
+    word-break: break-word;
+    text-align: left;
+}
+
+.summary-image-preview {
+    width: 65px;
+    height: 65px;
+    object-fit: cover;
+    border-radius: 0;
+    margin-right: 8px;
+    margin-bottom: 8px;
+    border: 1px solid #eee;
+}
+
+.summary-section-title {
+    font-weight: 700;
+    color: #f78c1c;
+    margin-bottom: 12px;
+    margin-top: 25px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid #fec;
+    padding-bottom: 4px;
+    display: flex;
+    align-items: center;
+}
+
+.summary-section-title:first-child {
+    margin-top: 0;
+}
+
+.summary-desc-box {
+    background: #fcfcfc;
+    padding: 10px;
+    border: 1px solid #f0f0f0;
+    color: #666;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    width: 100%;
+}
+
+.cloth-image-input {
+    margin-bottom: 10px !important;
+}
+
 /* Cloud Modal Styles */
 .cloud-modal .modal-dialog {
     max-width: 500px;
@@ -403,6 +544,29 @@
     font-size: 1.2rem;
 }
 </style>
+
+<!-- Summary Modal -->
+<div class="modal fade" id="summaryModal" tabindex="-1" role="dialog" aria-labelledby="summaryModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="summaryModalLabel"><i class="fas fa-clipboard-list mr-2" style="color:#f78c1c;"></i> Review Your Listing</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" id="summaryContent">
+        <!-- Summary will be injected here via JavaScript -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Edit Details</button>
+        <button type="button" id="finalSubmitBtn" class="btn btn-primary px-4 py-2">
+            Confirm & Post Listing <i class="fas fa-check-circle ml-1"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="modal fade cloud-modal" id="aiDescriptionModal" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">

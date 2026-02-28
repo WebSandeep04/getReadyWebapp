@@ -475,3 +475,58 @@
 .products-grid.hidden {
     opacity: 0;
 }
+
+/* Dual Range Slider Styles */
+.range-slider-container {
+    width: 100%;
+}
+.range-slider {
+    position: relative;
+    width: 100%;
+    height: 35px;
+    text-align: center;
+}
+.range-track {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 4px;
+    background-color: #ddd;
+    width: 100%;
+    z-index: 1;
+    border-radius: 2px;
+}
+.range-slider input[type="range"] {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+    pointer-events: none;
+    background: transparent;
+    z-index: 2;
+    margin: 0;
+}
+.range-slider input[type="range"]::-webkit-slider-thumb {
+    pointer-events: auto;
+    -webkit-appearance: none;
+    height: 18px;
+    width: 18px;
+    border-radius: 50%;
+    background-color: #ffc107;
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.range-slider input[type="range"]::-moz-range-thumb {
+    pointer-events: auto;
+    height: 18px;
+    width: 18px;
+    border-radius: 50%;
+    background-color: #ffc107;
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}

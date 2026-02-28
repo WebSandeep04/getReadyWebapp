@@ -112,6 +112,28 @@ class ProductController extends Controller
             });
         }
 
+        // Filter by Seller Rating
+        if ($request->filled('seller_rating')) {
+            $minRating = $request->seller_rating;
+            $query->whereHas('user', function($uq) use ($minRating) {
+                $uq->whereRaw('(SELECT COALESCE(AVG(rating), 0) FROM ratings WHERE ratings.rated_user_id = users.id) >= ?', [$minRating]);
+            });
+        }
+
+        // Filter by Product Rating
+        if ($request->filled('product_rating')) {
+            $minRating = $request->product_rating;
+            $query->whereRaw('(SELECT COALESCE(AVG(rating), 0) FROM product_reviews WHERE product_reviews.cloth_id = clothes.id) >= ?', [$minRating]);
+        }
+
+        // Filter by MRP Range
+        if ($request->filled('mrp_min')) {
+            $query->where('mrp', '>=', $request->mrp_min);
+        }
+        if ($request->filled('mrp_max')) {
+            $query->where('mrp', '<=', $request->mrp_max);
+        }
+
         // Sorting
         $sortBy = $request->get('sort_by', 'default');
         switch ($sortBy) {
@@ -120,6 +142,18 @@ class ProductController extends Controller
                 break;
             case 'price_high':
                 $query->orderBy('rent_price', 'desc');
+                break;
+            case 'mrp_low':
+                $query->orderBy('mrp', 'asc');
+                break;
+            case 'mrp_high':
+                $query->orderBy('mrp', 'desc');
+                break;
+            case 'rating_high':
+                $query->orderByRaw('(SELECT COALESCE(AVG(rating), 0) FROM product_reviews WHERE product_reviews.cloth_id = clothes.id) desc');
+                break;
+            case 'rating_low':
+                $query->orderByRaw('(SELECT COALESCE(AVG(rating), 0) FROM product_reviews WHERE product_reviews.cloth_id = clothes.id) asc');
                 break;
             case 'newest':
                 $query->orderBy('created_at', 'desc');

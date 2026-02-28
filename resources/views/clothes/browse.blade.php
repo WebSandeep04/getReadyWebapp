@@ -44,7 +44,6 @@
                                                {{ in_array($category->id, (array)request('categories', [])) ? 'checked' : '' }}>
                                         <span class="checkmark"></span>
                                         <span class="filter-label">{{ $category->name }}</span>
-                                        <i class="bi bi-chevron-right float-end"></i>
                                     </label>
                                 </div>
                             @endforeach
@@ -58,7 +57,6 @@
                                                {{ in_array($gender, (array)request('genders', [])) ? 'checked' : '' }}>
                                         <span class="checkmark"></span>
                                         <span class="filter-label">{{ $gender }}</span>
-                                        <i class="bi bi-chevron-right float-end"></i>
                                     </label>
                                 </div>
                             @endforeach
@@ -99,10 +97,64 @@
                                                {{ in_array($condition->id, (array)request('conditions', [])) ? 'checked' : '' }}>
                                         <span class="checkmark"></span>
                                         <span class="filter-label">{{ $condition->name }}</span>
-                                        <i class="bi bi-chevron-right float-end"></i>
                                     </label>
                                 </div>
                             @endforeach
+
+                            <!-- Seller Rating Filter -->
+                            <!-- Seller Rating Filter -->
+                            <h6 class="filter-group-title filter-group-spacing">Seller Rating</h6>
+                            <div class="filter-item">
+                                <div class="star-rating-filter" data-input="seller_rating">
+                                    <input type="hidden" name="seller_rating" id="seller_rating" value="{{ request('seller_rating') }}">
+                                    @php $currentSellerRating = request('seller_rating', 0); @endphp
+                                    @for($i=1; $i<=5; $i++)
+                                        <i class="bi bi-star{{ $i <= $currentSellerRating ? '-fill text-warning' : '' }} star-filter-icon" data-rating="{{ $i }}" style="cursor:pointer; font-size:1.2rem; color: #ccc;"></i>
+                                    @endfor
+                                    <span class="ms-2 small text-muted clear-rating" style="cursor:pointer; display:{{ $currentSellerRating ? 'inline' : 'none' }};" data-input="seller_rating">Clear</span>
+                                </div>
+                            </div>
+
+                            <!-- Product Rating Filter -->
+                            <h6 class="filter-group-title filter-group-spacing">Product Rating</h6>
+                            <div class="filter-item">
+                                <div class="star-rating-filter" data-input="product_rating">
+                                    <input type="hidden" name="product_rating" id="product_rating" value="{{ request('product_rating') }}">
+                                    @php $currentProductRating = request('product_rating', 0); @endphp
+                                    @for($i=1; $i<=5; $i++)
+                                        <i class="bi bi-star{{ $i <= $currentProductRating ? '-fill text-warning' : '' }} star-filter-icon" data-rating="{{ $i }}" style="cursor:pointer; font-size:1.2rem; color: #ccc;"></i>
+                                    @endfor
+                                    <span class="ms-2 small text-muted clear-rating" style="cursor:pointer; display:{{ $currentProductRating ? 'inline' : 'none' }};" data-input="product_rating">Clear</span>
+                                </div>
+                            </div>
+
+                            <!-- MRP Range Filter -->
+                            <h6 class="filter-group-title filter-group-spacing">MRP Range</h6>
+                            <div class="range-slider-container mb-3">
+                                <div class="range-slider">
+                                    <div class="range-track"></div>
+                                    <input type="range" class="range-min" min="0" max="50000" step="100" name="mrp_min" value="{{ request('mrp_min', 0) }}">
+                                    <input type="range" class="range-max" min="0" max="50000" step="100" name="mrp_max" value="{{ request('mrp_max', 50000) }}">
+                                </div>
+                                <div class="range-values mt-2 d-flex justify-content-between">
+                                    <span class="text-muted small">₹<span class="min-val">{{ request('mrp_min', 0) }}</span></span>
+                                    <span class="text-muted small">₹<span class="max-val">{{ request('mrp_max', 50000) }}</span></span>
+                                </div>
+                            </div>
+
+                            <!-- Rent Price Range Filter -->
+                            <h6 class="filter-group-title filter-group-spacing">Rent Range</h6>
+                            <div class="range-slider-container mb-3">
+                                <div class="range-slider">
+                                    <div class="range-track"></div>
+                                    <input type="range" class="range-min" min="0" max="20000" step="50" name="price_min" value="{{ request('price_min', 0) }}">
+                                    <input type="range" class="range-max" min="0" max="20000" step="50" name="price_max" value="{{ request('price_max', 20000) }}">
+                                </div>
+                                <div class="range-values mt-2 d-flex justify-content-between">
+                                    <span class="text-muted small">₹<span class="min-val">{{ request('price_min', 0) }}</span></span>
+                                    <span class="text-muted small">₹<span class="max-val">{{ request('price_max', 20000) }}</span></span>
+                                </div>
+                            </div>
 
                             <!-- Preserve search and sort -->
                             @if(request('search'))
@@ -175,6 +227,10 @@
                                 <option value="default" {{ request('sort_by', 'default') === 'default' ? 'selected' : '' }}>Sort by default</option>
                                 <option value="price_low" {{ request('sort_by') === 'price_low' ? 'selected' : '' }}>Price: Low to High</option>
                                 <option value="price_high" {{ request('sort_by') === 'price_high' ? 'selected' : '' }}>Price: High to Low</option>
+                                <option value="mrp_low" {{ request('sort_by') === 'mrp_low' ? 'selected' : '' }}>MRP: Low to High</option>
+                                <option value="mrp_high" {{ request('sort_by') === 'mrp_high' ? 'selected' : '' }}>MRP: High to Low</option>
+                                <option value="rating_high" {{ request('sort_by') === 'rating_high' ? 'selected' : '' }}>Rating: High to Low</option>
+                                <option value="rating_low" {{ request('sort_by') === 'rating_low' ? 'selected' : '' }}>Rating: Low to High</option>
                                 <option value="newest" {{ request('sort_by') === 'newest' ? 'selected' : '' }}>Newest First</option>
                                 <option value="oldest" {{ request('sort_by') === 'oldest' ? 'selected' : '' }}>Oldest First</option>
                             </select>
@@ -245,6 +301,12 @@ $(document).ready(function() {
             genders: [],
             conditions: [],
             status: $('input[name="status"]:checked').val() || 'any',
+            seller_rating: $('#seller_rating').val() || '',
+            product_rating: $('#product_rating').val() || '',
+            mrp_min: $('input[name="mrp_min"]').val() || '',
+            mrp_max: $('input[name="mrp_max"]').val() || '',
+            price_min: $('input[name="price_min"]').val() || '',
+            price_max: $('input[name="price_max"]').val() || '',
             deal_type: $('input[name="deal_type"]:checked').val() || 'all',
             sort_by: $('#sortBy').val() || 'default',
             search: $('.search-section input[name="search"]').val() || '',
@@ -316,10 +378,73 @@ $(document).ready(function() {
     const debouncedLoadProducts = debounce(loadProducts, 300);
     
     // Handle all filter changes
-    $(document).on('change', '#filterForm input[type="checkbox"], #filterForm input[type="radio"][name="status"]', function() {
+    $(document).on('change', '#filterForm input[type="checkbox"], #filterForm input[type="radio"], #filterForm input[type="range"]', function() {
         debouncedLoadProducts(1);
     });
+
+    // Handle range slider dual thumbs visually
+    $('.range-slider-container').each(function() {
+        let container = $(this);
+        let minInput = container.find('.range-min');
+        let maxInput = container.find('.range-max');
+        let minValDisp = container.find('.min-val');
+        let maxValDisp = container.find('.max-val');
+        
+        container.on('input', '.range-min', function() {
+            if(parseInt(minInput.val()) > parseInt(maxInput.val())) {
+                minInput.val(maxInput.val());
+            }
+            minValDisp.text(minInput.val());
+        });
+        container.on('input', '.range-max', function() {
+            if(parseInt(maxInput.val()) < parseInt(minInput.val())) {
+                maxInput.val(minInput.val());
+            }
+            maxValDisp.text(maxInput.val());
+        });
+    });
     
+    // Star Rating Interactivity
+    $('.star-filter-icon').on('mouseenter', function() {
+        let rating = $(this).data('rating');
+        let container = $(this).closest('.star-rating-filter');
+        container.find('.star-filter-icon').each(function() {
+            if ($(this).data('rating') <= rating) {
+                $(this).removeClass('bi-star').addClass('bi-star-fill text-warning');
+            } else {
+                $(this).removeClass('bi-star-fill text-warning').addClass('bi-star');
+            }
+        });
+    });
+
+    $('.star-rating-filter').on('mouseleave', function() {
+        let container = $(this);
+        let currentRating = container.find('input[type="hidden"]').val() || 0;
+        container.find('.star-filter-icon').each(function() {
+            if ($(this).data('rating') <= currentRating) {
+                $(this).removeClass('bi-star').addClass('bi-star-fill text-warning');
+            } else {
+                $(this).removeClass('bi-star-fill text-warning').addClass('bi-star');
+            }
+        });
+    });
+
+    $('.star-filter-icon').on('click', function() {
+        let rating = $(this).data('rating');
+        let container = $(this).closest('.star-rating-filter');
+        container.find('input[type="hidden"]').val(rating);
+        container.find('.clear-rating').show();
+        debouncedLoadProducts(1);
+    });
+
+    $('.clear-rating').on('click', function() {
+        let container = $(this).closest('.star-rating-filter');
+        container.find('input[type="hidden"]').val('');
+        $(this).hide();
+        container.trigger('mouseleave'); // reset visual to 0
+        debouncedLoadProducts(1);
+    });
+
     // Handle deal type changes
     $(document).on('change', 'input[name="deal_type"]', function() {
         loadProducts(1);
@@ -376,6 +501,32 @@ $(document).ready(function() {
             $(`input[name="status"][value="${filters.status}"]`).prop('checked', true);
             $(`input[name="deal_type"][value="${filters.deal_type}"]`).prop('checked', true);
             
+            // Restore Star Ratings
+            function restoreStarUI(inputId, value) {
+                let $input = $(`#${inputId}`);
+                $input.val(value);
+                let $container = $input.closest('.star-rating-filter');
+                if (value) {
+                    $container.find('.clear-rating').show();
+                } else {
+                    $container.find('.clear-rating').hide();
+                }
+                $container.trigger('mouseleave');
+            }
+            if (filters.seller_rating !== undefined) restoreStarUI('seller_rating', filters.seller_rating);
+            if (filters.product_rating !== undefined) restoreStarUI('product_rating', filters.product_rating);
+            
+            // Restore number inputs
+            $('input[name="mrp_min"]').val(filters.mrp_min);
+            $('input[name="mrp_max"]').val(filters.mrp_max);
+            $('input[name="price_min"]').val(filters.price_min);
+            $('input[name="price_max"]').val(filters.price_max);
+
+            $('.range-slider-container').has('input[name="mrp_min"]').find('.min-val').text(filters.mrp_min || 0);
+            $('.range-slider-container').has('input[name="mrp_max"]').find('.max-val').text(filters.mrp_max || 50000);
+            $('.range-slider-container').has('input[name="price_min"]').find('.min-val').text(filters.price_min || 0);
+            $('.range-slider-container').has('input[name="price_max"]').find('.max-val').text(filters.price_max || 20000);
+
             // Restore select
             $('#sortBy').val(filters.sort_by);
             $('.search-section input[name="search"]').val(filters.search);

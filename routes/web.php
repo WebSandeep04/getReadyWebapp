@@ -13,6 +13,7 @@ use App\Http\Controllers\ClothController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderExtensionController;
+use App\Http\Controllers\OrderConversionController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\ReplyController;
@@ -251,6 +252,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/orders/{id}/extension-quote', [OrderExtensionController::class, 'quote'])->name('orders.extension.quote');
     Route::post('/orders/{id}/extend', [OrderExtensionController::class, 'extend'])->name('orders.extend');
     Route::post('/orders/extension/verify', [OrderExtensionController::class, 'verifyPayment'])->name('orders.extension.verify');
+    
+    // Mid-Rental Purchase (Conversions)
+    Route::get('/orders/{id}/purchase-eligibility', [OrderConversionController::class, 'eligibility'])->name('orders.conversion.eligibility');
+    Route::post('/orders/{id}/convert-to-purchase', [OrderConversionController::class, 'convertToPurchase'])->name('orders.convert');
+    Route::post('/orders/conversion/verify', [OrderConversionController::class, 'verifyConversion'])->name('orders.conversion.verify');
 });
 
 // Get cart count (for header)

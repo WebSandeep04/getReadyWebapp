@@ -22,6 +22,12 @@ class OrderItem extends Model
         'tcs_amount',
         'is_seller_gst',
         'purchase_type',
+        'converted_to_purchase_at',
+        'conversion_amount',
+    ];
+
+    protected $casts = [
+        'converted_to_purchase_at' => 'datetime',
     ];
 
     public function order()

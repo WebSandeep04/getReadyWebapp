@@ -113,7 +113,7 @@
                                         @if($order->has_rental_items)
                                             {{ number_format($order->security_amount, 2) }}
                                         @else
-                                            <span class="text-muted">â€”</span>
+                                            <span class="text-muted">-</span>
                                         @endif
                                     </td>
                                     <td>
@@ -127,7 +127,7 @@
                                                 <small class="text-muted" style="font-size: 0.7rem;">Return: {{ ($order->return_date ?: \Carbon\Carbon::parse($order->rental_to)->addDay())->format('d/m/Y') }}</small>
                                             </div>
                                         @else
-                                            <span class="text-muted">â€”</span>
+                                            <span class="text-muted">-</span>
                                         @endif
                                     </td>
                                     <td>
@@ -155,7 +155,7 @@
                                                 </div>
                                             @endforeach
                                         @else
-                                            <span class="text-muted small">â€”</span>
+                                            <span class="text-muted small">-</span>
                                         @endif
                                     </td>
                                     <td>
@@ -248,6 +248,18 @@
                                                         data-rental-to="{{ \Carbon\Carbon::parse($order->rental_to)->format('Y-m-d') }}">
                                                         <i class="bi bi-calendar-plus h5 mb-0"></i>
                                                     </button>
+                                                    
+                                                    @php
+                                                        // Find a rent item to allow buying (assuming single item or first available rent item for UI simplicity)
+                                                        $rentItemForBuy = $order->items->where('purchase_type', 'rent')->first();
+                                                    @endphp
+                                                    @if($rentItemForBuy && $rentItemForBuy->cloth->selling_price > 0)
+                                                        <button type="button" class="btn btn-sm btn-outline-success px-2 border-0 buy-rented-item-btn" title="Buy Rented Item" 
+                                                            data-order-id="{{ $order->id }}" 
+                                                            data-cloth-id="{{ $rentItemForBuy->cloth_id }}">
+                                                            <i class="bi bi-cart-check h5 mb-0"></i>
+                                                        </button>
+                                                    @endif
                                                 @endif
 
                                          @else
@@ -370,7 +382,7 @@
 
                 <div class="mb-4">
                     <label class="text-muted small text-uppercase fw-bold d-block mb-1">Current Return Date</label>
-                    <span id="current_return_date" class="h6 mb-0">â€”</span>
+                    <span id="current_return_date" class="h6 mb-0">-</span>
                 </div>
 
                 <div class="mb-3">
@@ -390,7 +402,7 @@
                     </div>
                     <div class="mt-3 small text-muted">
                         <span>New Return Date:</span>
-                        <span id="new_return_date" class="font-weight-bold ml-1">â€”</span>
+                        <span id="new_return_date" class="font-weight-bold ml-1">-</span>
                     </div>
                 </div>
 
@@ -609,6 +621,15 @@
                 days: selectedDays 
             }, function(response) {
                 if(response.success) {
+                    // ---- DUMMY TEST KEY BYPASS ----
+                    if(!response.key || response.key === 'rzp_test_dummy' || response.key === 'rzp_test_1DP5mmOlF5G5ag' || response.key.includes('dummy')) {
+                        if(confirm("Testing Mode Active. Simulate successful payment for this extension?")) {
+                            verifyExtensionPayment(response.extension_id, 'pay_mock_ext_' + Date.now());
+                        }
+                        return;
+                    }
+                    // ---- END BYPASS ----
+
                     const options = {
                         "key": response.key,
                         "amount": response.razorpay_order.amount,
@@ -643,6 +664,106 @@
                     alert(response.message);
                     location.reload();
                 }
+            });
+        }
+
+        // --- Buy Rented Item Logic ---
+        $('.buy-rented-item-btn').on('click', function() {
+            const btn = $(this);
+            const orderId = btn.data('order-id');
+            const clothId = btn.data('cloth-id');
+
+            // 1. Check Eligibility (Price breakdown)
+            $.get(`/orders/${orderId}/purchase-eligibility`, { cloth_id: clothId }, function(res) {
+                if(res.success && res.is_eligible) {
+                    const quote = res.conversion_quote;
+                    let confirmText = `Are you sure you want to buy this item?` 
+                        + `\n\nTotal Price: ₹${quote.total_purchase_price}`
+                        + `\nRent Already Paid: -₹${quote.rent_already_paid}`
+                        + `\nSecurity Deposit Kept: -₹${quote.security_deposit}`
+                        + `\n----------------------`
+                        + `\nAmount Due Now: ₹${quote.amount_due}`;
+                        
+                    if(confirm(confirmText)) {
+                        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
+                        
+                        // 2. Initiate Conversion
+                        $.post(`/orders/${orderId}/convert-to-purchase`, {
+                            _token: $('meta[name="csrf-token"]').attr('content'),
+                            cloth_id: clothId
+                        }, function(convRes) {
+                            if(convRes.success) {
+                                if(!convRes.requires_payment) {
+                                    alert('Successfully converted to purchase without additional payment needed!');
+                                    location.reload();
+                                    return;
+                                }
+                                
+                                // ---- DUMMY TEST KEY BYPASS ----
+                                if(!convRes.key || convRes.key === 'rzp_test_dummy' || convRes.key === 'rzp_test_1DP5mmOlF5G5ag' || convRes.key.includes('dummy')) {
+                                    if(confirm("Testing Mode Active. Simulate successful payment for this mid-rental purchase?")) {
+                                        verifyConversionPayment(convRes.order_item_id, 'pay_mock_conv_' + Date.now());
+                                    } else {
+                                        btn.prop('disabled', false).html('<i class="bi bi-cart-check h5 mb-0"></i>');
+                                    }
+                                    return;
+                                }
+                                // ---- END BYPASS ----
+
+                                // Razorpay Gate
+                                const options = {
+                                    "key": convRes.key,
+                                    "amount": convRes.razorpay_order.amount,
+                                    "currency": convRes.razorpay_order.currency,
+                                    "name": "GetReady Purchase Conversion",
+                                    "description": "Mid-Rental Purchase",
+                                    "order_id": convRes.razorpay_order.id,
+                                    "handler": function (paymentResponse) {
+                                        verifyConversionPayment(convRes.order_item_id, paymentResponse.razorpay_payment_id);
+                                    },
+                                    "prefill": {
+                                        "name": "{{ auth()->user()->name }}",
+                                        "email": "{{ auth()->user()->email }}"
+                                    },
+                                    "theme": { "color": "#28a745" }
+                                };
+                                const rzp = new Razorpay(options);
+                                rzp.on('payment.failed', function(){
+                                    btn.prop('disabled', false).html('<i class="bi bi-cart-check h5 mb-0"></i>');
+                                    alert('Payment failed.');
+                                });
+                                rzp.open();
+                            } else {
+                                alert(convRes.message);
+                                btn.prop('disabled', false).html('<i class="bi bi-cart-check h5 mb-0"></i>');
+                            }
+                        }).fail(function() {
+                             alert('Failed to process request.');
+                             btn.prop('disabled', false).html('<i class="bi bi-cart-check h5 mb-0"></i>');
+                        });
+                    }
+                } else {
+                    alert(res.message || 'Item is not eligible for purchase.');
+                }
+            }).fail(function(){
+                 alert('Could not verify item eligibility.');
+            });
+        });
+
+        function verifyConversionPayment(orderItemId, paymentId) {
+            $.post('/orders/conversion/verify', {
+                _token: $('meta[name="csrf-token"]').attr('content'),
+                order_item_id: orderItemId,
+                razorpay_payment_id: paymentId
+            }, function(response) {
+                if(response.success) {
+                    alert('Success! ' + response.message);
+                    location.reload();
+                } else {
+                    alert('Error: ' + response.message);
+                }
+            }).fail(function(){
+                alert('Payment verification failed.');
             });
         }
     });

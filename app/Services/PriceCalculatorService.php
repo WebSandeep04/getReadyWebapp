@@ -175,4 +175,45 @@ class PriceCalculatorService
             'display_price' => round($basePrice + $buyerComm, 2) // Marketplace Price
         ];
     }
+
+    /**
+     * Calculate cost for converting an active rental into a purchase.
+     * 
+     * @param \App\Models\OrderItem $orderItem
+     * @return array
+     */
+    public function calculateRentalConversion(\App\Models\OrderItem $orderItem)
+    {
+        $cloth = $orderItem->cloth;
+        
+        // 1. Get Normal Purchase Value
+        $purchasePricing = $this->calculatePurchase($cloth);
+        $totalPurchaseValue = $purchasePricing['total_buyer_pay'];
+        
+        // 2. Already Paid (Rent Total for this item)
+        $paidRent = (float) $orderItem->price;
+        
+        // 3. Security Deposit (held by platform for this item)
+        $securityDeposit = (float) $cloth->security_deposit;
+        
+        // 4. Compute Remaining Balance Due
+        $amountDue = $totalPurchaseValue - $paidRent - $securityDeposit;
+        
+        if ($amountDue < 0) {
+            $amountDue = 0;
+        }
+
+        // We also need to map the delta payouts.
+        // E.g., The seller's total purchase payout minus what they already got for rent
+        $netSellerPayoutDelta = $purchasePricing['net_seller_payout'] - $this->calculate($cloth, max(4, $orderItem->rental_days ?? 4))['net_seller_payout'];
+
+        return [
+            'total_purchase_value' => round($totalPurchaseValue, 2),
+            'paid_rent' => round($paidRent, 2),
+            'security_deposit' => round($securityDeposit, 2),
+            'amount_due' => round($amountDue, 2),
+            'pricing_breakdown' => $purchasePricing, // The full purchase aggregate
+            'net_seller_payout_delta' => round(max(0, $netSellerPayoutDelta), 2)
+        ];
+    }
 }

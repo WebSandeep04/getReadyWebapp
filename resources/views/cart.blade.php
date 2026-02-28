@@ -592,6 +592,19 @@ if (checkoutBtn) {
 }
 
 function launchRazorpayCheckout(data, verifyUrl, csrfToken) {
+    // ---- DUMMY TEST KEY BYPASS ----
+    if (!data.razorpay.key || data.razorpay.key === 'rzp_test_dummy' || data.razorpay.key === 'rzp_test_1DP5mmOlF5G5ag' || data.razorpay.key.includes('dummy')) {
+        if(confirm("Testing Mode Active. Simulate successful payment for this order?")) {
+            const mockPaymentId = 'pay_mock_' + Date.now();
+            verifyPayment(data.order.id, mockPaymentId, verifyUrl, csrfToken);
+        } else {
+            toggleCheckoutButton(false);
+            showAlert('danger', 'Payment cancelled by user in testing mode.');
+        }
+        return;
+    }
+    // ---- END BYPASS ----
+
     const options = {
         key: data.razorpay.key,
         amount: data.order.amount_paise,

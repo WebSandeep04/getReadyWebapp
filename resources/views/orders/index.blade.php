@@ -677,12 +677,21 @@
             $.get(`/orders/${orderId}/purchase-eligibility`, { cloth_id: clothId }, function(res) {
                 if(res.success && res.is_eligible) {
                     const quote = res.conversion_quote;
+                    const pb = quote.pricing_breakdown;
+                    
                     let confirmText = `Are you sure you want to buy this item?` 
-                        + `\n\nTotal Price: ₹${quote.total_purchase_price}`
-                        + `\nRent Already Paid: -₹${quote.rent_already_paid}`
+                        + `\n\n--- Purchase Price Breakdown ---`
+                        + `\nBase Item Price: ₹${pb.base_price}`
+                        + `\nPlatform Fee: ₹${pb.buyer_comm}`
+                        + `\nItem GST (18%): ₹${pb.item_tax_fee}`
+                        + `\nFee GST (18%): ₹${pb.buyer_comm_gst}`
+                        + `\n--------------------------------`
+                        + `\nTotal Purchase Value: ₹${quote.total_purchase_value}`
+                        + `\n\n--- Less Deductions ---`
+                        + `\nRent Already Paid: -₹${quote.paid_rent}`
                         + `\nSecurity Deposit Kept: -₹${quote.security_deposit}`
-                        + `\n----------------------`
-                        + `\nAmount Due Now: ₹${quote.amount_due}`;
+                        + `\n================================`
+                        + `\nAMOUNT DUE NOW: ₹${quote.amount_due}`;
                         
                     if(confirm(confirmText)) {
                         btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');

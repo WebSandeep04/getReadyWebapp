@@ -142,7 +142,24 @@ The platform allows users to extend their active rental period seamlessly from t
 
 ---
 
-### 10. Financial Transparency (My Transactions)
+---
+
+## 10. Rental to Purchase Conversion
+A user with an active rental can decide to keep the item permanently by converting their rental order into a purchase.
+
+*   **Technical Component**: `OrderConversionController`, `PriceCalculatorService`.
+*   **Workflow**:
+    1.  **Request**: User clicks "Buy Now" on their active rental from the "My Orders" page.
+    2.  **Quote Setup**: The system evaluates eligibility (item must be for sale, order actively delivered).
+    3.  **Pricing Calculation**: `PriceCalculatorService` calculates the difference between simply keeping the item as a purchase vs the already-paid rental and security amounts.
+    4.  **Payment**: Triggers Razorpay payment only if the existing deposit does not cover the purchase price completely.
+    5.  **Synchronization**: The system flips the item `purchase_type` to `buy`.
+    6.  **Security Absorption**: The `Order` is marked with `security_absorbed_into_purchase = true` which indicates the security deposit was taken/consumed in exchange for full item ownership. The deposit will no longer await refund.
+    7.  **Fulfillment**: The physical item is already with the buyer, so `sku` is decremented in `clothes`, no reverse shipment is created, and the seller receives a success notification.
+
+---
+
+### 11. Financial Transparency (My Transactions)
 Users (Buyers and Sellers) can track all monetary movements in a unified transaction dashboard.
 
 *   **URL**: `/transactions`
@@ -155,7 +172,8 @@ Users (Buyers and Sellers) can track all monetary movements in a unified transac
 
 ---
 
-## 11. Migration & Logic Summary
+## 12. Migration & Logic Summary
+*   **OrderConversionController**: Added to manage on-the-fly rental-to-purchase conversions natively.
 *   **Availability Service**: Centralized all date blocking and checking logic.
 *   **Order-Aware Buffers**: Buffers now store Order IDs to identify own data during extensions.
 *   **Order Extension History**: `order_extensions` provides a full audit trail of all period updates.

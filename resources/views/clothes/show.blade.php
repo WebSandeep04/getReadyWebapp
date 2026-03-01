@@ -671,24 +671,47 @@ $(document).ready(function() {
             }
         });
         
-        // If always available, disable only blocked dates
-        if (clothData.isAlwaysAvailable) {
-            blockedDates.forEach(function(dateStr) {
-                disabledDates.push(dateStr);
-            });
-        } else {
-            // For managed calendar, disable all dates except available ones (for next 2 years)
-            const maxDate = new Date(today);
-            maxDate.setFullYear(maxDate.getFullYear() + 2);
-            let checkDate = new Date(today);
+        // To find chunks < 4 days, we must evaluate ALL dates up to some maxDate.
+        const maxDate = new Date(today);
+        maxDate.setFullYear(maxDate.getFullYear() + 2); // 2 years timeframe
+        
+        const activeDatesStrArray = [];
+        let checkDate = new Date(today);
+        
+        while (checkDate <= maxDate) {
+            const dateStr = checkDate.toISOString().split('T')[0];
+            const isAvailable = clothData.isAlwaysAvailable || availableDates.has(dateStr);
+            const isBlocked = blockedDates.has(dateStr);
             
-            while (checkDate <= maxDate) {
-                const dateStr = checkDate.toISOString().split('T')[0];
-                // Disable if not in available dates OR if it's blocked
-                if (!availableDates.has(dateStr) || blockedDates.has(dateStr)) {
-                    disabledDates.push(dateStr);
+            if (isAvailable && !isBlocked) {
+                activeDatesStrArray.push(dateStr);
+            } else {
+                disabledDates.push(dateStr);
+            }
+            checkDate.setDate(checkDate.getDate() + 1);
+        }
+        
+        // Find contiguous chunks. If a chunk is < 4 days, disable those dates.
+        if (activeDatesStrArray.length > 0) {
+            let chunk = [activeDatesStrArray[0]];
+            for (let i = 1; i < activeDatesStrArray.length; i++) {
+                const currDate = new Date(activeDatesStrArray[i]);
+                const prevDate = new Date(activeDatesStrArray[i-1]);
+                const diffTime = Math.abs(currDate - prevDate);
+                const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (diffDays === 1) {
+                    chunk.push(activeDatesStrArray[i]);
+                } else {
+                    if (chunk.length < 4) {
+                        chunk.forEach(d => disabledDates.push(d));
+                    }
+                    chunk = [activeDatesStrArray[i]];
                 }
-                checkDate.setDate(checkDate.getDate() + 1);
+            }
+            // Check the last chunk
+            if (chunk.length < 4) {
+                chunk.forEach(d => disabledDates.push(d));
             }
         }
         

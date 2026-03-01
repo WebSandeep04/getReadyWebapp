@@ -27,7 +27,7 @@ The project follows the standard Laravel directory structure with key applicatio
     *       *   `SecurityController`: Manages security deposit tracking, returns, and dashboard stats.
     *       *   `ReportController`: Handles tactical operations monitoring (Calendar) and financial performance analysis.
     *   **Api/**: API endpoints (e.g., `XpressbeesWebhookController`).
-    *   Specific feature controllers: `ClothController`, `OrderController`, `CartController`, `RejectionController`, `OrderExtensionController`.
+    *   Specific feature controllers: `ClothController`, `OrderController`, `CartController`, `RejectionController`, `OrderExtensionController`, `OrderConversionController`.
 *   **`app/Models/`**: Eloquent models representing database tables (`Cloth`, `User`, `Order`, `OrderExtension`, `Payment`, `Role`, `Permission`).
 *   **`database/migrations/`**: Database schema definitions.
 *   **`resources/views/`**: Blade templates for the frontend UI.
@@ -97,6 +97,13 @@ Users can increase their rental duration for active orders.
 *   **Availability**: Real-time checking (including pickup buffers) to prevent double bookings.
 *   **Invoicing**: Automates the generation of supplementary invoices for the extension cost.
 *   **History**: Tracks all changes in `order_extensions` with links to Razorpay transaction IDs.
+
+### 3.10 Rental to Purchase Conversion
+Buyers with an active rental can convert their rental into a full purchase from their dashboard.
+*   **Logic**: Evaluates eligibility (item must be for sale, order must be active). Calculates amount due by adjusting the security deposit already held.
+*   **Action**: Modifies `purchase_type` to `buy`, triggers Razorpay if extra payment is needed via `OrderConversionController`.
+*   **Inventory**: Decrements physical SKU, permanently transferring ownership.
+*   **Security Absorption**: Uses `security_absorbed_into_purchase` flag to indicate the security deposit was used towards the purchase price and blocks its refund.
 
 ---
 

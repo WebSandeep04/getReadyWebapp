@@ -108,4 +108,13 @@ Purchases follow the **Universal 20/20 Financial Structure**:
 *   **Security Dashboard**: These items never appear in the security dashboard as no funds are held.
 
 ---
+
+## 8. Converting a Rental to a Purchase
+If a user is currently renting an item marked as `is_purchased=true`, they can convert that rental into a permanent purchase from their active order view.
+*   **Controller**: `OrderConversionController@convertToPurchase`
+*   **Pricing**: The system calculates the remaining amount due by adjusting the rental amount and using the **Security Deposit** already held for the item. The user pays only the difference.
+*   **Order Update**: The item's `purchase_type` changes instantly from `rent` to `buy`. The order is flagged `security_absorbed_into_purchase = true` so the deposit is intentionally not returned.
+*   **Fulfillment Impact**: No new shipment is created because the buyer already has the physical item. The automated return scan ignores this converted item. The physical SKU is decremented from the catalog.
+
+---
 👉 **[Back to System Guide](../SYSTEM_GUIDE.md)**

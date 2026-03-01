@@ -204,6 +204,17 @@ function addAvailabilityBlock(type) {
             </div>
             ` : ''}
             <input type="hidden" name="availability_blocks[${index}][type]" value="${type}">
+            ${type === 'available' ? `
+            <div class="row mt-2">
+                <div class="col-12">
+                    <small class="text-info">
+                        <i class="fas fa-info-circle"></i> 
+                        Minimum 4 days rental required.
+                    </small>
+                    <div class="text-danger small mt-1 availability-error" style="display: none;"></div>
+                </div>
+            </div>
+            ` : ''}
         </div>
     `;
 
@@ -297,5 +308,68 @@ $(document).ready(function () {
         if (files.length > 0) {
             uploadImages(files);
         }
+    });
+
+    // Auto-fill and validate availability blocks
+    function handleAvailabilityDateChange(block) {
+        const startDateInput = block.find('input[name*="[start_date]"]');
+        const endDateInput = block.find('input[name*="[end_date]"]');
+        const errorDiv = block.find('.availability-error');
+
+        const startDate = startDateInput.val();
+        const endDate = endDateInput.val();
+
+        if (startDate && endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const daysDiff = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+
+            if (daysDiff < 4) {
+                if (errorDiv.length) {
+                    errorDiv.text(`Minimum 4 days rental required. Currently: ${daysDiff} day(s).`).show();
+                } else {
+                    // Create error div if it doesn't exist (for pre-existing blocks)
+                    block.append(`
+                    <div class="row mt-2 err-row">
+                        <div class="col-12">
+                            <div class="text-danger small mt-1 availability-error">Minimum 4 days rental required. Currently: ${daysDiff} day(s).</div>
+                        </div>
+                    </div>
+                    `);
+                }
+            } else {
+                if (errorDiv.length) {
+                    errorDiv.hide();
+                } else {
+                    block.find('.err-row').hide();
+                }
+            }
+        }
+    }
+
+    $(document).on('change', '.availability-block[data-type="available"] input[name*="[start_date]"]', function() {
+        const startDate = $(this).val();
+        if (startDate) {
+            const start = new Date(startDate);
+            const end = new Date(start);
+            end.setDate(end.getDate() + 3);
+
+            const year = end.getFullYear();
+            const month = String(end.getMonth() + 1).padStart(2, '0');
+            const day = String(end.getDate()).padStart(2, '0');
+            const formattedEndDate = `${year}-${month}-${day}`;
+
+            const block = $(this).closest('.availability-block');
+            const endDateInput = block.find('input[name*="[end_date]"]');
+            
+            endDateInput.val(formattedEndDate);
+            
+            handleAvailabilityDateChange(block);
+        }
+    });
+
+    $(document).on('change', '.availability-block[data-type="available"] input[name*="[end_date]"]', function() {
+        const block = $(this).closest('.availability-block');
+        handleAvailabilityDateChange(block);
     });
 }); 

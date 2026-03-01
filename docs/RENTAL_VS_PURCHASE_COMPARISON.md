@@ -80,6 +80,13 @@ This is the most significant difference between the two flows.
     *   **Rental**: **Immediately Eligible** after item is **Returned**.
     *   **Purchase**: **Immediately Eligible** after item is **Delivered**.
 
+### 6. Rental to Purchase Conversion (Mid-stream)
+Buyers actively renting an item (status `Delivered`) can choose to convert the order into a purchase.
+*   **Flow Shift**: Converts the order item from the **Rental (Loop)** to the **Purchase (Linear)** flow.
+*   **Logistics Check**: The system disables the `process-returns` cron job's reverse pickup action for this specific item because the buyer is keeping it.
+*   **Financial Handling**: Changes the `purchase_type` to `buy`. The system typically consumes the held Security Deposit to offset the purchase price so no refund takes place.
+*   **Payout Shift**: The seller becomes eligible for a purchase payout instead of a rental one.
+
 ---
 
 ## 🛠 Database Impact

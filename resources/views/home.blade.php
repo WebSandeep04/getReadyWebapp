@@ -25,50 +25,7 @@
   <p>{{ frontend_setting('about_content', 'Celebrate every occasion in style — without compromise. At GetReady, we make it easy to buy, sell, or rent premium outfits for weddings, festivals, and events. Smart fashion choices for modern wardrobes.') }}</p>
 </section>
 
-<!-- Brands Carousel -->
-@if($brands->count() > 0)
-<section class="brands-carousel-section py-5 bg-white">
-  <div class="container">
-    <h2 class="text-center text-warning mb-4">Our Brands</h2>
-    <div id="brandsCarousel" class="carousel slide" data-ride="carousel" data-interval="3000">
-      <div class="carousel-inner">
-        @php
-          $brandsPerSlide = 5;
-          $totalSlides = ceil($brands->count() / $brandsPerSlide);
-        @endphp
-        @for($i = 0; $i < $totalSlides; $i++)
-          <div class="carousel-item {{ $i === 0 ? 'active' : '' }}">
-            <div class="row justify-content-center align-items-center">
-              @foreach($brands->slice($i * $brandsPerSlide, $brandsPerSlide) as $brand)
-                <div class="col-6 col-md-2 text-center mb-3">
-                  <div class="brand-logo-wrapper">
-                    <img src="{{ asset('storage/' . $brand->logo) }}" alt="{{ $brand->name }}" class="brand-logo">
-                  </div>
-                </div>
-              @endforeach
-            </div>
-          </div>
-        @endfor
-      </div>
-      @if($totalSlides > 1)
-        <a class="carousel-control-prev" href="#brandsCarousel" role="button" data-slide="prev">
-          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-          <span class="sr-only">Previous</span>
-        </a>
-        <a class="carousel-control-next" href="#brandsCarousel" role="button" data-slide="next">
-          <span class="carousel-control-next-icon" aria-hidden="true"></span>
-          <span class="sr-only">Next</span>
-        </a>
-        <ol class="carousel-indicators">
-          @for($i = 0; $i < $totalSlides; $i++)
-            <li data-target="#brandsCarousel" data-slide-to="{{ $i }}" class="{{ $i === 0 ? 'active' : '' }}"></li>
-          @endfor
-        </ol>
-      @endif
-    </div>
-  </div>
-</section>
-@endif
+
 
 <!-- Most Loved -->
 <section class="most-loved text-center py-4 bg-light">
@@ -108,6 +65,58 @@
     </a>
   </div>
 </section>
+
+<!-- Brands Carousel -->
+@if(isset($brands) && $brands->count() > 0)
+<section class="brands-carousel-section py-5 bg-white">
+  <div class="container position-relative">
+    <h2 class="text-center text-warning mb-5">Our Brands</h2>
+    <div id="brandsCarousel" class="carousel slide" data-ride="carousel" data-interval="3000">
+      <div class="carousel-inner">
+        @php
+          $brandsPerSlide = 5;
+          $totalSlides = ceil($brands->count() / $brandsPerSlide);
+        @endphp
+        @for($i = 0; $i < $totalSlides; $i++)
+          <div class="carousel-item {{ $i === 0 ? 'active' : '' }}">
+            <div class="row justify-content-center align-items-start">
+              @foreach($brands->slice($i * $brandsPerSlide, $brandsPerSlide) as $brand)
+                <div class="col-6 col-md-2 text-center mb-3">
+                  <div class="d-flex flex-column align-items-center">
+                    <div class="brand-logo-wrapper mb-3">
+                        @if($brand->logo)
+                          <img src="{{ asset('storage/' . $brand->logo) }}" alt="{{ $brand->name }}" class="brand-logo">
+                        @else
+                          <i class="bi bi-tag-fill text-warning" style="font-size: 3rem;"></i>
+                        @endif
+                    </div>
+                    <h6 class="text-dark font-weight-bold px-2 w-100" style="font-size: 1rem; line-height: 1.3;" title="{{ $brand->name }}">{{ $brand->name }}</h6>
+                  </div>
+                </div>
+              @endforeach
+            </div>
+          </div>
+        @endfor
+      </div>
+      @if($totalSlides > 1)
+        <a class="carousel-control-prev" href="#brandsCarousel" role="button" data-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="sr-only">Previous</span>
+        </a>
+        <a class="carousel-control-next" href="#brandsCarousel" role="button" data-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="sr-only">Next</span>
+        </a>
+        <ol class="carousel-indicators">
+          @for($i = 0; $i < $totalSlides; $i++)
+            <li data-target="#brandsCarousel" data-slide-to="{{ $i }}" class="{{ $i === 0 ? 'active' : '' }}"></li>
+          @endfor
+        </ol>
+      @endif
+    </div>
+  </div>
+</section>
+@endif
 
 <!-- Occasion -->
 <section class="occasion text-center py-4">

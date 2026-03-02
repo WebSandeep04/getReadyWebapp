@@ -20,7 +20,7 @@ class HomeController extends Controller
             ->take(8)
             ->get();
 
-        $brands = Brand::whereNotNull('logo')->get();
+        $brands = Brand::all();
 
         $showHero = true;
 

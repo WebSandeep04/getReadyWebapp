@@ -43,13 +43,25 @@ class DatabaseSeeder extends Seeder
         }
 
         // Create sample fabric types
-        $fabrics = ['Silk', 'Cotton', 'Polyester', 'Linen'];
+        $fabrics = [
+            'Fleece', 'Polyester', 'Cotton', 'Knit', 'Denim', 'Cotton Blend', 'Net', 'Chiffon',
+            'Silk', 'Acrylic', 'Spandex / Lycra / Elastane', 'Silk Blend', 'Wool', 'Satin',
+            'Poly Cotton', 'Organza', 'Georgette', 'Banarasi Silk', 'Viscose', 'Nylon', 
+            'Crepe', 'Aeropostale', 'Linen', 'Velvet', 'Mesh', 'Rayon', 'Cashmere',
+            'Synthetic Georgette', 'Leather', 'Fur', 'Quilted'
+        ];
         foreach ($fabrics as $name) {
             FabricType::updateOrCreate(['name' => $name]);
         }
 
         // Create sample colors
-        $colors = ['Red', 'Blue', 'Green', 'Black', 'White'];
+        $colors = [
+            'Maroon', 'Brown', 'Olive', 'Nude', 'Navy Blue', 'Blue', 'Pink', 'Purple',
+            'White', 'Green', 'Off White', 'Gold', 'Yellow', 'Black', 'Coral', 'Tan',
+            'Multi-color', 'Grey', 'Rose', 'Mustard', 'Red', 'Mauve', 'Beige', 
+            'Sea Green', 'Khaki', 'Magenta', 'Burgundy', 'Charcoal', 'Cyan', 'Lavender',
+            'Rust', 'Orange', 'Peach', 'Wine', 'Denim Blue', 'Violet', 'Baby Pink', 'Crème'
+        ];
         foreach ($colors as $name) {
             Color::updateOrCreate(['name' => $name]);
         }
@@ -79,7 +91,18 @@ class DatabaseSeeder extends Seeder
         }
 
         // Create sample brands
-        $brands = ['Zara', 'H&M', 'Manyavar', 'Sabyasachi', 'FabIndia', 'Biba'];
+        $brands = [
+            'H&M', 'Zara', 'savana', 'shein', 'New me', 'Calvin klein', 'Forever 21', 'Mango',
+            'adidas', 'Nike', 'Puma', 'plum', 'Dot & Key', 'Dior', 'MAC', 'Swiss Beauty',
+            'Forever Fashion', 'Biba', 'Zudio', 'Little Box', 'Pantaloons', 'Westside', 'Taavi',
+            'Glitchez', 'Terractive', 'NUON', 'Primark Cares', 'DORI', 'TERRANOVA', 'Vero Moda',
+            'land\'s end', 'Lifestyle', 'Raymond', 'LYRA', 'DJ & C', 'Sqew', 'Levi\'s', 
+            'Jenniffer', 'AKS', 'wardrobe', 'plusS', 'Asybuy', 'Max', '4WRD', 'miss twenty',
+            'RIO', 'trigya', 'opaque.clip', 'URBANIC', 'UK 7', 'sharman', 'Chanderi', 
+            'Reegan', 'Mengghong ling', 'Roadster', 'love 4 label', 'berabond', 'Tokyo Talkies', 
+            'indigo spao', 'WISHFUL BY W', 'Bitterlime', 'Amayra', 'Marks & Spencer', 'ELISIA', 
+            'TALLY WEiJL', 'bape', 'Lakers', 'FILA', 'BLACKBERRYS', 'graf', 'Analogue'
+        ];
         foreach ($brands as $name) {
             Brand::updateOrCreate(['name' => $name]);
         }

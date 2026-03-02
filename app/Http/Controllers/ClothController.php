@@ -83,16 +83,16 @@ class ClothController extends Controller
     public function edit($id)
     {
         $cloth = Cloth::where('user_id', Auth::id())->with(['images', 'availabilityBlocks'])->findOrFail($id);
-        $sizes = Size::all();
+        $sizes = Size::orderBy('name', 'asc')->get();
         
         // Get data for dropdowns
-        $categories = Category::orderBy('name')->get();
-        $brands = Brand::orderBy('name')->get();
-        $fabricTypes = FabricType::orderBy('name')->get();
-        $colors = Color::orderBy('name')->get();
-        $fitTypes = BodyTypeFit::orderBy('name')->get();
+        $categories = Category::orderBy('name', 'asc')->get();
+        $brands = Brand::orderBy('name', 'asc')->get();
+        $fabricTypes = FabricType::orderBy('name', 'asc')->get();
+        $colors = Color::orderBy('name', 'asc')->get();
+        $fitTypes = BodyTypeFit::orderBy('name', 'asc')->get();
 
-        $garmentConditions = GarmentCondition::all();
+        $garmentConditions = GarmentCondition::orderBy('name', 'asc')->get();
         $showFilters = true;   
         
         return view('clothes.edit', compact('cloth', 'sizes', 'brands', 'categories', 'fabricTypes', 'colors', 'fitTypes', 'garmentConditions', 'showFilters'));
@@ -247,13 +247,13 @@ class ClothController extends Controller
 
     public function create()
     {
-        $categories = Category::all();
-        $fabric_types = FabricType::all();
-        $colors = Color::all();
-        $sizes = Size::all();
-        $body_type_fits = BodyTypeFit::all();
-        $garment_conditions = GarmentCondition::all();
-        $brands = Brand::all();
+        $categories = Category::orderBy('name', 'asc')->get();
+        $fabric_types = FabricType::orderBy('name', 'asc')->get();
+        $colors = Color::orderBy('name', 'asc')->get();
+        $sizes = Size::orderBy('name', 'asc')->get();
+        $body_type_fits = BodyTypeFit::orderBy('name', 'asc')->get();
+        $garment_conditions = GarmentCondition::orderBy('name', 'asc')->get();
+        $brands = Brand::orderBy('name', 'asc')->get();
         $showFilters = false;
         return view('sell', compact('categories', 'fabric_types', 'colors', 'sizes', 'body_type_fits', 'garment_conditions', 'brands', 'showFilters'));
     }

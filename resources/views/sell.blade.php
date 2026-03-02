@@ -273,13 +273,13 @@
     </div>
 
     <div class="step-content">
-      <div class="mb-2 text-left font-weight-bold">Upload up to 4 images (at least 1 required) <span class="text-danger">*</span>:</div>
+      <div class="mb-2 text-left font-weight-bold">Upload up to 4 images (at least 3 required) <span class="text-danger">*</span>:</div>
+      <input type="file" name="images[]" class="cloth-image-input" accept="image/*" required>
+      <input type="file" name="images[]" class="cloth-image-input" accept="image/*" required>
       <input type="file" name="images[]" class="cloth-image-input" accept="image/*" required>
       <input type="file" name="images[]" class="cloth-image-input" accept="image/*">
-      <input type="file" name="images[]" class="cloth-image-input" accept="image/*">
-      <input type="file" name="images[]" class="cloth-image-input" accept="image/*">
       <div id="imagePreviewContainer" class="d-flex flex-wrap gap-2 mb-3"></div>
-      <small class="text-muted">You can upload up to 4 images. At least 1 is required.</small>
+      <small class="text-muted">You can upload up to 4 images. At least 3 are required.</small>
       @error('images.*')<div class="text-danger small">{{ $message }}</div>@enderror
 
       <div class="d-flex justify-content-between align-items-center mb-1 mt-3">

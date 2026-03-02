@@ -228,12 +228,18 @@ if (form) {
       }
     });
 
-    // Special check for images - Check if at least one image is uploaded (first input is required)
-    const firstImageInput = imageInputs[0];
-    if (firstImageInput && firstImageInput.required && firstImageInput.files.length === 0) {
-      isValid = false;
-      firstImageInput.classList.add('is-invalid');
-      if (firstInvalidStep === -1) firstInvalidStep = 3; // Images step is index 3
+    // Special check for images - Check if all required image inputs are filled
+    let missingRequiredImage = false;
+    imageInputs.forEach(imgInput => {
+      if (imgInput && imgInput.required && imgInput.files.length === 0) {
+        isValid = false;
+        imgInput.classList.add('is-invalid');
+        missingRequiredImage = true;
+      }
+    });
+
+    if (missingRequiredImage && firstInvalidStep === -1) {
+      firstInvalidStep = 3; // Images step is index 3
     }
 
     if (!isValid) {

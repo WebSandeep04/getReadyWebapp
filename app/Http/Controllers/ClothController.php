@@ -300,7 +300,7 @@ class ClothController extends Controller
                 },
             ],
             'security_deposit' => 'required|numeric|min:0',
-            'images' => 'required|array|min:1|max:4',
+            'images' => 'required|array|min:3|max:4',
             'images.*' => 'image|mimes:jpeg,png,jpg,gif',
             'availability_blocks' => 'nullable|array',
             'availability_blocks.*.start_date' => 'required_with:availability_blocks|date',

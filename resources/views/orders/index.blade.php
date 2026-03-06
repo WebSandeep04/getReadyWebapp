@@ -227,9 +227,21 @@
                                                          $canReport = $deliveredAt && $deliveredAt->addMinutes(2)->isFuture();
                                                      @endphp
                                                      
-                                                     @if($canReport)
+                                                    @if($canReport)
                                                         <button type="button" class="btn btn-sm btn-outline-danger px-2 border-0" data-toggle="modal" data-target="#returnModal" data-order-id="{{ $order->id }}" title="Report Issue">
                                                             <i class="bi bi-exclamation-triangle"></i>
+                                                        </button>
+                                                     @endif
+
+                                                     {{-- Early Return Trigger --}}
+                                                     @if($order->has_rental_items && !in_array($order->status, ['Return Requested', 'Return In Progress', 'Returned']))
+                                                        <button type="button" class="btn btn-sm btn-outline-primary px-2 border-0 early-return-trigger" 
+                                                            data-toggle="modal" 
+                                                            data-target="#earlyReturnModal" 
+                                                            data-order-id="{{ $order->id }}"
+                                                            data-max-date="{{ \Carbon\Carbon::parse($order->rental_to)->format('Y-m-d') }}"
+                                                            title="Early Return">
+                                                            <i class="bi bi-arrow-down-left-square"></i>
                                                         </button>
                                                      @endif
                                                  @elseif($order->status === 'Return Requested')
@@ -281,141 +293,34 @@
     @endif
 </div>
 
-<!-- Return Request Modal -->
-<div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
+<!-- Early Return Date Selection Modal -->
+<div class="modal fade" id="earlyReturnModal" tabindex="-1" aria-labelledby="earlyReturnModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="" method="POST" id="returnForm" enctype="multipart/form-data">
+            <form id="earlyReturnForm" action="" method="POST">
                 @csrf
                 <div class="modal-header">
-                    <h5 class="modal-title" id="returnModalLabel">Report an Issue / Request Return</h5>
+                    <h5 class="modal-title" id="earlyReturnModalLabel"><i class="bi bi-arrow-down-left-square me-2"></i>Schedule Early Return</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="return_reason" class="form-label">Issue Category</label>
-                        <select class="form-control" name="return_reason" id="return_reason" required>
-                            <option value="">Select a reason</option>
-                            <option value="Damaged Item">Damaged Item</option>
-                            <option value="Wrong Item Received">Wrong Item Received</option>
-                            <option value="Inaccurate Description">Inaccurate Description</option>
-                            <option value="Size/Fit Issue">Size/Fit Issue</option>
-                            <option value="Quality Issue">Quality/Condition Issue</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="return_details" class="form-label">Provide more details</label>
-                        <textarea class="form-control" id="return_details" name="return_details" rows="4" placeholder="Describe the problem in detail..." required></textarea>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="return_images" class="form-label">Upload Evidence Images (Max 3)</label>
-                        <input type="file" class="form-control-file" name="return_images[]" id="return_images" multiple accept="image/*">
-                        <small class="text-muted">Max file size: 2MB per image.</small>
+                    <p class="text-muted small">Select the date you will return the item. No refunds are issued for early returns.</p>
+                    
+                    <div class="form-group mb-3">
+                        <label for="new_return_date" class="form-label fw-bold">Select Return Date</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="bi bi-calendar-check"></i></span>
+                            <input type="text" id="new_return_date" name="new_return_date" class="form-control bg-white" placeholder="Choose a date" readonly required>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-danger">Submit Request</button>
+                    <button type="submit" class="btn btn-primary">Save Return Date</button>
                 </div>
             </form>
-        </div>
-    </div>
-</div>
-<div class="modal fade" id="rateModal" tabindex="-1" aria-labelledby="rateModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form action="{{ route('ratings.store') }}" method="POST" id="rateForm">
-                @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title" id="rateModalLabel">Rate Your Experience</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" name="order_id" id="rating_order_id">
-                    
-                    <div class="mb-3 text-center">
-                        <label class="form-label d-block">How would you rate the seller?</label>
-                        <div class="rating-stars" style="font-size: 2rem; color: #ffc107; cursor: pointer;">
-                            <i class="bi bi-star" data-value="1"></i>
-                            <i class="bi bi-star" data-value="2"></i>
-                            <i class="bi bi-star" data-value="3"></i>
-                            <i class="bi bi-star" data-value="4"></i>
-                            <i class="bi bi-star" data-value="5"></i>
-                        </div>
-                        <input type="hidden" name="rating" id="rating_value" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="review" class="form-label">Review (Optional)</label>
-                        <textarea class="form-control" id="review" name="review" rows="3" placeholder="Share your experience..."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Submit Rating</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Extension Modal -->
-<div class="modal fade" id="extensionModal" tabindex="-1" aria-labelledby="extensionModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="extensionModalLabel"><i class="bi bi-calendar-plus me-2"></i>Extend Rental Period</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="alert alert-info small">
-                    <i class="bi bi-info-circle me-1"></i>Extensions are billed at the standard daily rate (Base Rent / 4).
-                </div>
-
-                <div class="mb-4">
-                    <label class="text-muted small text-uppercase fw-bold d-block mb-1">Current Return Date</label>
-                    <span id="current_return_date" class="h6 mb-0">-</span>
-                </div>
-
-                <div class="mb-3">
-                    <label for="extension_date" class="form-label fw-bold">Select New Return Date</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-white"><i class="bi bi-calendar-event"></i></span>
-                        <input type="text" id="extension_date" class="form-control bg-white" placeholder="Pick a date" readonly>
-                    </div>
-                </div>
-
-                <div id="quote_container" class="mt-4 p-3 border rounded bg-light d-none">
-                    <h6 class="mb-3 border-bottom pb-2">Price Breakdown</h6>
-                    <div id="quote_items"></div>
-                    <div class="d-flex justify-content-between font-weight-bold mt-2 pt-2 border-top">
-                        <span>Total Additional Amount:</span>
-                        <span id="total_extension_amount" class="text-primary">0.00</span>
-                    </div>
-                    <div class="mt-3 small text-muted">
-                        <span>New Return Date:</span>
-                        <span id="new_return_date" class="font-weight-bold ml-1">-</span>
-                    </div>
-                </div>
-
-                <div id="availability_alert" class="alert alert-danger mt-3 d-none">
-                    <i class="bi bi-calendar-x me-1"></i>Selected extension is not available for one or more items.
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button type="button" id="proceed_extension" class="btn btn-warning" disabled>
-                    Proceed to Pay <i class="bi bi-arrow-right ms-1"></i>
-                </button>
-            </div>
         </div>
     </div>
 </div>
@@ -429,6 +334,29 @@
     document.addEventListener('DOMContentLoaded', function() {
         let activeOrderId = null;
         let activeButton = null;
+        let earlyReturnDatePicker = null;
+
+        // Early Return Modal Logic
+        $('.early-return-trigger').on('click', function() {
+            const btn = $(this);
+            const orderId = btn.data('order-id');
+            const maxDate = btn.data('max-date');
+            
+            $('#earlyReturnForm').attr('action', `/orders/${orderId}/early-return`);
+            
+            if (earlyReturnDatePicker) {
+                earlyReturnDatePicker.destroy();
+            }
+
+            earlyReturnDatePicker = flatpickr("#new_return_date", {
+                minDate: "today",
+                maxDate: maxDate,
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "d M Y",
+                disableMobile: "true"
+            });
+        });
 
         // Use jQuery for Bootstrap 4 modal events
         $('#rateModal').on('show.bs.modal', function (event) {

@@ -346,4 +346,73 @@ class AvailabilityService
             }
         }
     }
+
+    /**
+     * Update order availability blocks for an early return.
+     * Effectively moves the end date and pickup buffers.
+     */
+    public function updateAvailabilityForEarlyReturn($clothId, $orderId, $newEndDate)
+    {
+        $newEnd = Carbon::parse($newEndDate);
+        
+        // 1. Find the main "Rented" block
+        $rentalBlock = AvailabilityBlock::where('cloth_id', $clothId)
+            ->where('type', 'blocked')
+            ->where('reason', 'like', 'Rented (Order #' . $orderId . ')%')
+            ->first();
+
+        if (!$rentalBlock) return;
+
+        $oldRentedEnd = Carbon::parse($rentalBlock->end_date);
+
+        // 2. Find the Pickup Buffer
+        $pickupBuffer = AvailabilityBlock::where('cloth_id', $clothId)
+            ->where('type', 'blocked')
+            ->where('reason', 'like', '%Pickup%')
+            ->where('reason', 'like', '%Order #' . $orderId . '%')
+            ->first();
+
+        $oldBufferEnd = $pickupBuffer ? Carbon::parse($pickupBuffer->end_date) : $oldRentedEnd->copy()->addDays(2);
+
+        // 3. Update the Rented Block End Date
+        $rentalBlock->update(['end_date' => $newEnd->format('Y-m-d')]);
+
+        // 4. Update or Re-create Pickup Buffer
+        $newBufferStart = $newEnd->copy()->addDay();
+        $newBufferEnd = $newEnd->copy()->addDays(2);
+
+        if ($pickupBuffer) {
+            $pickupBuffer->update([
+                'start_date' => $newBufferStart->format('Y-m-d'),
+                'end_date' => $newBufferEnd->format('Y-m-d')
+            ]);
+        } else {
+            AvailabilityBlock::create([
+                'cloth_id' => $clothId,
+                'start_date' => $newBufferStart->format('Y-m-d'),
+                'end_date' => $newBufferEnd->format('Y-m-d'),
+                'type' => 'blocked',
+                'reason' => 'Pre-pickup from owner buffer (Order #' . $orderId . ')'
+            ]);
+        }
+
+        // 5. Restore the "hole" created by moving the return date earlier
+        // The hole is from the NEW buffer end + 1 until the OLD buffer end
+        $holeStart = $newBufferEnd->copy()->addDay();
+        $holeEnd = $oldBufferEnd;
+
+        if ($holeStart->lte($holeEnd)) {
+            $hasAnyAvailable = AvailabilityBlock::where('cloth_id', $clothId)->where('type', 'available')->exists();
+            if ($hasAnyAvailable) {
+                AvailabilityBlock::create([
+                    'cloth_id' => $clothId,
+                    'start_date' => $holeStart->format('Y-m-d'),
+                    'end_date' => $holeEnd->format('Y-m-d'),
+                    'type' => 'available',
+                    'reason' => 'Restored after early return (Order #' . $orderId . ')'
+                ]);
+                $this->mergeAvailableBlocks($clothId);
+            }
+        }
+    }
 }

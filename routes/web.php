@@ -247,6 +247,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/invoices', [App\Http\Controllers\InvoiceController::class, 'index'])->name('invoices.index');
     Route::post('/ratings', [App\Http\Controllers\RatingController::class, 'store'])->name('ratings.store');
     Route::post('/orders/{id}/return-request', [App\Http\Controllers\OrderReturnController::class, 'store'])->name('orders.return-request');
+    Route::post('/orders/{id}/early-return', [App\Http\Controllers\OrderReturnController::class, 'earlyReturn'])->name('orders.early-return');
 
     // Rental Extensions
     Route::get('/orders/{id}/extension-quote', [OrderExtensionController::class, 'quote'])->name('orders.extension.quote');

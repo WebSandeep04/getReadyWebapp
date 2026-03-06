@@ -458,7 +458,24 @@ class OrderController extends Controller
         }
 
         if ($shipmentsCreated > 0) {
-            $order->update(['status' => 'Return In Progress']);
+            $updateData = ['status' => 'Return In Progress'];
+            
+            // Check if it's an Early Return
+            if ($order->return_reason === 'Early Return') {
+                $todayString = now()->toDateString();
+                $updateData['rental_to'] = $todayString;
+                $updateData['return_date'] = $todayString;
+                
+                // Update availability blocks immediately
+                $availabilityService = app(\App\Services\AvailabilityService::class);
+                foreach ($order->items as $item) {
+                     if ($item->cloth && $item->purchase_type !== 'buy') {
+                        $availabilityService->updateAvailabilityForEarlyReturn($item->cloth->id, $order->id, $todayString);
+                     }
+                }
+            }
+
+            $order->update($updateData);
             
             // Send Notification to Buyer
             Notification::create([

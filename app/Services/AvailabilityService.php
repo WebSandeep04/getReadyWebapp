@@ -16,7 +16,7 @@ class AvailabilityService
         $startDate = Carbon::parse($start);
         $endDate = Carbon::parse($end);
         $fullBlockStart = $startDate->copy()->subDay();
-        $fullBlockEnd = $endDate->copy()->addDay();
+        $fullBlockEnd = $endDate->copy()->addDays(2);
 
         // 1. Block Rental
         AvailabilityBlock::create([
@@ -39,10 +39,10 @@ class AvailabilityService
         // 3. Block Pickup Buffer
         AvailabilityBlock::create([
             'cloth_id' => $cloth->id,
-            'start_date' => $fullBlockEnd->format('Y-m-d'),
+            'start_date' => $endDate->copy()->addDay()->format('Y-m-d'),
             'end_date' => $fullBlockEnd->format('Y-m-d'),
             'type' => 'blocked',
-            'reason' => 'Pickup buffer (Order #' . $orderId . ')'
+            'reason' => 'Pre-pickup from owner buffer (Order #' . $orderId . ')'
         ]);
 
         $this->updateAvailableBlocks($cloth->id, $fullBlockStart, $fullBlockEnd);
@@ -62,8 +62,7 @@ class AvailabilityService
             ->where('start_date', $oldPickupBufferDate)
             ->where(function($q) use ($orderId) {
                 $q->where('reason', 'like', '%Order #' . $orderId . '%')
-                  ->orWhere('reason', 'Pickup buffer')
-                  ->orWhere('reason', 'Pickup Buffer');
+                  ->orWhere('reason', 'like', '%Pickup%');
             })
             ->delete();
 
@@ -88,18 +87,19 @@ class AvailabilityService
             ]);
         }
 
-        // 3. Create new Pickup Buffer at newEnd + 1
-        $newPickupBufferDate = $newEndDate->copy()->addDay();
+        // 3. Create new Pickup Buffer at newEnd + 1 to newEnd + 2
+        $newPickupBufferStart = $newEndDate->copy()->addDay();
+        $newPickupBufferEnd = $newEndDate->copy()->addDays(2);
         AvailabilityBlock::create([
             'cloth_id' => $cloth->id,
-            'start_date' => $newPickupBufferDate->format('Y-m-d'),
-            'end_date' => $newPickupBufferDate->format('Y-m-d'),
+            'start_date' => $newPickupBufferStart->format('Y-m-d'),
+            'end_date' => $newPickupBufferEnd->format('Y-m-d'),
             'type' => 'blocked',
-            'reason' => 'Pickup buffer (Order #' . $orderId . ')'
+            'reason' => 'Pre-pickup from owner buffer (Order #' . $orderId . ')'
         ]);
 
         // 4. Update available blocks for the newly blocked period
-        $this->updateAvailableBlocks($cloth->id, $oldEndDate->copy()->addDay(), $newPickupBufferDate);
+        $this->updateAvailableBlocks($cloth->id, $oldEndDate->copy()->addDay(), $newPickupBufferEnd);
     }
 
     /**
@@ -122,7 +122,8 @@ class AvailabilityService
                     Carbon::parse($order->rental_from)->subDay()->format('Y-m-d'),
                     Carbon::parse($order->rental_from)->format('Y-m-d'),
                     Carbon::parse($order->rental_to)->format('Y-m-d'),
-                    Carbon::parse($order->rental_to)->addDay()->format('Y-m-d')
+                    Carbon::parse($order->rental_to)->addDay()->format('Y-m-d'),
+                    Carbon::parse($order->rental_to)->addDays(2)->format('Y-m-d')
                 ];
             }
         }

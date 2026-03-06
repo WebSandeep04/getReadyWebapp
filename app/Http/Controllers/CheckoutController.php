@@ -75,6 +75,29 @@ class CheckoutController extends Controller
             return response()->json(['success' => false, 'message' => 'Unable to calculate order total'], 422);
         }
 
+        // --- FINAL AVAILABILITY CHECK BEFORE CHECKOUT ---
+        $availabilityService = new \App\Services\AvailabilityService();
+        foreach ($cartItems as $item) {
+            if ($item->purchase_type !== 'buy' && $item->rental_start_date && $item->rental_end_date) {
+                // If it's a rental, check if the dates are still available
+                $isAvailable = $availabilityService->isAvailable($item->cloth, $item->rental_start_date, $item->rental_end_date);
+                if (!$isAvailable) {
+                    return response()->json([
+                        'success' => false, 
+                        'message' => 'Sorry, the item "' . $item->cloth->title . '" is no longer available for the selected dates. Please remove it from your cart or change the dates.'
+                    ], 422);
+                }
+            } else if ($item->purchase_type === 'buy') {
+                // If it's a purchase, check if it's still available for purchase
+                if ($item->cloth->sku <= 0) {
+                     return response()->json([
+                        'success' => false, 
+                        'message' => 'Sorry, the item "' . $item->cloth->title . '" has been sold out.'
+                    ], 422);
+                }
+            }
+        }
+
         $rentalTo = !empty($rentalEndDates) ? max($rentalEndDates) : now()->addDays(3);
 
         // Create Order Record

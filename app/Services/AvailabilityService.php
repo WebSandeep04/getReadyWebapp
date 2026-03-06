@@ -349,13 +349,18 @@ class AvailabilityService
 
     /**
      * Update order availability blocks for an early return.
-     * Effectively moves the end date and pickup buffers.
+     * 
+     * This logic performs three critical steps:
+     * 1. Shrinks the main "Rented" block to the new end date.
+     * 2. Shifts the "Pre-pickup from owner" buffer to start immediately after the new end date.
+     * 3. Releases the future days (previously blocked) back into the "available" pool 
+     *    by creating a new available block for the "hole" created.
      */
     public function updateAvailabilityForEarlyReturn($clothId, $orderId, $newEndDate)
     {
-        $newEnd = Carbon::parse($newEndDate);
+        $newEnd = Carbon::parse($newEndDate)->startOfDay();
         
-        // 1. Find the main "Rented" block
+        // 1. Find the main "Rented" block for the specific order.
         $rentalBlock = AvailabilityBlock::where('cloth_id', $clothId)
             ->where('type', 'blocked')
             ->where('reason', 'like', 'Rented (Order #' . $orderId . ')%')
@@ -363,21 +368,22 @@ class AvailabilityService
 
         if (!$rentalBlock) return;
 
-        $oldRentedEnd = Carbon::parse($rentalBlock->end_date);
+        $oldRentedEnd = Carbon::parse($rentalBlock->end_date)->startOfDay();
 
-        // 2. Find the Pickup Buffer
+        // 2. Find the existing Pickup Buffer for this order.
         $pickupBuffer = AvailabilityBlock::where('cloth_id', $clothId)
             ->where('type', 'blocked')
             ->where('reason', 'like', '%Pickup%')
             ->where('reason', 'like', '%Order #' . $orderId . '%')
             ->first();
 
-        $oldBufferEnd = $pickupBuffer ? Carbon::parse($pickupBuffer->end_date) : $oldRentedEnd->copy()->addDays(2);
+        // Record the absolute end of the blocked period for this order before shifts.
+        $oldBufferEnd = $pickupBuffer ? Carbon::parse($pickupBuffer->end_date)->startOfDay() : $oldRentedEnd->copy()->addDays(2);
 
-        // 3. Update the Rented Block End Date
+        // 3. Update the Rented Block to the new user-selected end date.
         $rentalBlock->update(['end_date' => $newEnd->format('Y-m-d')]);
 
-        // 4. Update or Re-create Pickup Buffer
+        // 4. Calculate new buffer positions (New End + 1 and New End + 2).
         $newBufferStart = $newEnd->copy()->addDay();
         $newBufferEnd = $newEnd->copy()->addDays(2);
 
@@ -396,8 +402,11 @@ class AvailabilityService
             ]);
         }
 
-        // 5. Restore the "hole" created by moving the return date earlier
-        // The hole is from the NEW buffer end + 1 until the OLD buffer end
+        /**
+         * 5. HOLE RESTORATION
+         * The "hole" is the gap between the NEW buffer end and the OLD buffer end.
+         * These dates are now free for other users to book.
+         */
         $holeStart = $newBufferEnd->copy()->addDay();
         $holeEnd = $oldBufferEnd;
 
@@ -411,6 +420,7 @@ class AvailabilityService
                     'type' => 'available',
                     'reason' => 'Restored after early return (Order #' . $orderId . ')'
                 ]);
+                // Merge adjacent available blocks to keep the calendar clean.
                 $this->mergeAvailableBlocks($clothId);
             }
         }

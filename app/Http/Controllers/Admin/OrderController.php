@@ -191,6 +191,11 @@ class OrderController extends Controller
             return $this->markAsReturned($id);
         }
 
+        // If moving to Cancelled, we must also restore stock and availability
+        if ($newStatus === 'Cancelled' && $oldStatus !== 'Cancelled') {
+            return $this->cancelOrder($id);
+        }
+
         $order->status = $newStatus;
         if ($newStatus === 'Delivered' && !$order->delivered_at) {
             $order->delivered_at = now();
@@ -216,6 +221,8 @@ class OrderController extends Controller
         $order->status = 'Returned';
         $order->save();
 
+        $availabilityService = app(\App\Services\AvailabilityService::class);
+
         // Increment SKU for all returned items (Rental or Purchase)
         foreach ($order->items as $item) {
             $cloth = $item->cloth;
@@ -223,10 +230,45 @@ class OrderController extends Controller
                 $cloth->sku = $cloth->sku + 1;
                 $cloth->is_available = true; // Make available again
                 $cloth->save();
+
+                // If it was a rental item and has availability blocks, restore them
+                if ($item->purchase_type !== 'buy') {
+                    $availabilityService->restoreAvailabilityForOrder($cloth->id, $order->id);
+                }
             }
         }
 
         return response()->json(['success' => true, 'message' => 'Order marked as returned.']);
+    }
+
+    public function cancelOrder($id)
+    {
+        $order = Order::with('items.cloth')->findOrFail($id);
+
+        if ($order->status === 'Cancelled') {
+            return response()->json(['success' => false, 'message' => 'Order is already cancelled.'], 400);
+        }
+
+        $order->status = 'Cancelled';
+        $order->save();
+
+        $availabilityService = app(\App\Services\AvailabilityService::class);
+
+        // Increment SKU for all cancelled items and restore blocks
+        foreach ($order->items as $item) {
+            $cloth = $item->cloth;
+            if ($cloth) { 
+                $cloth->sku = $cloth->sku + 1;
+                $cloth->is_available = true; // Make available again
+                $cloth->save();
+
+                if ($item->purchase_type !== 'buy') {
+                    $availabilityService->restoreAvailabilityForOrder($cloth->id, $order->id);
+                }
+            }
+        }
+
+        return response()->json(['success' => true, 'message' => 'Order marked as cancelled and stock restored.']);
     }
 
     public function retryShipment($id)

@@ -273,4 +273,77 @@ class AvailabilityService
             }
         }
     }
+
+    /**
+     * Restore availability blocks completely for a given order (e.g., when returned or cancelled).
+     */
+    public function restoreAvailabilityForOrder($clothId, $orderId)
+    {
+        $blocks = AvailabilityBlock::where('cloth_id', $clothId)
+            ->where('type', 'blocked')
+            ->where(function ($q) use ($orderId) {
+                $q->where('reason', 'like', '%Order #' . $orderId . '%')
+                  ->orWhere('reason', 'like', '%Order#' . $orderId . '%')
+                  ->orWhere('reason', 'like', '%(#' . $orderId . ')%');
+            })
+            ->get();
+
+        if ($blocks->isEmpty()) return;
+
+        $minStart = Carbon::parse($blocks->min('start_date'));
+        $maxEnd = Carbon::parse($blocks->max('end_date'));
+
+        // 1. Delete the blocked records
+        $blocks->each->delete();
+
+        // 2. If cloth uses explicit "available" blocks, restore the hole and merge
+        $hasAnyAvailable = AvailabilityBlock::where('cloth_id', $clothId)->where('type', 'available')->exists();
+        
+        if ($hasAnyAvailable) {
+            AvailabilityBlock::create([
+                'cloth_id' => $clothId,
+                'start_date' => $minStart->format('Y-m-d'),
+                'end_date' => $maxEnd->format('Y-m-d'),
+                'type' => 'available',
+                'reason' => 'Restored after return (Order #' . $orderId . ')'
+            ]);
+
+            $this->mergeAvailableBlocks($clothId);
+        }
+    }
+
+    /**
+     * Helper to clean up and merge adjacent available blocks.
+     */
+    private function mergeAvailableBlocks($clothId)
+    {
+        $availableBlocks = AvailabilityBlock::where('cloth_id', $clothId)
+            ->where('type', 'available')
+            ->orderBy('start_date')
+            ->get();
+
+        if ($availableBlocks->count() <= 1) return;
+
+        $current = null;
+        foreach ($availableBlocks as $block) {
+            if (!$current) {
+                $current = $block;
+                continue;
+            }
+
+            $currentEnd = Carbon::parse($current->end_date);
+            $blockStart = Carbon::parse($block->start_date);
+            
+            if ($blockStart->lte($currentEnd->copy()->addDay())) {
+                $blockEnd = Carbon::parse($block->end_date);
+                if ($blockEnd->gt($currentEnd)) {
+                    $current->end_date = $block->end_date;
+                    $current->save();
+                }
+                $block->delete();
+            } else {
+                $current = $block;
+            }
+        }
+    }
 }

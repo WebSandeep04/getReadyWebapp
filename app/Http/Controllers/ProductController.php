@@ -45,6 +45,47 @@ class ProductController extends Controller
             $query->whereIn('condition_id', $conditions);
         }
 
+        // Filter by Brands
+        if ($request->filled('brands')) {
+            $brands = is_array($request->brands) ? $request->brands : [$request->brands];
+            $query->whereIn('brand_id', $brands);
+        }
+
+        // Filter by Fabrics
+        if ($request->filled('fabrics')) {
+            $fabrics = is_array($request->fabrics) ? $request->fabrics : [$request->fabrics];
+            $query->whereIn('fabric_id', $fabrics);
+        }
+
+        // Filter by Colors
+        if ($request->filled('colors')) {
+            $colors = is_array($request->colors) ? $request->colors : [$request->colors];
+            $query->whereIn('color_id', $colors);
+        }
+
+        // Filter by Sizes
+        if ($request->filled('sizes')) {
+            $sizes = is_array($request->sizes) ? $request->sizes : [$request->sizes];
+            $query->whereIn('size_id', $sizes);
+        }
+
+        // Filter by Fit Types
+        if ($request->filled('fits')) {
+            $fits = is_array($request->fits) ? $request->fits : [$request->fits];
+            $query->whereIn('fit_type_id', $fits);
+        }
+
+        // Filter by Bottom Types
+        if ($request->filled('bottoms')) {
+            $bottoms = is_array($request->bottoms) ? $request->bottoms : [$request->bottoms];
+            $query->whereIn('bottom_type_id', $bottoms);
+        }
+
+        // Filter by Is Cleaned
+        if ($request->filled('is_cleaned')) {
+            $query->where('is_cleaned', true);
+        }
+
         // Filter by price range
         if ($request->filled('price_min')) {
             $query->where('rent_price', '>=', $request->price_min);
@@ -136,6 +177,12 @@ class ProductController extends Controller
 
         // Sorting
         $sortBy = $request->get('sort_by', 'default');
+        
+        // Handle RDM Priority override
+        if ($request->input('rdm_priority') == '1') {
+            $sortBy = 'rdm_low';
+        }
+
         switch ($sortBy) {
             case 'price_low':
                 $query->orderBy('rent_price', 'asc');
@@ -155,6 +202,10 @@ class ProductController extends Controller
             case 'rating_low':
                 $query->orderByRaw('(SELECT COALESCE(AVG(rating), 0) FROM product_reviews WHERE product_reviews.cloth_id = clothes.id) asc');
                 break;
+            case 'rdm_low':
+                $query->orderByRaw('rent_price / NULLIF(mrp, 0) asc')
+                    ->orderBy('mrp', 'desc');
+                break;
             case 'newest':
                 $query->orderBy('created_at', 'desc');
                 break;
@@ -172,7 +223,12 @@ class ProductController extends Controller
 
         // Get filter options
         $categories = Category::orderBy('name')->get();
-        $sizes = Size::orderBy('name')->get();
+        $sizes = \App\Models\Size::orderBy('name')->get();
+        $brands = \App\Models\Brand::orderBy('name')->get();
+        $fabrics = \App\Models\FabricType::orderBy('name')->get();
+        $colors = \App\Models\Color::orderBy('name')->get();
+        $fits = \App\Models\BodyTypeFit::orderBy('name')->get();
+        $bottoms = \App\Models\BottomType::orderBy('name')->get();
         $conditions = GarmentCondition::all();
         $genders = ['Boy', 'Girl', 'Men', 'Women'];
 
@@ -191,6 +247,6 @@ class ProductController extends Controller
             ]);
         }
         
-        return view('clothes.browse', compact('clothes', 'categories', 'sizes', 'conditions', 'genders', 'showFilters'));
+        return view('clothes.browse', compact('clothes', 'categories', 'sizes', 'brands', 'fabrics', 'colors', 'fits', 'bottoms', 'conditions', 'genders', 'showFilters'));
     }
 }

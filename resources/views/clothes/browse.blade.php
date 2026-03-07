@@ -28,38 +28,102 @@
             <!-- Left Sidebar - Filters -->
             <div class="col-md-3 col-lg-2 sidebar-filters">
                 <div class="filter-section">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3 sidebar-header-fixed">
                         <h5 class="filter-title mb-0">Filter by</h5>
-                        <a href="{{ route('clothes.index') }}" class="text-warning small text-decoration-none">Clear all</a>
+                        <a href="{{ route('clothes.index') }}" class="text-warning small text-decoration-none font-weight-bold">Clear all</a>
                     </div>
                     
-                    <!-- Category Filter -->
-                    <div class="filter-group">
-                        <h6 class="filter-group-title">Category</h6>
-                        <form id="filterForm" method="GET" action="{{ route('clothes.index') }}">
-                            @foreach($categories as $category)
-                                <div class="filter-item">
-                                    <label class="filter-checkbox">
-                                        <input type="checkbox" name="categories[]" value="{{ $category->id }}" 
-                                               {{ in_array($category->id, (array)request('categories', [])) ? 'checked' : '' }}>
-                                        <span class="checkmark"></span>
-                                        <span class="filter-label">{{ $category->name }}</span>
-                                    </label>
-                                </div>
-                            @endforeach
+                    <form id="filterForm" method="GET" action="{{ route('clothes.index') }}">
+                        <!-- Category Filter -->
+                        <div class="filter-group">
+                            <h6 class="filter-group-title">Category</h6>
+                            <div class="filter-options-scroll">
+                                @foreach($categories as $category)
+                                    <div class="filter-item">
+                                        <label class="filter-checkbox">
+                                            <input type="checkbox" name="categories[]" value="{{ $category->id }}" 
+                                                   {{ in_array($category->id, (array)request('categories', [])) ? 'checked' : '' }}>
+                                            <span class="checkmark"></span>
+                                            <span class="filter-label">{{ $category->name }}</span>
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
 
-                            <!-- Gender Filter -->
+                            <!-- User Type Filter -->
                             <h6 class="filter-group-title filter-group-spacing">User Type</h6>
-                            @foreach($genders as $gender)
-                                <div class="filter-item">
-                                    <label class="filter-checkbox">
-                                        <input type="checkbox" name="genders[]" value="{{ $gender }}" 
-                                               {{ in_array($gender, (array)request('genders', [])) ? 'checked' : '' }}>
-                                        <span class="checkmark"></span>
-                                        <span class="filter-label">{{ $gender }}</span>
-                                    </label>
-                                </div>
-                            @endforeach
+                            <div class="filter-options-scroll">
+                                @foreach($genders as $gender)
+                                    <div class="filter-item">
+                                        <label class="filter-checkbox">
+                                            <input type="checkbox" name="genders[]" value="{{ $gender }}" 
+                                                   {{ in_array($gender, (array)request('genders', [])) ? 'checked' : '' }}>
+                                            <span class="checkmark"></span>
+                                            <span class="filter-label">{{ $gender }}</span>
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            <!-- Size Filter -->
+                            <h6 class="filter-group-title filter-group-spacing">Size</h6>
+                            <div class="filter-options-scroll">
+                                @foreach($sizes as $size)
+                                    <div class="filter-item">
+                                        <label class="filter-checkbox">
+                                            <input type="checkbox" name="sizes[]" value="{{ $size->id }}" 
+                                                   {{ in_array($size->id, (array)request('sizes', [])) ? 'checked' : '' }}>
+                                            <span class="checkmark"></span>
+                                            <span class="filter-label">{{ $size->name }}</span>
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            <!-- Brand Filter -->
+                            <h6 class="filter-group-title filter-group-spacing">Brand</h6>
+                            <div class="filter-options-scroll">
+                                @foreach($brands as $brand)
+                                    <div class="filter-item">
+                                        <label class="filter-checkbox">
+                                            <input type="checkbox" name="brands[]" value="{{ $brand->id }}" 
+                                                   {{ in_array($brand->id, (array)request('brands', [])) ? 'checked' : '' }}>
+                                            <span class="checkmark"></span>
+                                            <span class="filter-label">{{ $brand->name }}</span>
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            <!-- Fabric Filter -->
+                            <h6 class="filter-group-title filter-group-spacing">Fabric</h6>
+                            <div class="filter-options-scroll">
+                                @foreach($fabrics as $fabric)
+                                    <div class="filter-item">
+                                        <label class="filter-checkbox">
+                                            <input type="checkbox" name="fabrics[]" value="{{ $fabric->id }}" 
+                                                   {{ in_array($fabric->id, (array)request('fabrics', [])) ? 'checked' : '' }}>
+                                            <span class="checkmark"></span>
+                                            <span class="filter-label">{{ $fabric->name }}</span>
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            <!-- Color Filter -->
+                            <h6 class="filter-group-title filter-group-spacing">Color</h6>
+                            <div class="filter-options-scroll">
+                                @foreach($colors as $color)
+                                    <div class="filter-item">
+                                        <label class="filter-checkbox">
+                                            <input type="checkbox" name="colors[]" value="{{ $color->id }}" 
+                                                   {{ in_array($color->id, (array)request('colors', [])) ? 'checked' : '' }}>
+                                            <span class="checkmark"></span>
+                                            <span class="filter-label">{{ $color->name }}</span>
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
 
                             <!-- Status Filter -->
                             <h6 class="filter-group-title filter-group-spacing">Status</h6>
@@ -90,18 +154,49 @@
 
                             <!-- Condition Filter -->
                             <h6 class="filter-group-title filter-group-spacing">Condition</h6>
-                            @foreach($conditions as $condition)
-                                <div class="filter-item">
-                                    <label class="filter-checkbox">
-                                        <input type="checkbox" name="conditions[]" value="{{ $condition->id }}" 
-                                               {{ in_array($condition->id, (array)request('conditions', [])) ? 'checked' : '' }}>
-                                        <span class="checkmark"></span>
-                                        <span class="filter-label">{{ $condition->name }}</span>
-                                    </label>
-                                </div>
-                            @endforeach
+                            <div class="filter-options-scroll">
+                                @foreach($conditions as $condition)
+                                    <div class="filter-item">
+                                        <label class="filter-checkbox">
+                                            <input type="checkbox" name="conditions[]" value="{{ $condition->id }}" 
+                                                   {{ in_array($condition->id, (array)request('conditions', [])) ? 'checked' : '' }}>
+                                            <span class="checkmark"></span>
+                                            <span class="filter-label">{{ $condition->name }}</span>
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
 
-                            <!-- Seller Rating Filter -->
+                            <!-- Fit Type Filter -->
+                            <h6 class="filter-group-title filter-group-spacing">Fit Type</h6>
+                            <div class="filter-options-scroll">
+                                @foreach($fits as $fit)
+                                    <div class="filter-item">
+                                        <label class="filter-checkbox">
+                                            <input type="checkbox" name="fits[]" value="{{ $fit->id }}" 
+                                                   {{ in_array($fit->id, (array)request('fits', [])) ? 'checked' : '' }}>
+                                            <span class="checkmark"></span>
+                                            <span class="filter-label">{{ $fit->name }}</span>
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            <!-- Bottom Type Filter -->
+                            <h6 class="filter-group-title filter-group-spacing">Bottom Type</h6>
+                            <div class="filter-options-scroll">
+                                @foreach($bottoms as $bottom)
+                                    <div class="filter-item">
+                                        <label class="filter-checkbox">
+                                            <input type="checkbox" name="bottoms[]" value="{{ $bottom->id }}" 
+                                                   {{ in_array($bottom->id, (array)request('bottoms', [])) ? 'checked' : '' }}>
+                                            <span class="checkmark"></span>
+                                            <span class="filter-label">{{ $bottom->name }}</span>
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
+
                             <!-- Seller Rating Filter -->
                             <h6 class="filter-group-title filter-group-spacing">Seller Rating</h6>
                             <div class="filter-item">
@@ -128,20 +223,6 @@
                                 </div>
                             </div>
 
-                            <!-- MRP Range Filter -->
-                            <h6 class="filter-group-title filter-group-spacing">MRP Range</h6>
-                            <div class="range-slider-container mb-3">
-                                <div class="range-slider">
-                                    <div class="range-track"></div>
-                                    <input type="range" class="range-min" min="0" max="50000" step="100" name="mrp_min" value="{{ request('mrp_min', 0) }}">
-                                    <input type="range" class="range-max" min="0" max="50000" step="100" name="mrp_max" value="{{ request('mrp_max', 50000) }}">
-                                </div>
-                                <div class="range-values mt-2 d-flex justify-content-between">
-                                    <span class="text-muted small">₹<span class="min-val">{{ request('mrp_min', 0) }}</span></span>
-                                    <span class="text-muted small">₹<span class="max-val">{{ request('mrp_max', 50000) }}</span></span>
-                                </div>
-                            </div>
-
                             <!-- Rent Price Range Filter -->
                             <h6 class="filter-group-title filter-group-spacing">Rent Range</h6>
                             <div class="range-slider-container mb-3">
@@ -150,21 +231,75 @@
                                     <input type="range" class="range-min" min="0" max="20000" step="50" name="price_min" value="{{ request('price_min', 0) }}">
                                     <input type="range" class="range-max" min="0" max="20000" step="50" name="price_max" value="{{ request('price_max', 20000) }}">
                                 </div>
-                                <div class="range-values mt-2 d-flex justify-content-between">
-                                    <span class="text-muted small">₹<span class="min-val">{{ request('price_min', 0) }}</span></span>
-                                    <span class="text-muted small">₹<span class="max-val">{{ request('price_max', 20000) }}</span></span>
+                                <div class="range-values mt-2 d-flex justify-content-between align-items-center">
+                                    <div class="manual-range-inputs">
+                                        <div class="input-wrapper">
+                                            <span class="currency-symbol">₹</span>
+                                            <input type="number" class="manual-min" value="{{ request('price_min', 0) }}" placeholder="Min">
+                                        </div>
+                                        <div class="divider">-</div>
+                                        <div class="input-wrapper">
+                                            <span class="currency-symbol">₹</span>
+                                            <input type="number" class="manual-max" value="{{ request('price_max', 20000) }}" placeholder="Max">
+                                        </div>
+                                    </div>
                                 </div>
+                            </div>
+
+                            <!-- MRP Range Filter -->
+                            <h6 class="filter-group-title filter-group-spacing">MRP Range</h6>
+                            <div class="range-slider-container mb-3">
+                                <div class="range-slider">
+                                    <div class="range-track"></div>
+                                    <input type="range" class="range-min" min="0" max="50000" step="100" name="mrp_min" value="{{ request('mrp_min', 0) }}">
+                                    <input type="range" class="range-max" min="0" max="50000" step="100" name="mrp_max" value="{{ request('mrp_max', 50000) }}">
+                                </div>
+                                <div class="range-values mt-2 d-flex justify-content-between align-items-center">
+                                    <div class="manual-range-inputs">
+                                        <div class="input-wrapper">
+                                            <span class="currency-symbol">₹</span>
+                                            <input type="number" class="manual-min" value="{{ request('mrp_min', 0) }}" placeholder="Min">
+                                        </div>
+                                        <div class="divider">-</div>
+                                        <div class="input-wrapper">
+                                            <span class="currency-symbol">₹</span>
+                                            <input type="number" class="manual-max" value="{{ request('mrp_max', 50000) }}" placeholder="Max">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Priority Filter -->
+                            <h6 class="filter-group-title filter-group-spacing">Priority</h6>
+                            <div class="filter-item">
+                                <label class="filter-checkbox">
+                                    <input type="checkbox" id="rdmFilter" name="rdm_priority" value="1" 
+                                           {{ request('sort_by') === 'rdm_low' ? 'checked' : '' }}>
+                                    <span class="checkmark"></span>
+                                    <span class="filter-label">Best Value (RDM) <i class="bi bi-info-circle ms-1 text-warning" title="Prioritize lower Rent/MRP ratio"></i></span>
+                                </label>
+                            </div>
+
+                            <!-- Features Filter -->
+                            <h6 class="filter-group-title filter-group-spacing">Features</h6>
+                            <div class="filter-item">
+                                <label class="filter-checkbox">
+                                    <input type="checkbox" name="is_cleaned" value="1" 
+                                           {{ request('is_cleaned') ? 'checked' : '' }}>
+                                    <span class="checkmark"></span>
+                                    <span class="filter-label">Dry Cleaned Only</span>
+                                </label>
                             </div>
 
                             <!-- Preserve search and sort -->
                             @if(request('search'))
                                 <input type="hidden" name="search" value="{{ request('search') }}">
                             @endif
-                            @if(request('sort_by'))
+                            @if(request('sort_by') && request('sort_by') !== 'rdm_low')
                                 <input type="hidden" name="sort_by" value="{{ request('sort_by') }}">
                             @endif
-                        </form>
-                    </div>
+                        </div>
+                    </form>
                 </div>
             </div>
 
@@ -225,6 +360,7 @@
                         <div class="sort-section">
                             <select name="sort_by" id="sortBy" class="form-select sort-filter">
                                 <option value="default" {{ request('sort_by', 'default') === 'default' ? 'selected' : '' }}>Sort by default</option>
+                                <option value="rdm_low" {{ request('sort_by') === 'rdm_low' ? 'selected' : '' }}>Best Value (RDM)</option>
                                 <option value="price_low" {{ request('sort_by') === 'price_low' ? 'selected' : '' }}>Price: Low to High</option>
                                 <option value="price_high" {{ request('sort_by') === 'price_high' ? 'selected' : '' }}>Price: High to Low</option>
                                 <option value="mrp_low" {{ request('sort_by') === 'mrp_low' ? 'selected' : '' }}>MRP: Low to High</option>
@@ -308,6 +444,7 @@ $(document).ready(function() {
             price_min: $('input[name="price_min"]').val() || '',
             price_max: $('input[name="price_max"]').val() || '',
             deal_type: $('input[name="deal_type"]:checked').val() || 'all',
+            rdm_priority: $('#rdmFilter').is(':checked') ? '1' : '',
             sort_by: $('#sortBy').val() || 'default',
             search: $('.search-section input[name="search"]').val() || '',
             from_date: $('#fromDateFilter').val() || '',
@@ -326,6 +463,38 @@ $(document).ready(function() {
         $('input[name="conditions[]"]:checked').each(function() {
             filters.conditions.push($(this).val());
         });
+
+        filters.brands = [];
+        $('input[name="brands[]"]:checked').each(function() {
+            filters.brands.push($(this).val());
+        });
+
+        filters.fabrics = [];
+        $('input[name="fabrics[]"]:checked').each(function() {
+            filters.fabrics.push($(this).val());
+        });
+
+        filters.colors = [];
+        $('input[name="colors[]"]:checked').each(function() {
+            filters.colors.push($(this).val());
+        });
+
+        filters.sizes = [];
+        $('input[name="sizes[]"]:checked').each(function() {
+            filters.sizes.push($(this).val());
+        });
+
+        filters.fits = [];
+        $('input[name="fits[]"]:checked').each(function() {
+            filters.fits.push($(this).val());
+        });
+
+        filters.bottoms = [];
+        $('input[name="bottoms[]"]:checked').each(function() {
+            filters.bottoms.push($(this).val());
+        });
+
+        filters.is_cleaned = $('input[name="is_cleaned"]').is(':checked') ? '1' : '';
         
         return filters;
     }
@@ -385,22 +554,40 @@ $(document).ready(function() {
     // Handle range slider dual thumbs visually
     $('.range-slider-container').each(function() {
         let container = $(this);
-        let minInput = container.find('.range-min');
-        let maxInput = container.find('.range-max');
-        let minValDisp = container.find('.min-val');
-        let maxValDisp = container.find('.max-val');
+        let minInputRange = container.find('.range-min');
+        let maxInputRange = container.find('.range-max');
+        let manualMin = container.find('.manual-min');
+        let manualMax = container.find('.manual-max');
         
         container.on('input', '.range-min', function() {
-            if(parseInt(minInput.val()) > parseInt(maxInput.val())) {
-                minInput.val(maxInput.val());
+            if(parseInt(minInputRange.val()) > parseInt(maxInputRange.val())) {
+                minInputRange.val(maxInputRange.val());
             }
-            minValDisp.text(minInput.val());
+            manualMin.val(minInputRange.val());
         });
+
         container.on('input', '.range-max', function() {
-            if(parseInt(maxInput.val()) < parseInt(minInput.val())) {
-                maxInput.val(minInput.val());
+            if(parseInt(maxInputRange.val()) < parseInt(minInputRange.val())) {
+                maxInputRange.val(minInputRange.val());
             }
-            maxValDisp.text(maxInput.val());
+            manualMax.val(maxInputRange.val());
+        });
+
+        container.on('change', '.manual-min, .manual-max', function() {
+            let min = parseInt(manualMin.val());
+            let max = parseInt(manualMax.val());
+            let maxLimit = parseInt(maxInputRange.attr('max'));
+            
+            if (min < 0) min = 0;
+            if (max > maxLimit) max = maxLimit;
+            if (min > max) min = max;
+            
+            manualMin.val(min);
+            manualMax.val(max);
+            minInputRange.val(min);
+            maxInputRange.val(max);
+            
+            debouncedLoadProducts(1);
         });
     });
     
@@ -452,6 +639,21 @@ $(document).ready(function() {
     
     // Handle sort changes
     $(document).on('change', '#sortBy', function() {
+        if ($(this).val() === 'rdm_low') {
+            $('#rdmFilter').prop('checked', true);
+        } else {
+            $('#rdmFilter').prop('checked', false);
+        }
+        loadProducts(1);
+    });
+
+    // Handle RDM Priority checkbox specifically
+    $(document).on('change', '#rdmFilter', function() {
+        if ($(this).is(':checked')) {
+            $('#sortBy').val('rdm_low');
+        } else if ($('#sortBy').val() === 'rdm_low') {
+            $('#sortBy').val('default');
+        }
         loadProducts(1);
     });
     
@@ -496,10 +698,18 @@ $(document).ready(function() {
             filters.categories.forEach(id => $(`input[name="categories[]"][value="${id}"]`).prop('checked', true));
             filters.genders.forEach(val => $(`input[name="genders[]"][value="${val}"]`).prop('checked', true));
             filters.conditions.forEach(val => $(`input[name="conditions[]"][value="${val}"]`).prop('checked', true));
+            if (filters.brands) filters.brands.forEach(val => $(`input[name="brands[]"][value="${val}"]`).prop('checked', true));
+            if (filters.fabrics) filters.fabrics.forEach(val => $(`input[name="fabrics[]"][value="${val}"]`).prop('checked', true));
+            if (filters.colors) filters.colors.forEach(val => $(`input[name="colors[]"][value="${val}"]`).prop('checked', true));
+            if (filters.sizes) filters.sizes.forEach(val => $(`input[name="sizes[]"][value="${val}"]`).prop('checked', true));
+            if (filters.fits) filters.fits.forEach(val => $(`input[name="fits[]"][value="${val}"]`).prop('checked', true));
+            if (filters.bottoms) filters.bottoms.forEach(val => $(`input[name="bottoms[]"][value="${val}"]`).prop('checked', true));
             
             // Restore radios
             $(`input[name="status"][value="${filters.status}"]`).prop('checked', true);
             $(`input[name="deal_type"][value="${filters.deal_type}"]`).prop('checked', true);
+            $('#rdmFilter').prop('checked', filters.rdm_priority === '1');
+            $('input[name="is_cleaned"]').prop('checked', filters.is_cleaned === '1');
             
             // Restore Star Ratings
             function restoreStarUI(inputId, value) {

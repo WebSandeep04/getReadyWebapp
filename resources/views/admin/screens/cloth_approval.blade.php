@@ -785,12 +785,13 @@ $(function() {
         $('#detailCleaned').text(cloth.is_cleaned ? 'Yes' : 'No');
         
         // Populate Measurements
+        const unitSuffix = cloth.measurement_unit === 'cm' ? ' cm' : ' in';
         $('#detailMeasurementUnit').text(cloth.measurement_unit === 'cm' ? 'CM' : 'Inches');
-        $('#detailChest').text(cloth.chest_bust || '-');
-        $('#detailWaist').text(cloth.waist || '-');
-        $('#detailLength').text(cloth.length || '-');
-        $('#detailShoulder').text(cloth.shoulder || '-');
-        $('#detailSleeve').text(cloth.sleeve_length || '-');
+        $('#detailChest').text((cloth.chest_bust || '-') + (cloth.chest_bust ? unitSuffix : ''));
+        $('#detailWaist').text((cloth.waist || '-') + (cloth.waist ? unitSuffix : ''));
+        $('#detailLength').text((cloth.length || '-') + (cloth.length ? unitSuffix : ''));
+        $('#detailShoulder').text((cloth.shoulder || '-') + (cloth.shoulder ? unitSuffix : ''));
+        $('#detailSleeve').text((cloth.sleeve_length || '-') + (cloth.sleeve_length ? unitSuffix : ''));
         
         // Populate Financials
         $('#detailRent').text(cloth.base_rent ? '₹' + cloth.base_rent : '-');

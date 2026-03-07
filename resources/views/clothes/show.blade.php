@@ -22,27 +22,27 @@
         </button>
       </div>
       <div class="modal-body pt-2">
-        <p class="text-muted small mb-3">All measurements are in {{ $cloth->measurement_unit ?? 'inches' }}.</p>
+        <p class="text-muted small mb-3">All measurements are in {{ $cloth->measurement_unit ?? 'inch' }}.</p>
         <ul class="list-group list-group-flush">
           <li class="list-group-item d-flex justify-content-between align-items-center px-0">
             <span>Chest / Bust</span>
-            <span class="font-weight-bold text-dark">{{ $cloth->chest_bust ?? '—' }} {{ $cloth->measurement_unit == 'cm' ? 'cm' : '"' }}</span>
+            <span class="font-weight-bold text-dark">{{ $cloth->chest_bust ?? '—' }} {{ $cloth->measurement_unit == 'cm' ? 'cm' : 'in' }}</span>
           </li>
           <li class="list-group-item d-flex justify-content-between align-items-center px-0">
             <span>Waist</span>
-            <span class="font-weight-bold text-dark">{{ $cloth->waist ?? '—' }} {{ $cloth->measurement_unit == 'cm' ? 'cm' : '"' }}</span>
+            <span class="font-weight-bold text-dark">{{ $cloth->waist ?? '—' }} {{ $cloth->measurement_unit == 'cm' ? 'cm' : 'in' }}</span>
           </li>
           <li class="list-group-item d-flex justify-content-between align-items-center px-0">
             <span>Length</span>
-            <span class="font-weight-bold text-dark">{{ $cloth->length ?? '—' }} {{ $cloth->measurement_unit == 'cm' ? 'cm' : '"' }}</span>
+            <span class="font-weight-bold text-dark">{{ $cloth->length ?? '—' }} {{ $cloth->measurement_unit == 'cm' ? 'cm' : 'in' }}</span>
           </li>
           <li class="list-group-item d-flex justify-content-between align-items-center px-0">
             <span>Shoulder</span>
-            <span class="font-weight-bold text-dark">{{ $cloth->shoulder ?? '—' }} {{ $cloth->measurement_unit == 'cm' ? 'cm' : '"' }}</span>
+            <span class="font-weight-bold text-dark">{{ $cloth->shoulder ?? '—' }} {{ $cloth->measurement_unit == 'cm' ? 'cm' : 'in' }}</span>
           </li>
           <li class="list-group-item d-flex justify-content-between align-items-center px-0">
             <span>Sleeve Length</span>
-            <span class="font-weight-bold text-dark">{{ $cloth->sleeve_length ?? '—' }} {{ $cloth->measurement_unit == 'cm' ? 'cm' : '"' }}</span>
+            <span class="font-weight-bold text-dark">{{ $cloth->sleeve_length ?? '—' }} {{ $cloth->measurement_unit == 'cm' ? 'cm' : 'in' }}</span>
           </li>
         </ul>
       </div>
@@ -115,7 +115,7 @@
                 <i class="bi bi-info-circle" style="font-size: 0.9rem;"></i>
               </button>
             </label>
-            <p>Chest {{ $cloth->chest_bust ?? '—' }}{{ $cloth->measurement_unit == 'cm' ? 'cm' : '"' }}, Waist {{ $cloth->waist ?? '—' }}{{ $cloth->measurement_unit == 'cm' ? 'cm' : '"' }}</p>
+            <p>Chest {{ $cloth->chest_bust ?? '—' }}{{ $cloth->measurement_unit == 'cm' ? 'cm' : 'in' }}, Waist {{ $cloth->waist ?? '—' }}{{ $cloth->measurement_unit == 'cm' ? 'cm' : 'in' }}</p>
           </div>
           <!-- <div>
             <label>Care</label>

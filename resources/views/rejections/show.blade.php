@@ -340,41 +340,52 @@
 
                 <!-- Measurements (Optional) -->
                 <div class="form-section">
-                    <h5><i class="bi bi-rulers me-2 text-primary"></i>Measurements (Optional)</h5>
+                    <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                        <h5><i class="bi bi-rulers me-2 text-primary"></i>Measurements (Optional)</h5>
+                        <div class="unit-toggle-group">
+                            <div class="btn-group btn-group-sm" role="group">
+                                <input type="radio" class="btn-check unit-selector" name="measurement_unit" id="unit_inch" value="inch" {{ ($cloth->measurement_unit ?? 'inch') == 'inch' ? 'checked' : '' }} autocomplete="off">
+                                <label class="btn btn-outline-primary px-3" for="unit_inch">Inch</label>
+
+                                <input type="radio" class="btn-check unit-selector" name="measurement_unit" id="unit_cm" value="cm" {{ ($cloth->measurement_unit ?? 'inch') == 'cm' ? 'checked' : '' }} autocomplete="off">
+                                <label class="btn btn-outline-primary px-3" for="unit_cm">CM</label>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="row g-3">
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label for="chest_bust" class="form-label">Chest/Bust (inches)</label>
-                                <input type="number" class="form-control" id="chest_bust" name="chest_bust" 
+                                <label for="chest_bust" class="form-label measurement-label">Chest/Bust ({{ $cloth->measurement_unit ?? 'inch' }})</label>
+                                <input type="number" class="form-control measurement-input" id="chest_bust" name="chest_bust" 
                                        value="{{ $cloth->chest_bust }}" min="0" step="0.1">
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label for="waist" class="form-label">Waist (inches)</label>
-                                <input type="number" class="form-control" id="waist" name="waist" 
+                                <label for="waist" class="form-label measurement-label">Waist ({{ $cloth->measurement_unit ?? 'inch' }})</label>
+                                <input type="number" class="form-control measurement-input" id="waist" name="waist" 
                                        value="{{ $cloth->waist }}" min="0" step="0.1">
                             </div>
                         </div>
-                        </div>
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label for="length" class="form-label">Length (inches)</label>
-                                <input type="number" class="form-control" id="length" name="length" 
+                                <label for="length" class="form-label measurement-label">Length ({{ $cloth->measurement_unit ?? 'inch' }})</label>
+                                <input type="number" class="form-control measurement-input" id="length" name="length" 
                                        value="{{ $cloth->length }}" min="0" step="0.1">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="shoulder" class="form-label">Shoulder (inches)</label>
-                                <input type="number" class="form-control" id="shoulder" name="shoulder" 
+                                <label for="shoulder" class="form-label measurement-label">Shoulder ({{ $cloth->measurement_unit ?? 'inch' }})</label>
+                                <input type="number" class="form-control measurement-input" id="shoulder" name="shoulder" 
                                        value="{{ $cloth->shoulder }}" min="0" step="0.1">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="sleeve_length" class="form-label">Sleeve Length (inches)</label>
-                                <input type="number" class="form-control" id="sleeve_length" name="sleeve_length" 
+                                <label for="sleeve_length" class="form-label measurement-label">Sleeve Length ({{ $cloth->measurement_unit ?? 'inch' }})</label>
+                                <input type="number" class="form-control measurement-input" id="sleeve_length" name="sleeve_length" 
                                        value="{{ $cloth->sleeve_length }}" min="0" step="0.1">
                             </div>
                         </div>
@@ -423,6 +434,29 @@ $(document).ready(function() {
         $submitBtn.prop('disabled', true).html('<i class="bi bi-hourglass-split me-1"></i>Processing...');
     });
     
+    // Measurement unit toggle and conversion
+    $('.unit-selector').on('change', function() {
+        const unit = $(this).val();
+        const isCm = unit === 'cm';
+        const factor = isCm ? 2.54 : (1 / 2.54);
+
+        $('.measurement-label').each(function() {
+            const label = $(this);
+            const text = label.text().replace(/\s*\((inch|inches|cm)\)/gi, '');
+            label.text(`${text} (${unit})`);
+        });
+
+        $('.measurement-input').each(function() {
+            const input = $(this);
+            if (input.val()) {
+                let val = parseFloat(input.val());
+                if (!isNaN(val)) {
+                    input.val((val * factor).toFixed(1).replace(/\.0$/, ''));
+                }
+            }
+        });
+    });
+
     // Handle form errors
     @if($errors->any())
         // Scroll to error alert

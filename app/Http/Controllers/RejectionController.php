@@ -129,6 +129,7 @@ class RejectionController extends Controller
             'length' => 'nullable|numeric',
             'shoulder' => 'nullable|numeric',
             'sleeve_length' => 'nullable|numeric',
+            'measurement_unit' => 'nullable|string|in:inch,cm',
             'new_images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp',
         ]);
 

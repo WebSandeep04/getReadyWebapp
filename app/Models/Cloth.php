@@ -39,6 +39,7 @@ class Cloth extends Model
         'length',
         'shoulder',
         'sleeve_length',
+        'measurement_unit',
         'mrp',
     ];
 

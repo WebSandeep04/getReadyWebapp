@@ -309,14 +309,15 @@ function showSummary() {
   const bodyFit = getSelectText('body_type_fit');
 
   if (chest || waist || length || shoulder || sleeve || bodyFit) {
+    const unit = document.querySelector('.unit-selector:checked')?.value || 'inch';
     html += '<div class="summary-section-title"><i class="fas fa-ruler-combined mr-2"></i> Fit & Measurements</div>';
     html += '<div class="summary-grid-container">';
     if (bodyFit) html += `<div class="summary-item"><span class="summary-label">Body Fit</span><span class="summary-value">${bodyFit}</span></div>`;
-    if (chest) html += `<div class="summary-item"><span class="summary-label">Chest/Bust</span><span class="summary-value">${chest} inches</span></div>`;
-    if (waist) html += `<div class="summary-item"><span class="summary-label">Waist</span><span class="summary-value">${waist} inches</span></div>`;
-    if (length) html += `<div class="summary-item"><span class="summary-label">Length</span><span class="summary-value">${length} inches</span></div>`;
-    if (shoulder) html += `<div class="summary-item"><span class="summary-label">Shoulder</span><span class="summary-value">${shoulder} inches</span></div>`;
-    if (sleeve) html += `<div class="summary-item"><span class="summary-label">Sleeve Length</span><span class="summary-value">${sleeve} inches</span></div>`;
+    if (chest) html += `<div class="summary-item"><span class="summary-label">Chest/Bust</span><span class="summary-value">${chest} ${unit}</span></div>`;
+    if (waist) html += `<div class="summary-item"><span class="summary-label">Waist</span><span class="summary-value">${waist} ${unit}</span></div>`;
+    if (length) html += `<div class="summary-item"><span class="summary-label">Length</span><span class="summary-value">${length} ${unit}</span></div>`;
+    if (shoulder) html += `<div class="summary-item"><span class="summary-label">Shoulder</span><span class="summary-value">${shoulder} ${unit}</span></div>`;
+    if (sleeve) html += `<div class="summary-item"><span class="summary-label">Sleeve Length</span><span class="summary-value">${sleeve} ${unit}</span></div>`;
     html += '</div>';
   }
 
@@ -596,4 +597,46 @@ document.addEventListener('change', function (e) {
       if (sleeveInput) sleeveInput.value = sleeve;
     }
   }
+});
+// Measurement unit toggle and conversion
+const unitSelectors = document.querySelectorAll('.unit-selector');
+const measurementInputs = document.querySelectorAll('.measurement-input');
+const measurementLabels = document.querySelectorAll('.measurement-label');
+
+unitSelectors.forEach(selector => {
+  selector.addEventListener('change', function () {
+    const unit = this.value;
+    const isCm = unit === 'cm';
+    const factor = isCm ? 2.54 : (1 / 2.54);
+
+    measurementLabels.forEach(label => {
+      const text = label.textContent.replace(/\s*\((inch|inches|cm)\)/gi, '');
+      label.textContent = `${text} (${unit})`;
+    });
+
+    measurementInputs.forEach(input => {
+      // Update placeholder
+      const placeholder = input.getAttribute('placeholder').replace(/\s*\((inch|inches|cm)\)/gi, '');
+      input.setAttribute('placeholder', `${placeholder} (${unit})`);
+
+      // Convert value if it exists
+      if (input.value) {
+        let val = parseFloat(input.value.replace(/[^0-9.]/g, ''));
+        if (!isNaN(val)) {
+          input.value = (val * factor).toFixed(1).replace(/\.0$/, '');
+        }
+      }
+    });
+  });
+});
+
+// Initialize placeholders and labels
+const currentUnit = document.querySelector('.unit-selector:checked')?.value || 'inch';
+measurementLabels.forEach(label => {
+  const text = label.textContent.replace(/\s*\((inch|inches|cm)\)/gi, '');
+  label.textContent = `${text} (${currentUnit})`;
+});
+measurementInputs.forEach(input => {
+  const placeholder = input.getAttribute('placeholder').replace(/\s*\((inch|inches|cm)\)/gi, '');
+  input.setAttribute('placeholder', `${placeholder} (${currentUnit})`);
 });

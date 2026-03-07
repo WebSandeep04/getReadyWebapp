@@ -331,31 +331,17 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="chest_bust">Chest/Bust (inches)</label>
-                                    <input type="text" class="form-control" id="chest_bust" name="chest_bust" value="{{ $cloth->chest_bust }}">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="waist">Waist (inches)</label>
-                                    <input type="text" class="form-control" id="waist" name="waist" value="{{ $cloth->waist }}">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="length">Length (inches)</label>
-                                    <input type="text" class="form-control" id="length" name="length" value="{{ $cloth->length }}">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="shoulder">Shoulder (inches)</label>
-                                    <input type="text" class="form-control" id="shoulder" name="shoulder" value="{{ $cloth->shoulder }}">
+                            <div class="col-12 mb-2">
+                                <label><strong>Measurement Unit</strong></label>
+                                <div class="unit-toggle d-flex gap-3 mb-3">
+                                    <div class="custom-control custom-radio custom-control-inline">
+                                        <input type="radio" id="unit_inch" name="measurement_unit" class="custom-control-input unit-selector" value="inch" {{ $cloth->measurement_unit == 'inch' ? 'checked' : '' }}>
+                                        <label class="custom-control-label" for="unit_inch">Inch</label>
+                                    </div>
+                                    <div class="custom-control custom-radio custom-control-inline">
+                                        <input type="radio" id="unit_cm" name="measurement_unit" class="custom-control-input unit-selector" value="cm" {{ (isset($cloth->measurement_unit) && $cloth->measurement_unit == 'cm') ? 'checked' : '' }}>
+                                        <label class="custom-control-label" for="unit_cm">CM</label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -363,8 +349,38 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="sleeve_length">Sleeve Length (inches)</label>
-                                    <input type="text" class="form-control" id="sleeve_length" name="sleeve_length" value="{{ $cloth->sleeve_length }}">
+                                    <label for="chest_bust" class="measurement-label">Chest/Bust ({{ $cloth->measurement_unit ?? 'inch' }})</label>
+                                    <input type="text" class="form-control measurement-input" id="chest_bust" name="chest_bust" value="{{ $cloth->chest_bust }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="waist" class="measurement-label">Waist ({{ $cloth->measurement_unit ?? 'inch' }})</label>
+                                    <input type="text" class="form-control measurement-input" id="waist" name="waist" value="{{ $cloth->waist }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="length" class="measurement-label">Length ({{ $cloth->measurement_unit ?? 'inch' }})</label>
+                                    <input type="text" class="form-control measurement-input" id="length" name="length" value="{{ $cloth->length }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="shoulder" class="measurement-label">Shoulder ({{ $cloth->measurement_unit ?? 'inch' }})</label>
+                                    <input type="text" class="form-control measurement-input" id="shoulder" name="shoulder" value="{{ $cloth->shoulder }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="sleeve_length" class="measurement-label">Sleeve Length ({{ $cloth->measurement_unit ?? 'inch' }})</label>
+                                    <input type="text" class="form-control measurement-input" id="sleeve_length" name="sleeve_length" value="{{ $cloth->sleeve_length }}">
                                 </div>
                             </div>
                         </div>

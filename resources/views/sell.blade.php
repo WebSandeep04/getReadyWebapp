@@ -184,11 +184,38 @@
 
       <div class="measurements mt-3">
         <label><strong>Exact Measurements (for better fit understanding) (optional)</strong></label>
-        <input type="text" name="chest_bust" placeholder="Chest/Bust (inches)" value="{{ old('chest_bust') }}">
-        <input type="text" name="waist" placeholder="Waist (inches)" value="{{ old('waist') }}">
-        <input type="text" name="length" placeholder="Length (inches)" value="{{ old('length') }}">
-        <input type="text" name="shoulder" placeholder="Shoulder (inches)" value="{{ old('shoulder') }}">
-        <input type="text" name="sleeve_length" placeholder="Sleeve Length (inches)" value="{{ old('sleeve_length') }}">
+        
+        <div class="unit-toggle mb-3 d-flex gap-3">
+          <div class="custom-control custom-radio custom-control-inline">
+            <input type="radio" id="unit_inch" name="measurement_unit" class="custom-control-input unit-selector" value="inch" {{ old('measurement_unit', 'inch') == 'inch' ? 'checked' : '' }}>
+            <label class="custom-control-label" for="unit_inch">Inch</label>
+          </div>
+          <div class="custom-control custom-radio custom-control-inline">
+            <input type="radio" id="unit_cm" name="measurement_unit" class="custom-control-input unit-selector" value="cm" {{ old('measurement_unit') == 'cm' ? 'checked' : '' }}>
+            <label class="custom-control-label" for="unit_cm">CM</label>
+          </div>
+        </div>
+
+        <div class="form-group mb-2">
+          <label class="measurement-label font-weight-bold mb-1 d-block text-left">Chest/Bust ({{ old('measurement_unit', 'inch') == 'cm' ? 'cm' : 'inch' }})</label>
+          <input type="text" name="chest_bust" class="measurement-input" placeholder="Chest/Bust ({{ old('measurement_unit', 'inch') == 'cm' ? 'cm' : 'inch' }})" value="{{ old('chest_bust') }}">
+        </div>
+        <div class="form-group mb-2">
+          <label class="measurement-label font-weight-bold mb-1 d-block text-left">Waist ({{ old('measurement_unit', 'inch') == 'cm' ? 'cm' : 'inch' }})</label>
+          <input type="text" name="waist" class="measurement-input" placeholder="Waist ({{ old('measurement_unit', 'inch') == 'cm' ? 'cm' : 'inch' }})" value="{{ old('waist') }}">
+        </div>
+        <div class="form-group mb-2">
+          <label class="measurement-label font-weight-bold mb-1 d-block text-left">Length ({{ old('measurement_unit', 'inch') == 'cm' ? 'cm' : 'inch' }})</label>
+          <input type="text" name="length" class="measurement-input" placeholder="Length ({{ old('measurement_unit', 'inch') == 'cm' ? 'cm' : 'inch' }})" value="{{ old('length') }}">
+        </div>
+        <div class="form-group mb-2">
+          <label class="measurement-label font-weight-bold mb-1 d-block text-left">Shoulder ({{ old('measurement_unit', 'inch') == 'cm' ? 'cm' : 'inch' }})</label>
+          <input type="text" name="shoulder" class="measurement-input" placeholder="Shoulder ({{ old('measurement_unit', 'inch') == 'cm' ? 'cm' : 'inch' }})" value="{{ old('shoulder') }}">
+        </div>
+        <div class="form-group mb-2">
+          <label class="measurement-label font-weight-bold mb-1 d-block text-left">Sleeve Length ({{ old('measurement_unit', 'inch') == 'cm' ? 'cm' : 'inch' }})</label>
+          <input type="text" name="sleeve_length" class="measurement-input" placeholder="Sleeve Length ({{ old('measurement_unit', 'inch') == 'cm' ? 'cm' : 'inch' }})" value="{{ old('sleeve_length') }}">
+        </div>
       </div>
       
       <label class="d-block text-left font-weight-bold mb-1">Body Fit Type</label>

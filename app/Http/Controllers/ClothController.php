@@ -176,7 +176,7 @@ class ClothController extends Controller
         $updateData = $request->only([
             'title', 'description', 'category', 'gender', 'brand', 'fabric', 'color', 
             'chest_bust', 'waist', 'length', 'shoulder', 
-            'sleeve_length', 'size', 'fit_type', 'condition', 'defects', 
+            'sleeve_length', 'measurement_unit', 'size', 'fit_type', 'condition', 'defects', 
             'rent_price', 'is_purchased', 'selling_price', 'security_deposit', 'mrp', 'sku'
         ]);
 
@@ -372,6 +372,7 @@ class ClothController extends Controller
                 'length' => $request->input('length'),
                 'shoulder' => $request->input('shoulder'),
                 'sleeve_length' => $request->input('sleeve_length'),
+                'measurement_unit' => $request->input('measurement_unit', 'inch'),
             ]);
 
             // Create available blocks

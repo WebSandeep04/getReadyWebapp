@@ -269,7 +269,7 @@
                             </div>
                         </div>
 
-                        <h6 class="text-muted fw-bold mb-3">Measurements (Inches)</h6>
+                        <h6 class="text-muted fw-bold mb-3">Measurements (<span id="detailMeasurementUnit">Inches</span>)</h6>
                         <div class="row g-2 mb-4 bg-light p-2 rounded">
                             <div class="col-4">
                                 <small class="text-muted d-block">Chest/Bust</small>
@@ -785,6 +785,7 @@ $(function() {
         $('#detailCleaned').text(cloth.is_cleaned ? 'Yes' : 'No');
         
         // Populate Measurements
+        $('#detailMeasurementUnit').text(cloth.measurement_unit === 'cm' ? 'CM' : 'Inches');
         $('#detailChest').text(cloth.chest_bust || '-');
         $('#detailWaist').text(cloth.waist || '-');
         $('#detailLength').text(cloth.length || '-');

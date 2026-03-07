@@ -347,7 +347,7 @@ $(document).ready(function () {
         }
     }
 
-    $(document).on('change', '.availability-block[data-type="available"] input[name*="[start_date]"]', function() {
+    $(document).on('change', '.availability-block[data-type="available"] input[name*="[start_date]"]', function () {
         const startDate = $(this).val();
         if (startDate) {
             const start = new Date(startDate);
@@ -361,15 +361,43 @@ $(document).ready(function () {
 
             const block = $(this).closest('.availability-block');
             const endDateInput = block.find('input[name*="[end_date]"]');
-            
+
             endDateInput.val(formattedEndDate);
-            
+
             handleAvailabilityDateChange(block);
         }
     });
 
-    $(document).on('change', '.availability-block[data-type="available"] input[name*="[end_date]"]', function() {
+    $(document).on('change', '.availability-block[data-type="available"] input[name*="[end_date]"]', function () {
         const block = $(this).closest('.availability-block');
         handleAvailabilityDateChange(block);
+    });
+
+    // Measurement unit toggle and conversion
+    const unitSelectors = document.querySelectorAll('.unit-selector');
+    const measurementInputs = document.querySelectorAll('.measurement-input');
+    const measurementLabels = document.querySelectorAll('.measurement-label');
+
+    unitSelectors.forEach(selector => {
+        selector.addEventListener('change', function () {
+            const unit = this.value;
+            const isCm = unit === 'cm';
+            const factor = isCm ? 2.54 : (1 / 2.54);
+
+            measurementLabels.forEach(label => {
+                const text = label.textContent.replace(/\s*\((inch|inches|cm)\)/gi, '');
+                label.textContent = `${text} (${unit})`;
+            });
+
+            measurementInputs.forEach(input => {
+                // Convert value if it exists
+                if (input.value) {
+                    let val = parseFloat(input.value.replace(/[^0-9.]/g, ''));
+                    if (!isNaN(val)) {
+                        input.value = (val * factor).toFixed(1).replace(/\.0$/, '');
+                    }
+                }
+            });
+        });
     });
 }); 

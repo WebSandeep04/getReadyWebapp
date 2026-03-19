@@ -28,21 +28,27 @@ class AadhaarVerificationController extends Controller
         }
 
         $redirectUrl = route('aadhaar.callback');
-        $kycUrlData = $this->imWalletService->getAadhaarKycUrl($redirectUrl);
 
-        if (!$kycUrlData || !isset($kycUrlData['data']['url']) && !isset($kycUrlData['url'])) {
+        try {
+            $kycUrlData = $this->imWalletService->getAadhaarKycUrl($redirectUrl);
+
+            if (!isset($kycUrlData['data']['url']) && !isset($kycUrlData['url'])) {
+                throw new \Exception('API returned success but no URL was found.');
+            }
+
+            $url = $kycUrlData['data']['url'] ?? $kycUrlData['url'] ?? $kycUrlData['data'];
+
+            return response()->json([
+                'success' => true,
+                'url' => is_string($url) ? $url : (is_array($url) ? ($url['url'] ?? '') : ''),
+            ]);
+
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unable to generate KYC URL. Please try again later.'
+                'message' => 'Unable to generate KYC URL. Please try again later. Error: ' . $e->getMessage()
             ], 500);
         }
-
-        $url = $kycUrlData['data']['url'] ?? $kycUrlData['url'] ?? $kycUrlData['data'];
-
-        return response()->json([
-            'success' => true,
-            'url' => is_string($url) ? $url : (is_array($url) ? ($url['url'] ?? '') : ''),
-        ]);
     }
 
     /**
@@ -50,8 +56,6 @@ class AadhaarVerificationController extends Controller
      */
     public function callback(Request $request)
     {
-        Log::info('Aadhaar Callback received', $request->all());
-
         // This endpoint will be hit when IM Wallet redirects the user back
         // Usually there is a referenceId or status returned in the query params.
         

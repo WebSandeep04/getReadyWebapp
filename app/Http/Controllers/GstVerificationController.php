@@ -23,37 +23,38 @@ class GstVerificationController extends Controller
 
         $gstin = $request->gstin;
 
-        $data = $this->imWalletService->getGstDetails($gstin);
+        try {
+            $data = $this->imWalletService->getGstDetails($gstin);
 
-        if (!$data) {
+            // Auto Update user profile if user is logged in
+            if (auth()->check() && !empty($data['data'])) {
+                $user = auth()->user();
+                $user->gstin = $gstin;
+                $user->gst_number = $gstin;
+                
+                $businessData = $this->imWalletService->extractBusinessData($data);
+
+                if (!empty($businessData['name'])) {
+                    $user->name = $businessData['name'];
+                }
+                if (!empty($businessData['address'])) {
+                    $user->address = $businessData['address'];
+                }
+                
+                $user->save();
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $data,
+                'message' => 'GST details fetched successfully.'
+            ]);
+
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error verifying GSTIN or API is unavailable.'
+                'message' => 'Error verifying GSTIN or API is unavailable. ' . $e->getMessage()
             ], 500);
         }
-
-        // Auto Update user profile if user is logged in
-        if (auth()->check() && !empty($data['data'])) {
-            $user = auth()->user();
-            $user->gstin = $gstin;
-            $user->gst_number = $gstin;
-            
-            $businessData = $this->imWalletService->extractBusinessData($data);
-
-            if (!empty($businessData['name'])) {
-                $user->name = $businessData['name'];
-            }
-            if (!empty($businessData['address'])) {
-                $user->address = $businessData['address'];
-            }
-            
-            $user->save();
-        }
-
-        return response()->json([
-            'success' => true,
-            'data' => $data,
-            'message' => 'GST details fetched successfully.'
-        ]);
     }
 }

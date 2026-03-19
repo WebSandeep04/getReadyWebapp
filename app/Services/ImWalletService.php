@@ -13,29 +13,21 @@ class ImWalletService
      * @param string $gstin
      * @return array|null
      */
-    public function getGstDetails(string $gstin): ?array
+    public function getGstDetails(string $gstin): array
     {
-        try {
-            $response = Http::withHeaders([
-                'userCode' => env('IMWALLET_USER_CODE', 'IMAPIXXX'),
-                'webToken' => env('IMWALLET_WEB_TOKEN', 'XXX'),
-                'Content-Type' => 'application/json',
-                'Cookie' => 'JSESSIONID=' . env('IMWALLET_JSESSIONID', '2D4C230492EA6A7AA4593DED170FDA3E')
-            ])->post('https://partner.imwallet.in/web_services/verificationSuit/walletBased/getGstDetails.jsp', [
-                'gstin' => $gstin
-            ]);
+        $response = Http::withHeaders([
+            'userCode' => env('IMWALLET_USER_CODE'),
+            'webToken' => env('IMWALLET_WEB_TOKEN'),
+            'Content-Type' => 'application/json'
+        ])->post('https://partner.imwallet.in/web_services/verificationSuit/walletBased/getGstDetails.jsp', [
+            'gstin' => $gstin
+        ]);
 
-            if ($response->successful()) {
-                return $response->json();
-            }
-
-            Log::error('IM Wallet API Error: HTTP ' . $response->status() . ' - ' . $response->body());
-            return null;
-
-        } catch (\Exception $e) {
-            Log::error('IM Wallet API Exception: ' . $e->getMessage());
-            return null;
+        if ($response->successful()) {
+            return $response->json();
         }
+
+        $response->throw();
     }
 
     /**
@@ -88,28 +80,20 @@ class ImWalletService
      * @param string $redirectUrl
      * @return array|null
      */
-    public function getAadhaarKycUrl(string $redirectUrl): ?array
+    public function getAadhaarKycUrl(string $redirectUrl): array
     {
-        try {
-            $response = Http::withHeaders([
-                'userCode' => env('IMWALLET_USER_CODE', 'IMAPIXXX'),
-                'webToken' => env('IMWALLET_WEB_TOKEN', 'XXX'),
-                'Content-Type' => 'application/json',
-                'Cookie' => 'JSESSIONID=' . env('IMWALLET_JSESSIONID', '983966F203450D5770B464A3920DDD2C') // Using the JSESSIONID provided by user or use env
-            ])->post('https://partner.imwallet.in/web_services/verificationSuit/walletBased/unifiedKyc/getUrl.jsp', [
-                'redirectUrl' => $redirectUrl
-            ]);
+        $response = Http::withHeaders([
+            'userCode' => env('IMWALLET_USER_CODE'),
+            'webToken' => env('IMWALLET_WEB_TOKEN'),
+            'Content-Type' => 'application/json'
+        ])->post('https://partner.imwallet.in/web_services/verificationSuit/walletBased/unifiedKyc/getUrl.jsp', [
+            'redirectUrl' => $redirectUrl
+        ]);
 
-            if ($response->successful()) {
-                return $response->json();
-            }
-
-            Log::error('IM Wallet Aadhaar KYC API Error: HTTP ' . $response->status() . ' - ' . $response->body());
-            return null;
-
-        } catch (\Exception $e) {
-            Log::error('IM Wallet Aadhaar KYC Exception: ' . $e->getMessage());
-            return null;
+        if ($response->successful()) {
+            return $response->json();
         }
+
+        $response->throw();
     }
 }

@@ -284,16 +284,20 @@ class LoginController extends Controller
             'age' => $request->age,
             'gender' => $request->gender,
             'is_gst' => $request->is_gst,
-            'gstin' => $request->gstin,
-            'gst_number' => $request->gstin,
+            'gstin' => $request->is_gst == 1 ? $request->gstin : null,
+            'gst_number' => $request->is_gst == 1 ? $request->gstin : null,
             'password' => \Illuminate\Support\Facades\Hash::make(Str::random(16)),
         ];
 
         // Fetch GST Details if GST is enabled
         if ($request->is_gst == 1 && !empty($request->gstin)) {
-            $gstDetails = $this->imWalletService->getGstDetails($request->gstin);
+            try {
+                $gstDetails = $this->imWalletService->getGstDetails($request->gstin);
 
-            if ($gstDetails) {
+                if (empty($gstDetails['data'])) {
+                    throw new \Exception('Invalid GST Number or no data returned.');
+                }
+
                 $businessData = $this->imWalletService->extractBusinessData($gstDetails);
 
                 if (!empty($businessData['name'])) {
@@ -302,6 +306,13 @@ class LoginController extends Controller
                 if (!empty($businessData['address'])) {
                     $userData['address'] = $businessData['address'];
                 }
+            } catch (\Exception $e) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => [
+                        'gstin' => ['Invalid GST Number or unable to verify right now. Please try again.']
+                    ]
+                ], 422);
             }
         }
 

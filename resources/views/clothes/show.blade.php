@@ -779,24 +779,53 @@ $(document).ready(function() {
             processData: false,
             contentType: false,
             success: function(response) {
-                $('#vtoLoading').addClass('d-none');
                 if (response.success) {
-                    $('#vtoResultImage').attr('src', response.image_url);
-                    $('#vtoDownloadBtn').attr('href', response.image_url);
-                    $('#vtoResultImageContainer').removeClass('d-none');
+                    pollStatus(response.status_url);
                 } else {
-                    alert(response.error || 'Failed to generate try-on. Please try again.');
+                    $('#vtoLoading').addClass('d-none');
+                    alert(response.error || 'Failed to initialize try-on. Please try again.');
                     $('#vtoGenerateBtn').show();
                     $('#vtoResultSection').addClass('d-none');
                 }
             },
             error: function(xhr) {
                 $('#vtoLoading').addClass('d-none');
-                alert(xhr.responseJSON?.error || 'An error occurred during generation.');
+                alert(xhr.responseJSON?.error || 'An error occurred during initialization.');
                 $('#vtoGenerateBtn').show();
                 $('#vtoResultSection').addClass('d-none');
             }
         });
+
+        function pollStatus(statusUrl) {
+            $.ajax({
+                url: statusUrl,
+                type: 'GET',
+                success: function(res) {
+                    if (res.status === 'completed' && res.result_image_url) {
+                        $('#vtoLoading').addClass('d-none');
+                        $('#vtoResultImage').attr('src', res.result_image_url);
+                        $('#vtoDownloadBtn').attr('href', res.result_image_url);
+                        $('#vtoResultImageContainer').removeClass('d-none');
+                    } else if (res.status === 'failed') {
+                        $('#vtoLoading').addClass('d-none');
+                        alert(res.error_message || 'Virtual Try-On generation failed.');
+                        $('#vtoGenerateBtn').show();
+                        $('#vtoResultSection').addClass('d-none');
+                    } else {
+                        // pending or processing, check back in 3 seconds
+                        setTimeout(function() {
+                            pollStatus(statusUrl);
+                        }, 3000);
+                    }
+                },
+                error: function(xhr) {
+                    $('#vtoLoading').addClass('d-none');
+                    alert('Lost connection while checking status. Please try refreshing the page.');
+                    $('#vtoGenerateBtn').show();
+                    $('#vtoResultSection').addClass('d-none');
+                }
+            });
+        }
     });
 });
 

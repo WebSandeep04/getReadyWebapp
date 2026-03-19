@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Cloth;
+use App\Models\VirtualTryOn;
+use App\Jobs\ProcessFashnTryOn;
 use Illuminate\Support\Facades\Log;
 
 class VirtualTryOnController extends Controller
@@ -39,72 +41,43 @@ class VirtualTryOnController extends Controller
         }
 
         try {
-            // Read both images and convert them to Base64
-            $userImageBase64 = 'data:image/jpeg;base64,' . base64_encode(Storage::disk('public')->get($userImagePath));
-            $clothImageBase64 = 'data:image/jpeg;base64,' . base64_encode(Storage::disk('public')->get($clothImagePath));
-
-            // Step 1: Start the Job on Fashn.ai (using product-to-model which auto-supports VTO)
-            $initResponse = Http::withHeaders([
-                'Authorization' => "Bearer {$apiKey}",
-                'Content-Type'  => 'application/json',
-            ])->post("https://api.fashn.ai/v1/run", [
-                'model_name' => 'product-to-model',
-                'inputs' => [
-                    'product_image' => $clothImageBase64,
-                    'model_image'   => $userImageBase64,
-                    'output_format' => 'jpeg', // Faster load times
-                    'return_base64' => false   // False gives us a CDN URL directly containing the generated image
-                ]
+            // 2. Create the VTO history record in DB
+            $vto = VirtualTryOn::create([
+                'user_id' => auth()->id() ?? null,
+                'cloth_id' => $cloth->id,
+                'user_image_path' => $userImagePath,
+                'status' => 'pending'
             ]);
 
-            if (!$initResponse->successful()) {
-                Log::error("Fashn API Error: " . $initResponse->body());
-                return response()->json(['error' => 'Failed to initialize Fashn.ai process.'], 500);
-            }
+            // 3. Dispatch the Queue Job to handle API interaction asynchronously
+            ProcessFashnTryOn::dispatch($vto);
 
-            // Step 2: Grab the generation ID to poll the status
-            $jobId = $initResponse->json('id');
-            if (!$jobId) {
-                return response()->json(['error' => 'Invalid response from Fashn.ai.'], 500);
-            }
-
-            // Step 3: Poll until completion
-            $status = 'starting';
-            $resultImageUrl = null;
-            $maxPolls = 20; // Maximum wait ~40 seconds
-            $polls = 0;
-
-            while (!in_array($status, ['completed', 'failed']) && $polls < $maxPolls) {
-                sleep(2); // Wait 2 seconds before checking
-                
-                $statusResponse = Http::withHeaders([
-                    'Authorization' => "Bearer {$apiKey}"
-                ])->get("https://api.fashn.ai/v1/status/{$jobId}");
-
-                if ($statusResponse->successful()) {
-                    $statusData = $statusResponse->json();
-                    $status = $statusData['status'] ?? 'failed';
-
-                    if ($status === 'completed') {
-                        $resultImageUrl = $statusData['output'][0] ?? $statusData['image_url'] ?? null;
-                    }
-                }
-                $polls++;
-            }
-
-            if ($status === 'completed' && $resultImageUrl) {
-                return response()->json([
-                    'success' => true,
-                    'image_url' => $resultImageUrl,
-                    'message' => 'Virtual Try-On completed successfully.'
-                ]);
-            }
-
-            return response()->json(['error' => 'Fashn.ai API timed out or failed to complete.'], 500);
+            return response()->json([
+                'success' => true,
+                'vto_id' => $vto->id,
+                'message' => 'Virtual Try-On is processing in the background.'
+            ]);
 
         } catch (\Exception $e) {
             Log::error('Fashn VTO Error: ' . $e->getMessage());
-            return response()->json(['error' => 'An error occurred during VTO generation.'], 500);
+            Storage::disk('public')->delete($userImagePath);
+            return response()->json(['error' => 'An error occurred during VTO initialization.'], 500);
         }
+    }
+
+    /**
+     * Polling endpoint for the Frontend AJAX/ProgressBar
+     */
+    public function status($id)
+    {
+        $vto = VirtualTryOn::findOrFail($id);
+
+        return response()->json([
+            'id' => $vto->id,
+            'job_id' => $vto->job_id,
+            'status' => $vto->status,
+            'result_image_url' => $vto->result_image_url,
+            'error_message' => $vto->error_message
+        ]);
     }
 }

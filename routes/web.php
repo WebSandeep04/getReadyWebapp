@@ -50,6 +50,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/generate-description', [App\Http\Controllers\GeminiController::class, 'generateDescription'])->name('generate.description');
 });
 
+// Virtual Try On (Public/Auth decided by user, we can make it public since show.blade.php is public)
+Route::post('/clothes/virtual-try-on', [App\Http\Controllers\GeminiController::class, 'virtualTryOn'])->name('clothes.virtual-try-on');
+
 // Admin Auth
 Route::get('/admin/login', [App\Http\Controllers\Admin\AuthController::class, 'showLoginForm'])->name('admin.login');
 Route::post('/admin/login', [App\Http\Controllers\Admin\AuthController::class, 'login'])->name('admin.login.post');

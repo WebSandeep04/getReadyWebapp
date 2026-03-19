@@ -246,6 +246,10 @@
                   <i class="bi bi-bag-check me-2"></i>Buy once - ₹{{ number_format($cloth->display_selling_price) }}
                 </button>
               @endif
+              
+              <button class="btn btn-dark w-100 mt-2 fw-bold" data-toggle="modal" data-target="#virtualTryOnModal" style="background: linear-gradient(45deg, #6b4c9a, #a265d3); border: none;">
+                <i class="bi bi-magic me-2"></i>Virtual Try-On (AI Powered)
+              </button>
             @else
               <button class="btn btn-secondary w-100" disabled>
                 <i class="bi bi-x-circle me-2"></i>Sold Out
@@ -573,6 +577,102 @@
   </div>
 </div>
 
+<!-- Virtual Try-On Modal -->
+<div class="modal fade" id="virtualTryOnModal" tabindex="-1" aria-labelledby="virtualTryOnModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content rounded-4 border-0 shadow-lg">
+      <div class="modal-header border-0 pb-0" style="background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); border-radius: 1rem 1rem 0 0;">
+        <h4 class="modal-title fw-bold" id="virtualTryOnModalLabel" style="color: #6b4c9a;">
+            <i class="bi bi-magic me-2"></i>AI Virtual Try-On
+        </h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" aria-hidden="true">&times;</button>
+      </div>
+      <div class="modal-body p-4 bg-light">
+        <p class="text-muted text-center mb-4">Upload a clear photo of yourself to see how this <strong>{{ $cloth->title }}</strong> looks on you!</p>
+        
+        <div class="row g-4 mb-4">
+            <!-- Cloth Display -->
+            <div class="col-md-5 text-center">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body p-2 d-flex flex-column align-items-center justify-content-center">
+                        <h6 class="text-muted mb-2 small text-uppercase fw-bold">The Outfit</h6>
+                        @if($cloth->images->count())
+                            <img src="{{ asset('storage/' . $cloth->images->first()->image_path) }}" class="img-fluid rounded" style="max-height: 250px; object-fit: contain;">
+                        @else
+                            <img src="{{ asset('images/placeholder.jpg') }}" class="img-fluid rounded" style="max-height: 250px;">
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            <!-- Arrow Icon -->
+            <div class="col-md-2 d-flex align-items-center justify-content-center">
+                <i class="bi bi-plus-circle text-muted" style="font-size: 2rem; opacity: 0.5;"></i>
+            </div>
+
+            <!-- User Upload -->
+            <div class="col-md-5 text-center">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body p-3 d-flex flex-column align-items-center justify-content-center" id="vto-upload-container">
+                        <h6 class="text-muted mb-3 small text-uppercase fw-bold">Your Photo</h6>
+                        <div class="upload-area border border-2 border-dashed rounded w-100 d-flex align-items-center justify-content-center flex-column" id="vtoUploadArea" style="min-height: 200px; cursor: pointer; border-color: #cbd5e1!important; background: #f8fafc; transition: all 0.3s ease;">
+                            <i class="bi bi-cloud-arrow-up text-primary mb-2" style="font-size: 2rem;"></i>
+                            <span class="text-primary fw-medium">Click to upload</span>
+                            <small class="text-muted mt-1">JPEG, PNG (Max 5MB)</small>
+                            <input type="file" id="vtoUserImage" class="d-none" accept="image/*">
+                        </div>
+                        <div id="vtoPreviewContainer" class="w-100 d-none text-center">
+                            <div class="position-relative d-inline-block">
+                                <img src="" id="vtoUserPreview" class="img-fluid rounded" style="max-height: 220px; object-fit: contain; border: 2px solid #6b4c9a;">
+                                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 translate-middle rounded-circle" id="vtoClearImage" style="width: 25px; height: 25px; padding: 0; display: flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generate Button -->
+        <div class="text-center">
+            <button class="btn btn-lg text-white font-weight-bold px-5 py-2 shadow-sm rounded-pill" id="vtoGenerateBtn" style="background: linear-gradient(45deg, #6b4c9a, #a265d3); border: none;" disabled>
+                <i class="bi bi-stars me-2"></i>Generate Try-On
+            </button>
+        </div>
+
+        <!-- Result Section (Hidden initially) -->
+        <div id="vtoResultSection" class="mt-5 d-none">
+            <hr class="mb-4">
+            <h5 class="text-center fw-bold text-dark mb-3">Your Virtual Try-On Result</h5>
+            <div class="d-flex justify-content-center position-relative">
+                <div id="vtoLoading" class="text-center d-none" style="padding: 3rem 0;">
+                    <div class="spinner-grow text-primary mb-3" style="width: 3rem; height: 3rem; animation-duration: 1.5s; background-color: #a265d3;" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="text-muted fw-bold">Gemini is styling your look...</p>
+                    <small class="text-muted">This may take a few seconds.</small>
+                </div>
+                
+                <div id="vtoResultImageContainer" class="d-none text-center">
+                    <img src="" id="vtoResultImage" class="img-fluid rounded-4 shadow-lg" style="max-height: 500px; border: 4px solid #fff;">
+                    <div class="mt-3">
+                        <button class="btn btn-outline-dark rounded-pill me-2" onclick="document.getElementById('vtoResultImageContainer').classList.add('d-none'); document.getElementById('vtoGenerateBtn').style.display='inline-block';">
+                            <i class="bi bi-arrow-counterclockwise"></i> Try Another
+                        </button>
+                        <a href="#" id="vtoDownloadBtn" class="btn text-white rounded-pill" style="background: #6b4c9a;" download="virtual-try-on.jpg">
+                            <i class="bi bi-download"></i> Download
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
 <section class="related mt-5">
   <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -615,6 +715,91 @@
 <script src="{{ asset('js/product.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
+// Virtual Try On Scripts
+$(document).ready(function() {
+    // File upload click trigger
+    $('#vtoUploadArea').click(function(e) {
+        if(e.target.id !== 'vtoUserImage') {
+            $('#vtoUserImage').click();
+        }
+    });
+
+    // Handle file selection
+    $('#vtoUserImage').change(function() {
+        const file = this.files[0];
+        if (file) {
+            // Validate size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Image size should be less than 5MB');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                $('#vtoUserPreview').attr('src', e.target.result);
+                $('#vtoUploadArea').addClass('d-none').removeClass('d-flex');
+                $('#vtoPreviewContainer').removeClass('d-none');
+                $('#vtoGenerateBtn').prop('disabled', false);
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Clear Image
+    $('#vtoClearImage').click(function(e) {
+        e.stopPropagation();
+        $('#vtoUserImage').val('');
+        $('#vtoUserPreview').attr('src', '');
+        $('#vtoPreviewContainer').addClass('d-none');
+        $('#vtoUploadArea').removeClass('d-none').addClass('d-flex');
+        $('#vtoGenerateBtn').prop('disabled', true);
+        $('#vtoResultSection').addClass('d-none');
+    });
+
+    // Generate Try On
+    $('#vtoGenerateBtn').click(function() {
+        const file = $('#vtoUserImage')[0].files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('user_image', file);
+        formData.append('cloth_id', {{ $cloth->id }});
+        formData.append('_token', '{{ csrf_token() }}');
+
+        // UI updates
+        $(this).hide();
+        $('#vtoResultSection').removeClass('d-none');
+        $('#vtoResultImageContainer').addClass('d-none');
+        $('#vtoLoading').removeClass('d-none');
+
+        $.ajax({
+            url: '{{ route("clothes.virtual-try-on") }}',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                $('#vtoLoading').addClass('d-none');
+                if (response.success) {
+                    $('#vtoResultImage').attr('src', response.image_url);
+                    $('#vtoDownloadBtn').attr('href', response.image_url);
+                    $('#vtoResultImageContainer').removeClass('d-none');
+                } else {
+                    alert(response.error || 'Failed to generate try-on. Please try again.');
+                    $('#vtoGenerateBtn').show();
+                    $('#vtoResultSection').addClass('d-none');
+                }
+            },
+            error: function(xhr) {
+                $('#vtoLoading').addClass('d-none');
+                alert(xhr.responseJSON?.error || 'An error occurred during generation.');
+                $('#vtoGenerateBtn').show();
+                $('#vtoResultSection').addClass('d-none');
+            }
+        });
+    });
+});
+
 // Cloth data for calculations
 const clothData = {
     id: {{ $cloth->id }},

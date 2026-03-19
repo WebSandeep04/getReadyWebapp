@@ -43,25 +43,18 @@ class VirtualTryOnController extends Controller
             $userImageBase64 = 'data:image/jpeg;base64,' . base64_encode(Storage::disk('public')->get($userImagePath));
             $clothImageBase64 = 'data:image/jpeg;base64,' . base64_encode(Storage::disk('public')->get($clothImagePath));
 
-            // Determine Clothing Category for Fashn API
-            $catName = strtolower($cloth->category->name ?? '');
-            $fashnCategory = 'tops'; // Default
-            if (str_contains($catName, 'pant') || str_contains($catName, 'trouser') || str_contains($catName, 'bottom') || str_contains($catName, 'skirt')) {
-                $fashnCategory = 'bottoms';
-            } elseif (str_contains($catName, 'dress') || str_contains($catName, 'gown') || str_contains($catName, 'jumpsuit') || str_contains($catName, 'kurt')) {
-                $fashnCategory = 'one-pieces';
-            }
-
-            // Step 1: Start the Job on Fashn.ai
+            // Step 1: Start the Job on Fashn.ai (using product-to-model which auto-supports VTO)
             $initResponse = Http::withHeaders([
                 'Authorization' => "Bearer {$apiKey}",
                 'Content-Type'  => 'application/json',
             ])->post("https://api.fashn.ai/v1/run", [
-                'model_image' => $userImageBase64,
-                'garment_image' => $clothImageBase64,
-                'category' => $fashnCategory,
-                'nsfw_filter' => true,
-                'cover_feet' => false
+                'model_name' => 'product-to-model',
+                'inputs' => [
+                    'product_image' => $clothImageBase64,
+                    'model_image'   => $userImageBase64,
+                    'output_format' => 'jpeg', // Faster load times
+                    'return_base64' => false   // False gives us a CDN URL directly containing the generated image
+                ]
             ]);
 
             if (!$initResponse->successful()) {

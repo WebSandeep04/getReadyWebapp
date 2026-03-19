@@ -81,4 +81,35 @@ class ImWalletService
 
         return $data;
     }
+
+    /**
+     * Get Unified KYC URL for Aadhaar Verification
+     *
+     * @param string $redirectUrl
+     * @return array|null
+     */
+    public function getAadhaarKycUrl(string $redirectUrl): ?array
+    {
+        try {
+            $response = Http::withHeaders([
+                'userCode' => env('IMWALLET_USER_CODE', 'IMAPIXXX'),
+                'webToken' => env('IMWALLET_WEB_TOKEN', 'XXX'),
+                'Content-Type' => 'application/json',
+                'Cookie' => 'JSESSIONID=' . env('IMWALLET_JSESSIONID', '983966F203450D5770B464A3920DDD2C') // Using the JSESSIONID provided by user or use env
+            ])->post('https://partner.imwallet.in/web_services/verificationSuit/walletBased/unifiedKyc/getUrl.jsp', [
+                'redirectUrl' => $redirectUrl
+            ]);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            Log::error('IM Wallet Aadhaar KYC API Error: HTTP ' . $response->status() . ' - ' . $response->body());
+            return null;
+
+        } catch (\Exception $e) {
+            Log::error('IM Wallet Aadhaar KYC Exception: ' . $e->getMessage());
+            return null;
+        }
+    }
 }

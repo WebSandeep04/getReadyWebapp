@@ -29,6 +29,8 @@ class User extends Authenticatable
         'gstin',
         'is_gst',
         'gst_number',
+        'aadhaar_number',
+        'is_aadhaar_verified',
         'gender',
         'password',
         'profile_image',

@@ -152,6 +152,36 @@
                             <div class="invalid-feedback" id="gstin-error"></div>
                         </div>
 
+                        <!-- Aadhaar Verification Section -->
+                        <div class="card mb-4 border-info">
+                            <div class="card-header bg-info text-white">
+                                <h6 class="mb-0 fw-bold"><i class="bi bi-shield-lock me-2"></i>KYC Verification</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group mb-3">
+                                    <label for="aadhaar_number" class="form-label fw-bold">Aadhaar Number <span class="text-muted fw-normal">(Optional for auto-fill via Digilocker KYC)</span></label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="aadhaar_number" name="aadhaar_number" 
+                                               value="{{ $user->aadhaar_number }}" 
+                                               placeholder="Enter 12-digit Aadhaar Number"
+                                               maxlength="12" pattern="[0-9]{12}" {{ $user->is_aadhaar_verified ? 'readonly' : '' }}>
+                                        @if($user->is_aadhaar_verified)
+                                            <button class="btn btn-success" type="button" disabled>
+                                                <i class="bi bi-check-circle me-1"></i> Verified
+                                            </button>
+                                        @else
+                                            <button class="btn btn-info text-white" type="button" id="btn-verify-aadhaar">
+                                                <i class="bi bi-shield-check me-1"></i> Verify via IM Wallet
+                                            </button>
+                                        @endif
+                                    </div>
+                                    @if(!$user->is_aadhaar_verified)
+                                        <small class="text-muted d-block mt-1">Enter your Aadhaar to auto-verify via Digilocker. You will be redirected to the secure portal.</small>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Account Information -->
                         <div class="card mb-4">
                             <div class="card-header bg-light">
@@ -413,6 +443,48 @@ $(document).ready(function() {
                 $btn.prop('disabled', false).html(originalText);
             }
         });
+    });
+
+    // Aadhaar Verification
+    $('#btn-verify-aadhaar').click(function() {
+        const aadhaarNumber = $('#aadhaar_number').val();
+        // Just warning if it's less than 12 digits, but we still allow testing the redirect
+        if(aadhaarNumber && aadhaarNumber.length !== 12) {
+            showAlert('warning', 'Aadhaar usually has 12 digits. Redirecting to KYC portal anyway...');
+        }
+
+        const $btn = $(this);
+        const originalText = $btn.html();
+        
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Initializing KYC...');
+
+        $.ajax({
+            url: '{{ route("aadhaar.start") }}',
+            type: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                aadhaar_number: aadhaarNumber
+            },
+            success: function(response) {
+                if(response.success && response.url) {
+                    showAlert('success', 'Redirecting to IM Wallet KYC portal...');
+                    // Redirect to the KYC URL
+                    window.location.href = response.url;
+                } else {
+                    showAlert('danger', 'Failed to initialize KYC. Try again.');
+                    $btn.prop('disabled', false).html(originalText);
+                }
+            },
+            error: function() {
+                showAlert('danger', 'Error communicating with IM Wallet API.');
+                $btn.prop('disabled', false).html(originalText);
+            }
+        });
+    });
+
+    // Auto-formatting Aadhaar Number (Numbers only)
+    $('#aadhaar_number').on('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12);
     });
 });
 </script>

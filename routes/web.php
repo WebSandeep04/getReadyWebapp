@@ -33,6 +33,10 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // GST Verification
 Route::post('/verify-gst', [\App\Http\Controllers\GstVerificationController::class, 'verifyGst'])->name('verify.gst');
 
+// Aadhaar KYC Verification (IM Wallet)
+Route::post('/aadhaar/start', [\App\Http\Controllers\AadhaarVerificationController::class, 'startKyc'])->name('aadhaar.start');
+Route::any('/aadhaar/callback', [\App\Http\Controllers\AadhaarVerificationController::class, 'callback'])->name('aadhaar.callback');
+
 // Profile (Requires Authentication)
 Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [UserController::class, 'profile'])->name('profile');

@@ -16,6 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth' => \App\Http\Middleware\Authenticate::class,
             'admin.auth' => \App\Http\Middleware\AdminAuthMiddleware::class,
         ]);
+        
+        $middleware->validateCsrfTokens(except: [
+            'aadhaar/callback',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

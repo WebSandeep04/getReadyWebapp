@@ -30,6 +30,9 @@ Route::post('/login', [LoginController::class, 'login']);
 // Logout
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
+// GST Verification
+Route::post('/verify-gst', [\App\Http\Controllers\GstVerificationController::class, 'verifyGst'])->name('verify.gst');
+
 // Profile (Requires Authentication)
 Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [UserController::class, 'profile'])->name('profile');

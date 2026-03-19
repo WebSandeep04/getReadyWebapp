@@ -10,14 +10,15 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use App\Services\Msg91Service;
+use App\Services\ImWalletService;
 use Illuminate\Support\Str;
-
-
 
 class RegisterController extends Controller
 {
-    public function __construct(private readonly Msg91Service $msg91Service)
-    {
+    public function __construct(
+        private readonly Msg91Service $msg91Service,
+        private readonly ImWalletService $imWalletService
+    ) {
     }
 
     /**
@@ -193,8 +194,8 @@ class RegisterController extends Controller
                     ])->withInput();
                 }
 
-                // Create user account
-                $user = User::create([
+                // Define default user data
+                $userData = [
                     'name' => 'User-' . substr($phone, -4),
                     'email' => null, 
                     'phone' => $phone,
@@ -205,8 +206,27 @@ class RegisterController extends Controller
                     'is_gst' => $request->is_gst,
                     'gstin' => $request->gstin,
                     'gst_number' => $request->gstin,
-                    'password' => Hash::make(Str::random(16)), // Random password for mobile signup
-                ]);
+                    'password' => \Illuminate\Support\Facades\Hash::make(Str::random(16)), // Random password for mobile signup
+                ];
+
+                // Fetch GST Details if GST is enabled
+                if ($request->is_gst == 1 && !empty($request->gstin)) {
+                    $gstDetails = $this->imWalletService->getGstDetails($request->gstin);
+
+                    if ($gstDetails) {
+                        $businessData = $this->imWalletService->extractBusinessData($gstDetails);
+
+                        if (!empty($businessData['name'])) {
+                            $userData['name'] = $businessData['name'];
+                        }
+                        if (!empty($businessData['address'])) {
+                            $userData['address'] = $businessData['address'];
+                        }
+                    }
+                }
+
+                // Create user account
+                $user = User::create($userData);
 
                 // Create welcome notification
                 Notification::create([

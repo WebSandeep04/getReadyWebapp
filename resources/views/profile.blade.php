@@ -141,11 +141,14 @@
 
                         <div class="form-group mb-4" id="gst-container" style="display: {{ $user->is_gst ? 'block' : 'none' }};">
                             <label for="gstin" class="form-label fw-bold">GSTIN *</label>
-                            <input type="text" class="form-control" id="gstin" name="gstin" 
-                                   value="{{ $user->gstin ?? $user->gst_number }}" 
-                                   placeholder="Enter 15-digit GSTIN (e.g., 27AAAAA0000A1Z5)"
-                                   maxlength="15">
-                            <small class="text-muted">Format: 15 characters (e.g., 27AAAAA0000A1Z5)</small>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="gstin" name="gstin" 
+                                       value="{{ $user->gstin ?? $user->gst_number }}" 
+                                       placeholder="Enter 15-digit GSTIN (e.g., 27AAAAA0000A1Z5)"
+                                       maxlength="15">
+                                <button class="btn btn-warning" type="button" id="btn-verify-gst">Verify & Auto-fill</button>
+                            </div>
+                            <small class="text-muted d-block mt-1">Format: 15 characters (e.g., 27AAAAA0000A1Z5)</small>
                             <div class="invalid-feedback" id="gstin-error"></div>
                         </div>
 
@@ -354,5 +357,63 @@ function toggleGstField() {
         gstInput.value = ''; // Clear value if not business
     }
 }
+
+$(document).ready(function() {
+    $('#btn-verify-gst').click(function() {
+        const gstin = $('#gstin').val();
+        if(!gstin || gstin.length !== 15) {
+            showAlert('danger', 'Please enter a valid 15-digit GSTIN first.');
+            return;
+        }
+
+        const $btn = $(this);
+        const originalText = $btn.html();
+        
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Verifying...');
+
+        $.ajax({
+            url: '{{ route("verify.gst") }}',
+            type: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                gstin: gstin
+            },
+            success: function(response) {
+                if(response.success && response.data && response.data.data) {
+                    const gstData = response.data.data;
+                    
+                    // Auto-fill form fields
+                    if (gstData.tradeName || gstData.legalName) {
+                        $('#name').val(gstData.tradeName || gstData.legalName);
+                    }
+                    
+                    if (gstData.pradr && gstData.pradr.addr) {
+                        const addr = gstData.pradr.addr;
+                        const addressParts = [];
+                        if (addr.bno) addressParts.push(addr.bno);
+                        if (addr.st) addressParts.push(addr.st);
+                        if (addr.loc) addressParts.push(addr.loc);
+                        if (addr.dst) addressParts.push(addr.dst);
+                        if (addr.stcd) addressParts.push(addr.stcd);
+                        if (addr.pncd) addressParts.push(addr.pncd);
+                        
+                        if (addressParts.length > 0) {
+                            $('#address').val(addressParts.join(', '));
+                        }
+                    }
+                    showAlert('success', 'GST details fetched and form auto-filled successfully! Please review and click Update Profile.');
+                } else {
+                    showAlert('warning', 'Could not fetch GST details or GSTIN is invalid.');
+                }
+            },
+            error: function(xhr) {
+                showAlert('danger', 'Error verifying GSTIN. Please check the GSTIN or try again later.');
+            },
+            complete: function() {
+                $btn.prop('disabled', false).html(originalText);
+            }
+        });
+    });
+});
 </script>
 @endsection

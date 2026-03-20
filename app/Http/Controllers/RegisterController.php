@@ -218,6 +218,9 @@ class RegisterController extends Controller
                             throw new \Exception('Invalid GST Number or no data returned.');
                         }
 
+                        // Save entire GST details for future reference
+                        $userData['gst_details'] = $gstDetails;
+
                         $businessData = $this->imWalletService->extractBusinessData($gstDetails);
 
                         if (!empty($businessData['name'])) {
@@ -226,6 +229,16 @@ class RegisterController extends Controller
                         if (!empty($businessData['address'])) {
                             $userData['address'] = $businessData['address'];
                         }
+
+                        // Save extra mapped fields
+                        $userData['gst_legal_name'] = $businessData['legal_name'] ?? null;
+                        $userData['gst_trade_name'] = $businessData['trade_name'] ?? null;
+                        $userData['gst_constitution_of_business'] = $businessData['constitution_of_business'] ?? null;
+                        $userData['gst_status'] = $businessData['status'] ?? null;
+                        $userData['gst_registration_date'] = $businessData['registration_date'] ?? null;
+                        $userData['gst_principal_address'] = $businessData['principal_address'] ?? null;
+                        $userData['gst_nature_of_business'] = $businessData['nature_of_business'] ?? null;
+
                     } catch (\Exception $e) {
                         if ($request->ajax()) {
                             return response()->json([

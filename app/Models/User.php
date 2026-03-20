@@ -35,6 +35,14 @@ class User extends Authenticatable
         'password',
         'profile_image',
         'last_login_at',
+        'gst_legal_name',
+        'gst_trade_name',
+        'gst_constitution_of_business',
+        'gst_status',
+        'gst_registration_date',
+        'gst_principal_address',
+        'gst_nature_of_business',
+        'gst_details',
     ];
 
     public function state()
@@ -67,6 +75,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'gst_nature_of_business' => 'array',
+            'gst_details' => 'array',
         ];
     }
 

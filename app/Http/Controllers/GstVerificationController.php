@@ -41,6 +41,18 @@ class GstVerificationController extends Controller
                     $user->address = $businessData['address'];
                 }
                 
+                // Save entire GST details for future reference
+                $user->gst_details = $data;
+
+                // Save extra mapped fields
+                $user->gst_legal_name = $businessData['legal_name'] ?? null;
+                $user->gst_trade_name = $businessData['trade_name'] ?? null;
+                $user->gst_constitution_of_business = $businessData['constitution_of_business'] ?? null;
+                $user->gst_status = $businessData['status'] ?? null;
+                $user->gst_registration_date = $businessData['registration_date'] ?? null;
+                $user->gst_principal_address = $businessData['principal_address'] ?? null;
+                $user->gst_nature_of_business = $businessData['nature_of_business'] ?? null;
+
                 $user->save();
             }
 

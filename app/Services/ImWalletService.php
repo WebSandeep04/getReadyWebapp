@@ -41,6 +41,13 @@ class ImWalletService
         $data = [
             'name' => null,
             'address' => null,
+            'legal_name' => null,
+            'trade_name' => null,
+            'constitution_of_business' => null,
+            'status' => null,
+            'registration_date' => null,
+            'principal_address' => null,
+            'nature_of_business' => null,
         ];
 
         if (empty($apiResponse['data'])) {
@@ -49,13 +56,31 @@ class ImWalletService
 
         $gstData = $apiResponse['data'];
 
-        // Extract Business Name
-        if (isset($gstData['tradeName']) || isset($gstData['legalName'])) {
-            $data['name'] = $gstData['tradeName'] ?? $gstData['legalName'] ?? null;
+        // If the new 'result' structure is present
+        if (isset($gstData['result']['taxpayerDetails'])) {
+            $taxpayer = $gstData['result']['taxpayerDetails'];
+            $data['legal_name'] = $taxpayer['lgnm'] ?? null;
+            $data['trade_name'] = $taxpayer['tradeNam'] ?? null;
+            $data['name'] = $data['trade_name'] ?? $data['legal_name'] ?? null;
+            $data['constitution_of_business'] = $taxpayer['ctb'] ?? null;
+            $data['status'] = $taxpayer['sts'] ?? null;
+            $data['registration_date'] = $taxpayer['rgdt'] ?? null;
+            $data['nature_of_business'] = $taxpayer['nba'] ?? null;
+        } else {
+            // Extract Business Name (old structure fallback)
+            if (isset($gstData['tradeName']) || isset($gstData['legalName'])) {
+                $data['trade_name'] = $gstData['tradeName'] ?? null;
+                $data['legal_name'] = $gstData['legalName'] ?? null;
+                $data['name'] = $data['trade_name'] ?? $data['legal_name'] ?? null;
+            }
         }
 
         // Extract Address
-        if (isset($gstData['pradr']['addr'])) {
+        if (isset($gstData['result']['business_places']['pradr']['adr'])) {
+            $data['principal_address'] = $gstData['result']['business_places']['pradr']['adr'];
+            $data['address'] = $data['principal_address'];
+        } elseif (isset($gstData['pradr']['addr'])) {
+            // old structure fallback
             $addr = $gstData['pradr']['addr'];
             $addressParts = [];
             if (!empty($addr['bno'])) $addressParts[] = $addr['bno'];
@@ -67,6 +92,7 @@ class ImWalletService
 
             $fullAddress = implode(', ', $addressParts);
             if ($fullAddress) {
+                $data['principal_address'] = $fullAddress;
                 $data['address'] = $fullAddress;
             }
         }

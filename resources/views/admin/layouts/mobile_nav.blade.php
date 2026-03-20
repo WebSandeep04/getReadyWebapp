@@ -26,6 +26,8 @@
                     <span class="rounded-circle d-inline-block text-center align-middle bg-secondary text-white me-2" style="width:32px; height:32px; line-height:32px; font-size:1.1rem; overflow:hidden; vertical-align:middle;">
                         @if(Auth::user()->profile_image)
                             <img src="{{ asset(Auth::user()->profile_image) }}" alt="Profile" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
+                        @elseif(Auth::user()->aadhaar_image_base64)
+                            <img src="data:image/jpeg;base64,{{ Auth::user()->aadhaar_image_base64 }}" alt="Profile" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
                         @else
                             {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                         @endif

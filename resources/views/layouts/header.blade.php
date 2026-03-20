@@ -83,6 +83,8 @@
         <a href="#" class="header-icon-btn dropdown-toggle" id="profileDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Profile">
           @if(Auth::user()->profile_image)
             <img src="{{ asset('storage/' . Auth::user()->profile_image) }}" alt="Profile" class="header-profile-img">
+          @elseif(Auth::user()->aadhaar_image_base64)
+            <img src="data:image/jpeg;base64,{{ Auth::user()->aadhaar_image_base64 }}" alt="Profile" class="header-profile-img">
           @else
             <i class="bi bi-person-circle"></i>
           @endif

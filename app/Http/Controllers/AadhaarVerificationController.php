@@ -84,11 +84,27 @@ class AadhaarVerificationController extends Controller
                             $user->aadhaar_care_of = $data['careOf'] ?? null;
                             $user->aadhaar_xml_link = $data['link'] ?? null;
                             $user->aadhaar_pdf_link = $data['pdfLink'] ?? null;
+                            $user->aadhaar_image_base64 = $data['image'] ?? null;
                             $user->aadhaar_details = $data;
                             
-                            // Map generic fields if available
-                            $user->gender = $data['gender'] ?? $user->gender;
+                            // 💡 Logic: If not GST, automatically set the main address to the Aadhaar address
+                            if (!$user->is_gst && isset($data['address']) && is_array($data['address'])) {
+                                $addr = $data['address'];
+                                $parts = [];
+                                if (!empty($addr['house'])) $parts[] = $addr['house'];
+                                if (!empty($addr['street'])) $parts[] = $addr['street'];
+                                if (!empty($addr['loc'])) $parts[] = $addr['loc'];
+                                if (!empty($addr['dist'])) $parts[] = $addr['dist'];
+                                if (!empty($addr['state'])) $parts[] = $addr['state'];
+                                if (!empty($addr['pc'])) $parts[] = $addr['pc'];
+                                
+                                $formattedAddress = implode(', ', $parts);
+                                if (!empty($formattedAddress)) {
+                                    $user->address = $formattedAddress;
+                                }
+                            }
                             
+                            // 💡 Logic: Aadhaar name is always the pure individual's full name
                             if (!empty($data['name'])) {
                                 $user->name = $data['name'];
                             }

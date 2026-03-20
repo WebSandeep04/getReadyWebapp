@@ -52,6 +52,7 @@ class ImWalletService
             'registration_date' => null,
             'principal_address' => null,
             'nature_of_business' => null,
+            'members' => null,
         ];
 
         if (empty($apiResponse['data'])) {
@@ -70,6 +71,7 @@ class ImWalletService
             $data['status'] = $taxpayer['sts'] ?? null;
             $data['registration_date'] = $taxpayer['rgdt'] ?? null;
             $data['nature_of_business'] = $taxpayer['nba'] ?? null;
+            $data['members'] = $taxpayer['mbr'] ?? null;
         } else {
             // Extract Business Name (old structure fallback)
             if (isset($gstData['tradeName']) || isset($gstData['legalName'])) {

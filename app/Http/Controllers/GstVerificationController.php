@@ -31,6 +31,7 @@ class GstVerificationController extends Controller
                 $user = auth()->user();
                 $user->gstin = $gstin;
                 $user->gst_number = $gstin;
+                $user->is_gst = 1; // Explicitly flag them as a GST business!
                 
                 $businessData = $this->imWalletService->extractBusinessData($data);
 
@@ -52,6 +53,12 @@ class GstVerificationController extends Controller
                 $user->gst_registration_date = $businessData['registration_date'] ?? null;
                 $user->gst_principal_address = $businessData['principal_address'] ?? null;
                 $user->gst_nature_of_business = $businessData['nature_of_business'] ?? null;
+                $user->gst_members = $businessData['members'] ?? null;
+
+                // 💡 Logic: If it is a GST user, securely force main address to their GST Address
+                if ($user->gst_principal_address) {
+                    $user->address = $user->gst_principal_address;
+                }
 
                 $user->save();
             }
@@ -59,6 +66,7 @@ class GstVerificationController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $data,
+                'businessData' => $businessData ?? $this->imWalletService->extractBusinessData($data),
                 'message' => 'GST details fetched successfully.'
             ]);
 

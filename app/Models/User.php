@@ -42,6 +42,7 @@ class User extends Authenticatable
         'gst_registration_date',
         'gst_principal_address',
         'gst_nature_of_business',
+        'gst_members',
         'gst_details',
         'aadhaar_masked_number',
         'aadhaar_address',
@@ -49,6 +50,7 @@ class User extends Authenticatable
         'aadhaar_care_of',
         'aadhaar_xml_link',
         'aadhaar_pdf_link',
+        'aadhaar_image_base64',
         'aadhaar_details',
     ];
 
@@ -83,6 +85,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'gst_nature_of_business' => 'array',
+            'gst_members' => 'array',
             'gst_details' => 'array',
             'aadhaar_address' => 'array',
             'aadhaar_details' => 'array',

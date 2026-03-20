@@ -32,6 +32,9 @@
                                     @if($user->profile_image)
                                         <img id="profile-preview" src="{{ asset('storage/' . $user->profile_image) }}" 
                                              alt="Profile" class="rounded-circle profile-image">
+                                    @elseif($user->aadhaar_image_base64)
+                                        <img id="profile-preview" src="data:image/jpeg;base64,{{ $user->aadhaar_image_base64 }}" 
+                                             alt="Profile" class="rounded-circle profile-image">
                                     @else
                                         <div id="profile-preview" class="rounded-circle profile-image bg-secondary text-white d-flex align-items-center justify-content-center">
                                             {{ strtoupper(substr($user->name, 0, 1)) }}
@@ -58,7 +61,14 @@
                                     <div class="invalid-feedback" id="name-error"></div>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-6" id="legal-name-col" style="display: {{ $user->is_gst ? 'block' : 'none' }};">
+                                <div class="form-group mb-3">
+                                    <label for="legal_name" class="form-label fw-bold text-success">Legal Name (GST)</label>
+                                    <input type="text" class="form-control bg-light" id="legal_name" 
+                                           value="{{ $user->gst_legal_name }}" readonly placeholder="Auto-fetched via GST">
+                                </div>
+                            </div>
+                            <div class="col-md-6" id="email-col">
                                 <div class="form-group mb-3">
                                     <label for="email" class="form-label fw-bold">Email Address *</label>
                                     <input type="email" class="form-control" id="email" name="email" 
@@ -66,9 +76,6 @@
                                     <div class="invalid-feedback" id="email-error"></div>
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group mb-3">
                                     <label for="phone" class="form-label fw-bold">Phone Number *</label>
@@ -77,6 +84,9 @@
                                     <div class="invalid-feedback" id="phone-error"></div>
                                 </div>
                             </div>
+                        </div>
+
+                        <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group mb-3">
                                     <label for="gender" class="form-label fw-bold">User Type *</label>
@@ -145,11 +155,45 @@
                                 <input type="text" class="form-control" id="gstin" name="gstin" 
                                        value="{{ $user->gstin ?? $user->gst_number }}" 
                                        placeholder="Enter 15-digit GSTIN (e.g., 27AAAAA0000A1Z5)"
-                                       maxlength="15">
-                                <button class="btn btn-warning" type="button" id="btn-verify-gst">Verify & Auto-fill</button>
+                                       maxlength="15" {{ $user->is_gst && $user->gst_legal_name ? 'readonly' : '' }}>
+                                @if($user->is_gst && $user->gst_legal_name)
+                                    <button class="btn btn-success" type="button" disabled id="btn-verify-gst">
+                                        <i class="bi bi-check-circle me-1"></i> Verified
+                                    </button>
+                                @else
+                                    <button class="btn btn-warning" type="button" id="btn-verify-gst">Verify & Auto-fill</button>
+                                @endif
                             </div>
                             <small class="text-muted d-block mt-1">Format: 15 characters (e.g., 27AAAAA0000A1Z5)</small>
                             <div class="invalid-feedback" id="gstin-error"></div>
+                            
+                            @if($user->gst_legal_name || $user->gst_principal_address)
+                            <div class="mt-3 p-3 bg-light border rounded">
+                                <h6 class="fw-bold text-success mb-2"><i class="bi bi-building-check me-1"></i>Verified Business Details</h6>
+                                <div class="small">
+                                    @if($user->gst_legal_name)
+                                        <div class="mb-1"><span class="text-muted">Legal Name:</span> <strong>{{ $user->gst_legal_name }}</strong></div>
+                                    @endif
+                                    @if($user->gst_trade_name)
+                                        <div class="mb-1"><span class="text-muted">Trade Name:</span> <strong>{{ $user->gst_trade_name }}</strong></div>
+                                    @endif
+                                    @if($user->gst_constitution_of_business)
+                                        <div class="mb-1"><span class="text-muted">Entity Type:</span> <strong>{{ $user->gst_constitution_of_business }}</strong></div>
+                                    @endif
+                                    @if($user->gst_status)
+                                        <div class="mb-1"><span class="text-muted">Status:</span> <span class="badge bg-success">{{ $user->gst_status }}</span></div>
+                                    @endif
+                                    @if($user->gst_principal_address)
+                                        <div class="mb-1"><span class="text-muted">Reg. Address:</span> <strong>{{ $user->gst_principal_address }}</strong></div>
+                                    @endif
+                                    @if(!empty($user->gst_members) && is_array($user->gst_members))
+                                        <div class="mb-1"><span class="text-muted">Directors/Members:</span> 
+                                            <strong>{{ collect($user->gst_members)->implode(', ') }}</strong>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                            @endif
                         </div>
 
                         <!-- Aadhaar Verification Section -->
@@ -162,9 +206,9 @@
                                     <label for="aadhaar_number" class="form-label fw-bold">Aadhaar Number <span class="text-muted fw-normal">(Optional for auto-fill via Digilocker KYC)</span></label>
                                     <div class="input-group">
                                         <input type="text" class="form-control" id="aadhaar_number" name="aadhaar_number" 
-                                               value="{{ $user->aadhaar_number }}" 
+                                               value="{{ $user->aadhaar_masked_number ?? $user->aadhaar_number }}" 
                                                placeholder="Enter 12-digit Aadhaar Number"
-                                               maxlength="12" pattern="[0-9]{12}" {{ $user->is_aadhaar_verified ? 'readonly' : '' }}>
+                                               maxlength="12" pattern="[0-9xX]{12}" {{ $user->is_aadhaar_verified ? 'readonly' : '' }}>
                                         @if($user->is_aadhaar_verified)
                                             <button class="btn btn-success" type="button" disabled>
                                                 <i class="bi bi-check-circle me-1"></i> Verified
@@ -177,6 +221,38 @@
                                     </div>
                                     @if(!$user->is_aadhaar_verified)
                                         <small class="text-muted d-block mt-1">Enter your Aadhaar to auto-verify via Digilocker. You will be redirected to the secure portal.</small>
+                                    @else
+                                        <div class="mt-3 p-3 bg-light border border-info rounded">
+                                            <h6 class="fw-bold text-info mb-2"><i class="bi bi-person-check-fill me-1"></i>Verified Identity Details</h6>
+                                            <div class="row small">
+                                                <div class="col-md-6">
+                                                    @if($user->aadhaar_masked_number)
+                                                        <div class="mb-1"><span class="text-muted">Aadhaar:</span> <strong>{{ $user->aadhaar_masked_number }}</strong></div>
+                                                    @endif
+                                                    @if($user->aadhaar_dob)
+                                                        <div class="mb-1"><span class="text-muted">Date of Birth:</span> <strong>{{ $user->aadhaar_dob }}</strong></div>
+                                                    @endif
+                                                    @if($user->gender)
+                                                        <div class="mb-1"><span class="text-muted">Gender:</span> <strong>{{ $user->gender }}</strong></div>
+                                                    @endif
+                                                </div>
+                                                <div class="col-md-6">
+                                                    @if($user->aadhaar_care_of)
+                                                        <div class="mb-1"><span class="text-muted">Care Of:</span> <strong>{{ $user->aadhaar_care_of }}</strong></div>
+                                                    @endif
+                                                    @if($user->aadhaar_address && isset($user->aadhaar_address['loc']))
+                                                        <div class="mb-1"><span class="text-muted">Location:</span> <strong>{{ $user->aadhaar_address['loc'] }}, {{ $user->aadhaar_address['dist'] }}</strong></div>
+                                                    @endif
+                                                    @if($user->aadhaar_pdf_link)
+                                                        <div class="mt-2">
+                                                            <a href="{{ $user->aadhaar_pdf_link }}" target="_blank" class="btn btn-sm btn-outline-info">
+                                                                <i class="bi bi-file-earmark-pdf me-1"></i>View Digilocker PDF
+                                                            </a>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
                                     @endif
                                 </div>
                             </div>
@@ -302,8 +378,17 @@ $(document).ready(function() {
                     // Update profile image in header if changed
                     if (response.user.profile_image) {
                         $('.auth-buttons img[alt="Profile"]').attr('src', '/storage/' + response.user.profile_image);
+                    } else if (response.user.aadhaar_image_base64) {
+                        // If no custom image but we have Aadhaar image
+                        if ($('.auth-buttons img[alt="Profile"]').length) {
+                             $('.auth-buttons img[alt="Profile"]').attr('src', 'data:image/jpeg;base64,' + response.user.aadhaar_image_base64);
+                        } else {
+                             // Replace the placeholder icon with the new image
+                             $('.auth-buttons .bi-person-circle').replaceWith('<img src="data:image/jpeg;base64,' + response.user.aadhaar_image_base64 + '" alt="Profile" class="header-profile-img">');
+                        }
                     } else {
-                        $('.auth-buttons .rounded-circle').html(response.user.name.charAt(0).toUpperCase());
+                        // Revert to placeholder if neither exist
+                        $('.auth-buttons .header-profile-img').replaceWith('<i class="bi bi-person-circle"></i>');
                     }
                 }
             },
@@ -381,10 +466,12 @@ function toggleGstField() {
     if (isGst) {
         gstContainer.style.display = 'block';
         gstInput.setAttribute('required', 'required');
+        document.getElementById('legal-name-col').style.display = 'block';
     } else {
         gstContainer.style.display = 'none';
         gstInput.removeAttribute('required');
         gstInput.value = ''; // Clear value if not business
+        document.getElementById('legal-name-col').style.display = 'none';
     }
 }
 
@@ -409,29 +496,26 @@ $(document).ready(function() {
                 gstin: gstin
             },
             success: function(response) {
-                if(response.success && response.data && response.data.data) {
-                    const gstData = response.data.data;
+                if(response.success && response.businessData) {
+                    const businessData = response.businessData;
                     
-                    // Auto-fill form fields
-                    if (gstData.tradeName || gstData.legalName) {
-                        $('#name').val(gstData.tradeName || gstData.legalName);
+                    // Auto-fill form fields accurately using mapped businessData (Leave Full Name alone!)
+                    if (businessData.legal_name || businessData.trade_name) {
+                        $('#legal_name').val(businessData.legal_name || businessData.trade_name);
                     }
                     
-                    if (gstData.pradr && gstData.pradr.addr) {
-                        const addr = gstData.pradr.addr;
-                        const addressParts = [];
-                        if (addr.bno) addressParts.push(addr.bno);
-                        if (addr.st) addressParts.push(addr.st);
-                        if (addr.loc) addressParts.push(addr.loc);
-                        if (addr.dst) addressParts.push(addr.dst);
-                        if (addr.stcd) addressParts.push(addr.stcd);
-                        if (addr.pncd) addressParts.push(addr.pncd);
-                        
-                        if (addressParts.length > 0) {
-                            $('#address').val(addressParts.join(', '));
-                        }
+                    if (businessData.principal_address) {
+                        $('#address').val(businessData.principal_address);
                     }
-                    showAlert('success', 'GST details fetched and form auto-filled successfully! Please review and click Update Profile.');
+
+                    // Auto-flag GST as Yes (1) in frontend dropdown
+                    $('#is_gst').val('1').trigger('change');
+
+                    // Change button to Verified state
+                    $('#gstin').prop('readonly', true);
+                    $btn.removeClass('btn-warning').addClass('btn-success').prop('disabled', true).html('<i class="bi bi-check-circle me-1"></i> Verified');
+
+                    showAlert('success', 'GST details uniquely matched and auto-filled successfully! Please review and click Update Profile.');
                 } else {
                     showAlert('warning', 'Could not fetch GST details or GSTIN is invalid.');
                 }
@@ -440,7 +524,10 @@ $(document).ready(function() {
                 showAlert('danger', 'Error verifying GSTIN. Please check the GSTIN or try again later.');
             },
             complete: function() {
-                $btn.prop('disabled', false).html(originalText);
+                // Restore button only if verification failed (not switched to verified state)
+                if (!$btn.hasClass('btn-success')) {
+                    $btn.prop('disabled', false).html(originalText);
+                }
             }
         });
     });

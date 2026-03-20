@@ -238,6 +238,12 @@ class RegisterController extends Controller
                         $userData['gst_registration_date'] = $businessData['registration_date'] ?? null;
                         $userData['gst_principal_address'] = $businessData['principal_address'] ?? null;
                         $userData['gst_nature_of_business'] = $businessData['nature_of_business'] ?? null;
+                        $userData['gst_members'] = $businessData['members'] ?? null;
+                        
+                        // 💡 Logic: Force main address to GST address for GST users
+                        if ($userData['gst_principal_address']) {
+                            $userData['address'] = $userData['gst_principal_address'];
+                        }
 
                     } catch (\Exception $e) {
                         if ($request->ajax()) {

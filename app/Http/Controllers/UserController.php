@@ -110,6 +110,37 @@ class UserController extends Controller
             $data['profile_image'] = $path;
         }
 
+        // 💡 Security Enforcements: Lock identity fields to verified sources
+        if ($data['is_gst']) {
+            if ($user->gst_principal_address) {
+                $data['address'] = $user->gst_principal_address;
+            }
+        } 
+        
+        // Aadhaar always dictates the individual's full name if verified
+        if ($user->is_aadhaar_verified) {
+            if (isset($user->aadhaar_details['name'])) {
+                $data['name'] = $user->aadhaar_details['name'];
+            }
+            
+            // Construct Aadhaar address if not a GST person
+            if (!$data['is_gst'] && isset($user->aadhaar_details['address']) && is_array($user->aadhaar_details['address'])) {
+                $addr = $user->aadhaar_details['address'];
+                $parts = [];
+                if (!empty($addr['house'])) $parts[] = $addr['house'];
+                if (!empty($addr['street'])) $parts[] = $addr['street'];
+                if (!empty($addr['loc'])) $parts[] = $addr['loc'];
+                if (!empty($addr['dist'])) $parts[] = $addr['dist'];
+                if (!empty($addr['state'])) $parts[] = $addr['state'];
+                if (!empty($addr['pc'])) $parts[] = $addr['pc'];
+                
+                $formattedAddress = implode(', ', $parts);
+                if (!empty($formattedAddress)) {
+                    $data['address'] = $formattedAddress;
+                }
+            }
+        }
+
         $user->update($data);
 
         return response()->json([

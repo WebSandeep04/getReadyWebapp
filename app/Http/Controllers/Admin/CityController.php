@@ -22,7 +22,11 @@ class CityController extends Controller
     {
         $query = City::with('state');
 
-        if ($request->has('state_id') && $request->state_id != '') {
+        if ($request->has('state_name') && $request->state_name != '') {
+            $query->whereHas('state', function ($q) use ($request) {
+                $q->where('name', $request->state_name);
+            });
+        } elseif ($request->has('state_id') && $request->state_id != '') {
             $query->where('state_id', $request->state_id);
         }
 

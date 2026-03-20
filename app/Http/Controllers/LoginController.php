@@ -237,8 +237,6 @@ class LoginController extends Controller
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string|regex:/^[0-9]{10,15}$/',
             'verification_token' => 'required|string',
-            'state_id' => 'required|exists:states,id',
-            'city_id' => 'required|exists:cities,id',
             'age' => 'required|integer|min:1|max:120',
             'gender' => 'required|in:Boy,Girl,Men,Women',
             'is_gst' => 'required|boolean',
@@ -279,8 +277,6 @@ class LoginController extends Controller
             'email' => null, 
             'phone' => $phone,
             'address' => null,
-            'state_id' => $request->state_id,
-            'city_id' => $request->city_id,
             'age' => $request->age,
             'gender' => $request->gender,
             'is_gst' => $request->is_gst,
@@ -303,13 +299,13 @@ class LoginController extends Controller
 
                 $businessData = $this->imWalletService->extractBusinessData($gstDetails);
 
-                if (!empty($businessData['name'])) {
-                    $userData['name'] = $businessData['name'];
+                // Only update state and city if they are currently null/empty
+                if (empty($userData['state']) && !empty($businessData['state'])) {
+                    $userData['state'] = $businessData['state'];
                 }
-                if (!empty($businessData['address'])) {
-                    $userData['address'] = $businessData['address'];
+                if (empty($userData['city']) && !empty($businessData['city'])) {
+                    $userData['city'] = $businessData['city'];
                 }
-
                 // Save extra mapped fields
                 $userData['gst_legal_name'] = $businessData['legal_name'] ?? null;
                 $userData['gst_trade_name'] = $businessData['trade_name'] ?? null;
@@ -320,10 +316,8 @@ class LoginController extends Controller
                 $userData['gst_nature_of_business'] = $businessData['nature_of_business'] ?? null;
                 $userData['gst_members'] = $businessData['members'] ?? null;
 
-                // 💡 Logic: Force main address to GST address for GST users
-                if ($userData['gst_principal_address']) {
-                    $userData['address'] = $userData['gst_principal_address'];
-                }
+
+
 
             } catch (\Exception $e) {
                 return response()->json([

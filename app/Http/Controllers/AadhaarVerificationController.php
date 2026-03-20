@@ -87,8 +87,19 @@ class AadhaarVerificationController extends Controller
                             $user->aadhaar_image_base64 = $data['image'] ?? null;
                             $user->aadhaar_details = $data;
                             
-                            // 💡 Logic: If not GST, automatically set the main address to the Aadhaar address
-                            if (!$user->is_gst && isset($data['address']) && is_array($data['address'])) {
+                            // 💡 Logic: Always update internal state and city with robust Aadhaar string data
+                            if (isset($data['address']) && is_array($data['address'])) {
+                                $addr = $data['address'];
+                                if (!empty($addr['state'])) {
+                                    $user->state = $addr['state'];
+                                }
+                                if (!empty($addr['dist'])) {
+                                    $user->city = $addr['dist'];
+                                }
+                            }
+                            
+                            // 💡 Logic: Always automatically set the main address to the Aadhaar address
+                            if (isset($data['address']) && is_array($data['address'])) {
                                 $addr = $data['address'];
                                 $parts = [];
                                 if (!empty($addr['house'])) $parts[] = $addr['house'];

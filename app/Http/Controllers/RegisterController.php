@@ -147,7 +147,6 @@ class RegisterController extends Controller
                 $validator = Validator::make($request->all(), [
                     'phone' => 'required|string|regex:/^[0-9]{10,15}$/|unique:users,phone',
                     'verification_token' => 'required|string',
-                    'city' => 'required|string|max:255',
                     'age' => 'required|integer|min:1|max:120',
                     'gender' => 'required|in:Boy,Girl,Men,Women',
                     'is_gst' => 'required|boolean',
@@ -200,7 +199,6 @@ class RegisterController extends Controller
                     'email' => null, 
                     'phone' => $phone,
                     'address' => null,
-                    'city' => $request->city,
                     'age' => $request->age,
                     'gender' => $request->gender,
                     'is_gst' => $request->is_gst,
@@ -223,13 +221,13 @@ class RegisterController extends Controller
 
                         $businessData = $this->imWalletService->extractBusinessData($gstDetails);
 
-                        if (!empty($businessData['name'])) {
-                            $userData['name'] = $businessData['name'];
-                        }
-                        if (!empty($businessData['address'])) {
-                            $userData['address'] = $businessData['address'];
-                        }
-
+                // Only update state and city if they are currently null/empty
+                if (empty($userData['state']) && !empty($businessData['state'])) {
+                    $userData['state'] = $businessData['state'];
+                }
+                if (empty($userData['city']) && !empty($businessData['city'])) {
+                    $userData['city'] = $businessData['city'];
+                }
                         // Save extra mapped fields
                         $userData['gst_legal_name'] = $businessData['legal_name'] ?? null;
                         $userData['gst_trade_name'] = $businessData['trade_name'] ?? null;
@@ -240,10 +238,7 @@ class RegisterController extends Controller
                         $userData['gst_nature_of_business'] = $businessData['nature_of_business'] ?? null;
                         $userData['gst_members'] = $businessData['members'] ?? null;
                         
-                        // 💡 Logic: Force main address to GST address for GST users
-                        if ($userData['gst_principal_address']) {
-                            $userData['address'] = $userData['gst_principal_address'];
-                        }
+
 
                     } catch (\Exception $e) {
                         if ($request->ajax()) {

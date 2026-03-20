@@ -66,11 +66,8 @@ class UserController extends Controller
     public function profile()
     {
         $user = Auth::user();
-        $states = State::where('status', 1)->get();
-        // Get cities if user already has a state selected
-        $cities = $user->state_id ? City::where('state_id', $user->state_id)->where('status', 1)->get() : collect();
         $showFilters = false;
-        return view('profile', compact('user', 'showFilters', 'states', 'cities'));
+        return view('profile', compact('user', 'showFilters'));
     }
 
     // Update user profile (AJAX)
@@ -83,8 +80,8 @@ class UserController extends Controller
             'email' => 'required|email|max:255|unique:users,email,' . $user->id,
             'phone' => 'required|string|max:20|unique:users,phone,' . $user->id,
             'address' => 'nullable|string|max:255',
-            'state_id' => 'nullable|exists:states,id',
-            'city_id' => 'nullable|exists:cities,id',
+            'state' => 'nullable|string',
+            'city' => 'nullable|string',
             'is_gst' => 'required|boolean',
             'gstin' => 'required_if:is_gst,1|nullable|string|max:15|regex:/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/',
             'gender' => 'required|in:Boy,Girl,Men,Women',
@@ -95,7 +92,9 @@ class UserController extends Controller
             return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
-        $data = $request->only(['name', 'email', 'phone', 'address', 'gstin', 'gender', 'is_gst', 'state_id', 'city_id']);
+        $data = $request->only(['name', 'email', 'phone', 'address', 'gstin', 'gender', 'is_gst', 'state', 'city']);
+        
+        // Ensure GST is preserved
         $data['gst_number'] = $data['gstin'] ?? null;
 
         // Handle profile image upload
@@ -111,11 +110,6 @@ class UserController extends Controller
         }
 
         // 💡 Security Enforcements: Lock identity fields to verified sources
-        if ($data['is_gst']) {
-            if ($user->gst_principal_address) {
-                $data['address'] = $user->gst_principal_address;
-            }
-        } 
         
         // Aadhaar always dictates the individual's full name if verified
         if ($user->is_aadhaar_verified) {
@@ -123,8 +117,8 @@ class UserController extends Controller
                 $data['name'] = $user->aadhaar_details['name'];
             }
             
-            // Construct Aadhaar address if not a GST person
-            if (!$data['is_gst'] && isset($user->aadhaar_details['address']) && is_array($user->aadhaar_details['address'])) {
+            // Aadhaar always dictates the primary address if verified
+            if (isset($user->aadhaar_details['address']) && is_array($user->aadhaar_details['address'])) {
                 $addr = $user->aadhaar_details['address'];
                 $parts = [];
                 if (!empty($addr['house'])) $parts[] = $addr['house'];

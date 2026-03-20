@@ -34,13 +34,16 @@ class GstVerificationController extends Controller
                 $user->is_gst = 1; // Explicitly flag them as a GST business!
                 
                 $businessData = $this->imWalletService->extractBusinessData($data);
+                // Only update state and city if they are currently null/empty
+                if (empty($user->state) && !empty($businessData['state'])) {
+                    $user->state = $businessData['state'];
+                }
+                if (empty($user->city) && !empty($businessData['city'])) {
+                    $user->city = $businessData['city'];
+                }
 
-                if (!empty($businessData['name'])) {
-                    $user->name = $businessData['name'];
-                }
-                if (!empty($businessData['address'])) {
-                    $user->address = $businessData['address'];
-                }
+
+
                 
                 // Save entire GST details for future reference
                 $user->gst_details = $data;
@@ -55,10 +58,7 @@ class GstVerificationController extends Controller
                 $user->gst_nature_of_business = $businessData['nature_of_business'] ?? null;
                 $user->gst_members = $businessData['members'] ?? null;
 
-                // 💡 Logic: If it is a GST user, securely force main address to their GST Address
-                if ($user->gst_principal_address) {
-                    $user->address = $user->gst_principal_address;
-                }
+
 
                 $user->save();
             }

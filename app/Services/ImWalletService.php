@@ -15,18 +15,22 @@ class ImWalletService
      */
     public function getGstDetails(string $gstin): array
     {
+        $payload = ['gstin' => $gstin];
+        Log::info('IM Wallet GST Details Request:', $payload);
+
         $response = Http::withHeaders([
             'userCode' => env('IMWALLET_USER_CODE'),
             'webToken' => env('IMWALLET_WEB_TOKEN'),
             'Content-Type' => 'application/json'
-        ])->post('https://partner.imwallet.in/web_services/verificationSuit/walletBased/getGstDetails.jsp', [
-            'gstin' => $gstin
-        ]);
+        ])->post('https://partner.imwallet.in/web_services/verificationSuit/walletBased/getGstDetails.jsp', $payload);
 
         if ($response->successful()) {
-            return $response->json();
+            $responseData = $response->json();
+            Log::info('IM Wallet GST Details Response:', $responseData ?? []);
+            return $responseData;
         }
 
+        Log::error('IM Wallet GST Details Error:', $response->json() ?? ['status' => $response->status()]);
         $response->throw();
     }
 
@@ -108,18 +112,49 @@ class ImWalletService
      */
     public function getAadhaarKycUrl(string $redirectUrl): array
     {
+        $payload = ['redirectUrl' => $redirectUrl];
+        Log::info('IM Wallet Aadhaar KYC URL Request:', $payload);
+
         $response = Http::withHeaders([
             'userCode' => env('IMWALLET_USER_CODE'),
             'webToken' => env('IMWALLET_WEB_TOKEN'),
             'Content-Type' => 'application/json'
-        ])->post('https://partner.imwallet.in/web_services/verificationSuit/walletBased/unifiedKyc/getUrl.jsp', [
-            'redirectUrl' => $redirectUrl
-        ]);
+        ])->post('https://partner.imwallet.in/web_services/verificationSuit/walletBased/unifiedKyc/getUrl.jsp', $payload);
 
         if ($response->successful()) {
-            return $response->json();
+            $responseData = $response->json();
+            Log::info('IM Wallet Aadhaar KYC URL Response:', $responseData ?? []);
+            return $responseData;
         }
 
+        Log::error('IM Wallet Aadhaar KYC URL Error:', $response->json() ?? ['status' => $response->status()]);
+        $response->throw();
+    }
+
+    /**
+     * Get Status of Aadhaar KYC using Unified Transaction ID
+     *
+     * @param string $unifiedTransactionId
+     * @return array
+     */
+    public function getAadhaarKycStatus(string $unifiedTransactionId): array
+    {
+        $payload = ['unifiedTransactionId' => $unifiedTransactionId];
+        Log::info('IM Wallet Aadhaar KYC Status Request:', $payload);
+
+        $response = Http::withHeaders([
+            'userCode' => env('IMWALLET_USER_CODE'),
+            'webToken' => env('IMWALLET_WEB_TOKEN'),
+            'Content-Type' => 'application/json'
+        ])->post('https://partner.imwallet.in/web_services/verificationSuit/walletBased/unifiedKyc/getStatus.jsp', $payload);
+
+        if ($response->successful()) {
+            $responseData = $response->json();
+            Log::info('IM Wallet Aadhaar KYC Status Response:', $responseData ?? []);
+            return $responseData;
+        }
+
+        Log::error('IM Wallet Aadhaar KYC Status Error:', $response->json() ?? ['status' => $response->status()]);
         $response->throw();
     }
 }

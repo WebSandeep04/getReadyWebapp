@@ -56,25 +56,52 @@ class AadhaarVerificationController extends Controller
      */
     public function callback(Request $request)
     {
+        // Log the entire callback payload from IM Wallet
+        Log::info('IM Wallet Aadhaar KYC Callback Payload:', $request->all());
+
         // This endpoint will be hit when IM Wallet redirects the user back
         // Usually there is a referenceId or status returned in the query params.
         
         $status = $request->input('status');
+        $unifiedTransactionId = $request->input('unifiedTransactionId');
         
-        // We will just redirect the user back to profile with a success flag
-        // In a real scenario, you'd verify the KYC details with another API call
-        // using the reference ID provided in the callback.
-        
-        if ($status === 'SUCCESS' || $request->has('referenceId') || $request->has('token')) {
-            // Suppose IM Wallet sends back KYC data directly or we fetch it here.
-            // Since we don't know the exact data structure yet, we'll mark verified on success parameter.
+        if (strtolower((string)$status) === 'success' || $request->has('referenceId') || $request->has('token') || $unifiedTransactionId) {
             if (auth()->check()) {
                 $user = auth()->user();
-                $user->is_aadhaar_verified = true;
                 
-                // Example of extracting provided name, gender from generic callback names
-                if ($request->has('name') || $request->has('fullName')) {
-                    $user->name = $request->input('name', $request->input('fullName'));
+                if ($unifiedTransactionId) {
+                    try {
+                        // "Now take unified id and hit other api"
+                        $statusData = $this->imWalletService->getAadhaarKycStatus($unifiedTransactionId);
+                        
+                        if (isset($statusData['data'])) {
+                            $data = $statusData['data'];
+                            
+                            $user->is_aadhaar_verified = true;
+                            $user->aadhaar_masked_number = $data['maskedAdharNumber'] ?? null;
+                            $user->aadhaar_address = $data['address'] ?? null;
+                            $user->aadhaar_dob = $data['dob'] ?? null;
+                            $user->aadhaar_care_of = $data['careOf'] ?? null;
+                            $user->aadhaar_xml_link = $data['link'] ?? null;
+                            $user->aadhaar_pdf_link = $data['pdfLink'] ?? null;
+                            $user->aadhaar_details = $data;
+                            
+                            // Map generic fields if available
+                            $user->gender = $data['gender'] ?? $user->gender;
+                            
+                            if (!empty($data['name'])) {
+                                $user->name = $data['name'];
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        Log::error('Failed to fetch Aadhaar Status during callback: ' . $e->getMessage());
+                    }
+                } else {
+                    // Fallback to minimal info extraction if no unified ID present
+                    $user->is_aadhaar_verified = true;
+                    if ($request->has('name') || $request->has('fullName')) {
+                        $user->name = $request->input('name', $request->input('fullName', $user->name));
+                    }
                 }
                 
                 $user->save();

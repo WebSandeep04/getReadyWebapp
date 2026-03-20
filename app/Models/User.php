@@ -43,6 +43,13 @@ class User extends Authenticatable
         'gst_principal_address',
         'gst_nature_of_business',
         'gst_details',
+        'aadhaar_masked_number',
+        'aadhaar_address',
+        'aadhaar_dob',
+        'aadhaar_care_of',
+        'aadhaar_xml_link',
+        'aadhaar_pdf_link',
+        'aadhaar_details',
     ];
 
     public function state()
@@ -77,6 +84,8 @@ class User extends Authenticatable
             'password' => 'hashed',
             'gst_nature_of_business' => 'array',
             'gst_details' => 'array',
+            'aadhaar_address' => 'array',
+            'aadhaar_details' => 'array',
         ];
     }
 

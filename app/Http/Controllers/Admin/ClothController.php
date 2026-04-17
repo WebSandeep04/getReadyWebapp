@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Cloth;
 use App\Models\Notification;
 use App\Services\PriceCalculatorService;
+use Illuminate\Support\Facades\Storage;
+use App\Models\ClothImage;
 
 class ClothController extends Controller
 {
@@ -239,6 +241,64 @@ class ClothController extends Controller
         return response()->json([
             'success' => true,
             'reasons' => $reasons,
+        ]);
+    }
+
+    public function uploadImages(Request $request, $id)
+    {
+        $cloth = Cloth::findOrFail($id);
+
+        if ($cloth->is_approved === 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot modify images for an already approved item.'
+            ], 400);
+        }
+
+        $request->validate([
+            'images.*' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120'
+        ]);
+
+        $uploadedImages = [];
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('clothes', 'public');
+                $clothImage = $cloth->images()->create(['image_path' => $path]);
+                $uploadedImages[] = [
+                    'id' => $clothImage->id,
+                    'image_path' => $path
+                ];
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Images uploaded successfully',
+            'images' => $uploadedImages
+        ]);
+    }
+
+    public function destroyImage($imageId)
+    {
+        $image = ClothImage::with('cloth')->findOrFail($imageId);
+        
+        if ($image->cloth && $image->cloth->is_approved === 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot delete images for an already approved item.'
+            ], 400);
+        }
+        
+        // Delete the file from storage
+        if (Storage::disk('public')->exists($image->image_path)) {
+            Storage::disk('public')->delete($image->image_path);
+        }
+        
+        $image->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Image deleted successfully'
         ]);
     }
 }

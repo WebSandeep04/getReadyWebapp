@@ -59,6 +59,21 @@
     font-size: 0.75rem;
     padding: 0.35rem 0.5rem;
 }
+.image-wrapper { position: relative; }
+.delete-img-btn { position: absolute; top: 5px; right: 5px; padding: 2px 5px; font-size: 10px; opacity: 0; transition: 0.3s; }
+.image-wrapper:hover .delete-img-btn { opacity: 1; }
+.upload-btn-wrapper {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+}
+.upload-btn-wrapper input[type=file] {
+  font-size: 100px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+}
 </style>
 @endpush
 
@@ -191,7 +206,14 @@
             <div class="modal-body">
                 <div class="row">
                     <div class="col-md-5">
-                        <h6 class="text-muted fw-bold mb-3">Images</h6>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="text-muted fw-bold mb-0">Images</h6>
+                            <div class="upload-btn-wrapper" id="adminUploadWrapper">
+                                <button class="btn btn-sm btn-dark"><i class="bi bi-plus-circle me-1"></i>Add</button>
+                                <input type="file" id="adminUploadImages" multiple accept="image/*">
+                                <input type="hidden" id="currentDetailClothId">
+                            </div>
+                        </div>
                         <div id="detailImages" class="mb-3"></div>
                         
                         <h6 class="text-muted fw-bold mb-2 mt-4">Status</h6>
@@ -848,13 +870,16 @@ $(function() {
             $('#detailStatus').html('<span class="badge bg-success">Approved</span>');
             $('#modalApproveBtn').hide();
             $('#modalRejectBtn').hide();
+            $('#adminUploadWrapper').hide();
         } else if (cloth.is_approved === -1) {
              $('#detailStatus').html('<span class="badge bg-danger">Rejected</span>');
              $('#modalApproveBtn').show().prop('disabled', true).html('<i class="bi bi-clock-history me-1"></i>Wait for Resubmission');
              $('#modalRejectBtn').hide();
+             $('#adminUploadWrapper').show();
         } else {
             $('#modalApproveBtn').show();
             $('#modalRejectBtn').show();
+            $('#adminUploadWrapper').show();
             if (cloth.resubmission_count > 0) {
                 $('#detailStatus').html('<span class="badge bg-info">Re-approval</span>');
             } else {
@@ -865,25 +890,134 @@ $(function() {
         // Images
         let imagesHtml = '';
         if (cloth.images && cloth.images.length > 0) {
-            imagesHtml = '<div class="row g-2">';
+            imagesHtml = '<div class="row g-2" id="imageGallery">';
             cloth.images.forEach(img => {
-                imagesHtml += `<div class="col-4">
+                let deleteBtn = '';
+                if (cloth.is_approved != 1) {
+                    deleteBtn = `<button class="btn btn-danger btn-sm delete-img-btn" data-id="${img.id}">
+                        <i class="bi bi-trash"></i>
+                    </button>`;
+                }
+                imagesHtml += `<div class="col-4 image-wrapper" id="img-container-${img.id}">
                     <a href="/storage/${img.image_path}" target="_blank">
                         <img src="/storage/${img.image_path}" class="img-fluid rounded border w-100" style="height: 100px; object-fit: cover;">
                     </a>
+                    ${deleteBtn}
                 </div>`;
             });
             imagesHtml += '</div>';
         } else {
-            imagesHtml = '<p class="text-muted fst-italic">No images uploaded.</p>';
+            imagesHtml = '<p class="text-muted fst-italic" id="noImagesText">No images uploaded.</p>';
         }
         $('#detailImages').html(imagesHtml);
+        $('#currentDetailClothId').val(cloth.id);
 
         $('#detailModal').modal('show');
     });
 
-    $('#rejectReason').on('input', function() {
-        $(this).removeClass('is-invalid');
+    // Delete Image Handler
+    $(document).on('click', '.delete-img-btn', function() {
+        if (!confirm('Are you sure you want to delete this image?')) return;
+        
+        const imageId = $(this).data('id');
+        const $container = $(`#img-container-${imageId}`);
+        const $btn = $(this);
+        
+        $btn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i>');
+        
+        $.ajax({
+            url: `{{ url('/admin/clothes/images') }}/${imageId}`,
+            type: 'DELETE',
+            data: { _token: '{{ csrf_token() }}' },
+            success: function(res) {
+                if (res.success) {
+                    $container.fadeOut(300, function() {
+                        $(this).remove();
+                        if ($('#imageGallery .image-wrapper').length === 0) {
+                            $('#detailImages').html('<p class="text-muted fst-italic" id="noImagesText">No images uploaded.</p>');
+                        }
+                    });
+                    
+                    // Update state
+                    const clothId = $('#currentDetailClothId').val();
+                    const cloth = approvalState.data.find(c => c.id == clothId);
+                    if (cloth && cloth.images) {
+                        cloth.images = cloth.images.filter(img => img.id != imageId);
+                    }
+                    
+                    showAlert('Image deleted successfully', 'success');
+                }
+            },
+            error: function() {
+                $btn.prop('disabled', false).html('<i class="bi bi-trash"></i>');
+                showAlert('Failed to delete image', 'danger');
+            }
+        });
+    });
+
+    // Upload Image Handler
+    $('#adminUploadImages').on('change', function() {
+        const files = this.files;
+        if (!files.length) return;
+        
+        const clothId = $('#currentDetailClothId').val();
+        const formData = new FormData();
+        formData.append('_token', '{{ csrf_token() }}');
+        
+        for (let i = 0; i < files.length; i++) {
+            formData.append('images[]', files[i]);
+        }
+        
+        const $input = $(this);
+        const $btn = $input.siblings('button');
+        const originalBtnHtml = $btn.html();
+        
+        $btn.prop('disabled', true).html('<i class="bi bi-hourglass-split me-1"></i>Uploading...');
+        
+        $.ajax({
+            url: `{{ url('/admin/clothes') }}/${clothId}/images`,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(res) {
+                if (res.success) {
+                    $('#noImagesText').remove();
+                    if ($('#imageGallery').length === 0) {
+                        $('#detailImages').html('<div class="row g-2" id="imageGallery"></div>');
+                    }
+                    
+                    let newImagesHtml = '';
+                    res.images.forEach(img => {
+                        newImagesHtml += `<div class="col-4 image-wrapper" id="img-container-${img.id}">
+                            <a href="/storage/${img.image_path}" target="_blank">
+                                <img src="/storage/${img.image_path}" class="img-fluid rounded border w-100" style="height: 100px; object-fit: cover;">
+                            </a>
+                            <button class="btn btn-danger btn-sm delete-img-btn" data-id="${img.id}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>`;
+                        
+                        // Update state
+                        const cloth = approvalState.data.find(c => c.id == clothId);
+                        if (cloth) {
+                            if (!cloth.images) cloth.images = [];
+                            cloth.images.push(img);
+                        }
+                    });
+                    
+                    $('#imageGallery').append(newImagesHtml);
+                    showAlert('Images uploaded successfully', 'success');
+                }
+                $input.val('');
+            },
+            error: function() {
+                showAlert('Failed to upload images', 'danger');
+            },
+            complete: function() {
+                $btn.prop('disabled', false).html(originalBtnHtml);
+            }
+        });
     });
 
 

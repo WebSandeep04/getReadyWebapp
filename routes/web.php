@@ -90,6 +90,8 @@ Route::middleware(['admin.auth'])->group(function () {
     Route::post('/admin/clothes/approve/{id}', [App\Http\Controllers\Admin\ClothController::class, 'approveCloth'])->name('clothes.approve');
     Route::post('/admin/clothes/reject/{id}', [App\Http\Controllers\Admin\ClothController::class, 'rejectCloth'])->name('clothes.reject');  
     Route::get('/admin/clothes/reject-reason/{id}', [App\Http\Controllers\Admin\ClothController::class, 'getRejectionReason'])->name('clothes.reject-reason');
+    Route::post('/admin/clothes/{id}/images', [App\Http\Controllers\Admin\ClothController::class, 'uploadImages'])->name('admin.clothes.images.upload');
+    Route::delete('/admin/clothes/images/{imageId}', [App\Http\Controllers\Admin\ClothController::class, 'destroyImage'])->name('admin.clothes.images.destroy');
 
     // Dashboard stats (Admin)
     Route::get('/admin/dashboard/stats', [App\Http\Controllers\Admin\DashboardController::class, 'dashboardStats']);

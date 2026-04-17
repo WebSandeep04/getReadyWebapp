@@ -45,6 +45,7 @@
         ['label' => 'Cities', 'route' => 'cities.index', 'icon' => 'bi-building'],
         ['label' => 'Tax (Management)', 'route' => 'admin.tax', 'icon' => 'bi-receipt-cutoff'],
         ['label' => 'Frontend Settings', 'route' => 'admin.frontend', 'icon' => 'bi-globe'],
+        ['label' => 'Prompts', 'route' => 'prompts.index', 'icon' => 'bi-terminal'],
     ];
 
     // Fetch authenticated admin

@@ -213,6 +213,13 @@ Route::middleware(['admin.auth'])->group(function () {
     Route::get('/admin/role-master/permissions/{id}', [App\Http\Controllers\Admin\RoleMasterController::class, 'getRolePermissions'])->name('role_master.permissions');
     Route::post('/admin/role-master/save', [App\Http\Controllers\Admin\RoleMasterController::class, 'saveRolePermissions'])->name('role_master.save');
      Route::post('/admin/role-master/store', [App\Http\Controllers\Admin\RoleMasterController::class, 'store'])->name('role_master.store');
+
+    // Prompt Management (Admin)
+    Route::get('/admin/prompts', [App\Http\Controllers\Admin\PromptController::class, 'index'])->name('prompts.index');
+    Route::get('/admin/prompts/json', [App\Http\Controllers\Admin\PromptController::class, 'json'])->name('prompts.json');
+    Route::post('/admin/prompts', [App\Http\Controllers\Admin\PromptController::class, 'store'])->name('prompts.store');
+    Route::put('/admin/prompts/{id}', [App\Http\Controllers\Admin\PromptController::class, 'update'])->name('prompts.update');
+    Route::delete('/admin/prompts/{id}', [App\Http\Controllers\Admin\PromptController::class, 'destroy'])->name('prompts.destroy');
 });
 
 // Public API routes for mobile/frontend

@@ -9,12 +9,14 @@ use App\Models\Notification;
 use App\Services\PriceCalculatorService;
 use Illuminate\Support\Facades\Storage;
 use App\Models\ClothImage;
+use App\Models\Prompt;
 
 class ClothController extends Controller
 {
     public function clothApproval()
     {
-        return view('admin.screens.cloth_approval');
+        $prompts = Prompt::all();
+        return view('admin.screens.cloth_approval', compact('prompts'));
     }
 
     // Fetch all clothes (AJAX)

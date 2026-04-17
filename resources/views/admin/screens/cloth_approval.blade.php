@@ -245,6 +245,20 @@
                                 <td class="fw-semibold" id="detailOwnerGST">-</td>
                             </tr>
                         </table>
+
+                        <h6 class="text-muted fw-bold mb-2 mt-4">AI Helper (Prompt)</h6>
+                        <div class="bg-light p-3 rounded">
+                            <label class="small text-muted text-uppercase fw-bold mb-1">Instruction</label>
+                            <select id="selectedPrompt" class="form-select form-select-sm mb-2 bg-white">
+                                <option value="">-- No custom prompt --</option>
+                                @foreach($prompts as $p)
+                                    <option value="{{ $p->prompt_text }}">{{ $p->name }}</option>
+                                @endforeach
+                            </select>
+                            <button class="btn btn-sm btn-dark w-100" id="copyDetailsBtn">
+                                <i class="bi bi-clipboard-plus me-1"></i>Copy Data for AI
+                            </button>
+                        </div>
                     </div>
                     <div class="col-md-7 border-start">
                         <h6 class="text-muted fw-bold mb-3">Product Information</h6>
@@ -791,6 +805,7 @@ $(function() {
     $(document).on('click', '.view-details-btn', function() {
         const id = $(this).data('id');
         const cloth = approvalState.data.find(c => c.id == id);
+        approvalState.currentCloth = cloth; // Store for prompt copying
         
         if (!cloth) return;
 
@@ -1021,6 +1036,41 @@ $(function() {
     });
 
 
+    // Copy Details for AI Prompt
+    $('#copyDetailsBtn').on('click', function() {
+        const cloth = approvalState.currentCloth;
+        const $btn = $(this);
+        if (!cloth) {
+            showAlert('No cloth selected', 'warning');
+            return;
+        }
+
+        const instruction = $('#selectedPrompt').val();
+        
+        let details = `Product Title: ${cloth.title}\n`;
+        details += `Brand: ${cloth.brand || 'N/A'}\n`;
+        details += `Category: ${cloth.category || 'N/A'}\n`;
+        details += `Target Audience: ${cloth.gender || 'N/A'}\n`;
+        details += `Size: ${cloth.size || 'N/A'} (L: ${cloth.length || '--'}, W: ${cloth.waist || '--'}, C: ${cloth.chest_bust || '--'})\n`;
+        details += `Condition: ${cloth.condition || 'N/A'}\n`;
+        details += `Fabric: ${cloth.fabric || 'N/A'}\n`;
+        details += `Color: ${cloth.color || 'N/A'}\n`;
+        details += `Description: ${cloth.description || 'N/A'}\n`;
+        
+        const finalPrompt = instruction ? `${instruction}\n\n${details}` : details;
+        
+        navigator.clipboard.writeText(finalPrompt).then(() => {
+            const originalText = $btn.html();
+            $btn.removeClass('btn-dark').addClass('btn-success').html('<i class="bi bi-check2"></i> Copied!');
+            setTimeout(() => {
+                $btn.removeClass('btn-success').addClass('btn-dark').html(originalText);
+            }, 2000);
+            if (window.showAlert) window.showAlert('Data copied to clipboard', 'info');
+        }).catch(err => {
+            console.error('Clipboard error:', err);
+            alert('Failed to copy to clipboard');
+        });
+    });
 });
 </script>
 @endpush

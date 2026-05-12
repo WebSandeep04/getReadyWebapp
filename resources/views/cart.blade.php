@@ -3,17 +3,28 @@
 @section('title', 'Get Ready - Cart')
 
 @section('content')
-<div class="container mt-4">
-    <div class="row">
+<div class="container py-5" style="margin-bottom: 80px;">
+    <div class="row mb-5">
         <div class="col-12">
-            <h2 class="text-warning mb-4">
-                <i class="bi bi-cart3 me-2"></i>
-                Shopping Cart
-            </h2>
+            <div class="d-flex align-items-center gap-3 mb-2">
+                <div class="bg-primary-subtle p-3 rounded-4">
+                    <i class="bi bi-bag-heart text-primary fs-3"></i>
+                </div>
+                <div>
+                    <h1 class="h2 fw-bold mb-0 text-dark">Your Shopping Bag</h1>
+                    <p class="text-muted mb-0">Review your selected items and proceed to checkout</p>
+                </div>
+            </div>
             @if(request('payment') === 'success')
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    Payment received! We’re processing your order now.
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <div class="alert alert-success alert-dismissible fade show rounded-4 border-0 shadow-sm mt-4" role="alert">
+                    <div class="d-flex align-items-center gap-3">
+                        <i class="bi bi-check-circle-fill fs-4"></i>
+                        <div>
+                            <strong class="d-block">Payment Successful!</strong>
+                            <span>We've received your order and are preparing it for delivery.</span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-alert="alert"></button>
                 </div>
             @endif
         </div>
@@ -21,93 +32,88 @@
 
     <div class="cart-container">
         @if(Auth::check() && $cartItems->count() > 0)
-            <div class="row">
+            <div class="row g-4">
                 <div class="col-lg-8">
                     <!-- Cart Items -->
                     @foreach($cartItems as $cartItem)
-                        <div class="card mb-3 cart-item" data-cart-item-id="{{ $cartItem->id }}">
-                            <div class="card-body">
-                                <div class="row align-items-center">
+                        <div class="card mb-4 border-0 shadow-sm rounded-4 cart-item overflow-hidden" data-cart-item-id="{{ $cartItem->id }}">
+                            <div class="card-body p-4">
+                                <div class="row align-items-center g-4">
                                     <div class="col-md-3">
-                                        @if($cartItem->cloth->images->count() > 0)
-                                            <img src="{{ asset('storage/' . $cartItem->cloth->images->first()->image_path) }}" 
-                                                 alt="{{ $cartItem->cloth->title }}" class="img-fluid rounded">
-                                        @else
-                                            <img src="{{ asset('images/1.jpg') }}" alt="{{ $cartItem->cloth->title }}" class="img-fluid rounded">
-                                        @endif
+                                        <div class="position-relative">
+                                            @if($cartItem->cloth->images->count() > 0)
+                                                <img src="{{ asset('storage/' . $cartItem->cloth->images->first()->image_path) }}" 
+                                                     alt="{{ $cartItem->cloth->title }}" class="img-fluid rounded-4 shadow-sm w-100" style="height: 180px; object-fit: cover; border-radius: 10px;">
+                                            @else
+                                                <img src="{{ asset('images/1.jpg') }}" alt="{{ $cartItem->cloth->title }}" class="img-fluid rounded-4 shadow-sm w-100" style="height: 180px; object-fit: cover; border-radius: 10px;">
+                                            @endif
+                                        </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <h5 class="card-title">{{ $cartItem->cloth->title }}</h5>
-                                        <p class="card-text text-muted">
-                                            <small>Size: {{ $cartItem->cloth->sizeRef->name ?? 'Unknown' }}</small><br>
-                                            <small>Condition: {{ $cartItem->cloth->conditionRef->name ?? 'Unknown' }}</small>
-                                        </p>
-                                        @if($cartItem->purchase_type === 'buy')
-                                            <div class="purchase-info">
-                                                <p class="text-success fw-bold item-price">
-                                                    <i class="bi bi-bag-check me-1"></i>
-                                                    Selling Price: ₹{{ number_format($cartItem->total_selling_price) }}
-                                                </p>
-                                                <div class="alert alert-success">
-                                                    <i class="bi bi-info-circle me-1"></i>
-                                                    <small>This item will be purchased, not rented.</small>
-                                                </div>
+                                        <div class="d-flex flex-column gap-2">
+                                            <div class="mb-1">
+                                                <span class="badge {{ $cartItem->purchase_type === 'buy' ? 'bg-success' : 'bg-primary' }} rounded-pill px-3 py-2 shadow-sm mb-2" style="font-size: 0.65rem; color:#fff; letter-spacing: 0.5px;">
+                                                    {{ $cartItem->purchase_type === 'buy' ? 'PURCHASE' : 'RENTAL' }}
+                                                </span>
+                                                <h4 class="fw-bold text-dark mb-0" style="font-size: 1.4rem;">{{ $cartItem->cloth->title }}</h4>
                                             </div>
-                                        @else
-                                            <p class="text-warning fw-bold item-price" data-price="{{ $cartItem->cloth->display_rent_price }}" data-deposit="{{ $cartItem->cloth->security_deposit }}">
-                                                ₹{{ number_format($cartItem->cloth->display_rent_price) }} <small class="text-muted">(for 4 days)</small>
-                                            </p>
-                                            
-                                            @if($cartItem->rental_start_date && $cartItem->rental_end_date)
-                                                <div class="rental-info">
-                                                    <p class="mb-1">
-                                                        <strong>Rental Period:</strong><br>
-                                                        <small class="text-muted">
-                                                            {{ \Carbon\Carbon::parse($cartItem->rental_start_date)->format('d/m/Y') }} - 
-                                                            {{ \Carbon\Carbon::parse($cartItem->rental_end_date)->format('d/m/Y') }}
-                                                        </small>
-                                                    </p>
-                                                    <p class="mb-1">
-                                                        <strong>Duration:</strong> {{ $cartItem->rental_days }} days
-                                                    </p>
-                                                    <p class="mb-1">
-                                                        <strong>Total Cost:</strong> ₹{{ number_format($cartItem->total_rental_cost) }}
-                                                    </p>
+                                            <div class="d-flex flex-wrap gap-2 mb-2 text-muted small">
+                                                <span class="bg-light px-2 py-1 rounded-2 border shadow-sm">Size: <span class="text-dark fw-bold">{{ $cartItem->cloth->sizeRef->name ?? 'Unknown' }}</span></span>
+                                                <span class="bg-light px-2 py-1 rounded-2 border shadow-sm">Condition: <span class="text-dark fw-bold">{{ $cartItem->cloth->conditionRef->name ?? 'Unknown' }}</span></span>
+                                            </div>
+
+                                            @if($cartItem->purchase_type === 'buy')
+                                                <div class="p-3 rounded-4 bg-success-subtle border border-success-subtle d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <span class="text-success small fw-bold d-block">PURCHASE PRICE</span>
+                                                        <p class="text-success mb-0 x-small opacity-75">Ownership after delivery</p>
+                                                    </div>
+                                                    <span class="text-success h5 fw-bold mb-0">₹{{ number_format($cartItem->total_selling_price) }}</span>
+                                                </div>
+                                            @else
+                                                <div class="p-3 rounded-4 bg-light border border-light-subtle shadow-sm">
+                                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                                        <span class="text-muted small fw-bold">RENTAL COST</span>
+                                                        <span class="text-primary fw-bold">₹{{ number_format($cartItem->total_rental_cost) }}</span>
+                                                    </div>
+                                                    <div class="d-flex align-items-center gap-2 text-muted x-small fw-semibold">
+                                                        <i class="bi bi-calendar3 text-primary"></i> 
+                                                        <span> {{ \Carbon\Carbon::parse($cartItem->rental_start_date)->format('d M') }} - {{ \Carbon\Carbon::parse($cartItem->rental_end_date)->format('d M, Y') }} ({{ $cartItem->rental_days }} Days)</span>
+                                                    </div>
                                                 </div>
                                             @endif
-                                        @endif
+                                        </div>
                                     </div>
                                     <div class="col-md-3">
-                                        <div class="d-flex flex-column align-items-end">
-                                            <div class="mb-2">
-                                                <label for="quantity-{{ $cartItem->id }}" class="form-label">Quantity:</label>
-                                                <input type="number" 
-                                                       id="quantity-{{ $cartItem->id }}" 
-                                                       class="form-control quantity-input" 
-                                                       value="{{ $cartItem->quantity }}" 
-                                                       min="1" 
-                                                       max="{{ $cartItem->cloth->sku }}"
-                                                       data-cart-item-id="{{ $cartItem->id }}">
+                                        <div class="d-flex flex-column align-items-start justify-content-between h-100 py-1">
+                                            <div class="text-start w-100">
+                                                <label class="small fw-bold text-muted text-uppercase mb-2 d-block">Quantity</label>
+                                                <div class="input-group input-group-sm shadow-sm" style="max-width: 130px; height: 38px;">
+                                                    <button class="btn btn-outline-secondary qty-btn px-3 border-end-0" type="button" data-action="minus" style="border-radius: 12px 0 0 12px; background: #fff;">-</button>
+                                                    <input type="number" 
+                                                           class="form-control quantity-input text-center fw-bold bg-white border-start-0 border-end-0 fs-6" 
+                                                           value="{{ $cartItem->quantity }}" 
+                                                           min="1" 
+                                                           max="{{ $cartItem->cloth->sku }}"
+                                                           data-cart-item-id="{{ $cartItem->id }}"
+                                                           readonly
+                                                           style="width: 45px; pointer-events: none;">
+                                                    <button class="btn btn-outline-secondary qty-btn px-3 border-start-0" type="button" data-action="plus" style="border-radius: 0 12px 12px 0; background: #fff;">+</button>
+                                                </div>
                                             </div>
-                                                                                         <p class="fw-bold item-total">
-                                                 @if($cartItem->purchase_type === 'buy')
-                                                     ₹{{ number_format($cartItem->total_selling_price) }}
-                                                 @else
-                                                     ₹{{ number_format($cartItem->total_rental_cost ?? ($cartItem->cloth->display_rent_price * $cartItem->quantity)) }}
-                                                 @endif
-                                             </p>
-                                             <small class="text-muted">
-                                                 @if($cartItem->purchase_type === 'buy')
-                                                     (Selling Price)
-                                                 @elseif($cartItem->rental_days)
-                                                     ({{ $cartItem->rental_days }} days)
-                                                 @else
-                                                     (per day)
-                                                 @endif
-                                             </small>
-                                            <button class="btn btn-outline-danger btn-sm remove-from-cart-btn" 
+                                            <div class="text-start py-2 w-100">
+                                                <p class="text-muted x-small mb-1 text-uppercase fw-bold">Subtotal</p>
+                                                <h3 class="fw-bold text-dark mb-0" style="letter-spacing: -0.5px;">
+                                                    @if($cartItem->purchase_type === 'buy')
+                                                        ₹{{ number_format($cartItem->total_selling_price) }}
+                                                    @else
+                                                        ₹{{ number_format($cartItem->total_rental_cost ?? ($cartItem->cloth->display_rent_price * $cartItem->quantity)) }}
+                                                    @endif
+                                                </h3>
+                                            </div>
+                                            <button class="btn btn-link text-danger btn-sm p-0 text-decoration-none remove-from-cart-btn fw-bold d-flex align-items-center gap-1 mt-1" 
                                                     data-cart-item-id="{{ $cartItem->id }}">
-                                                <i class="bi bi-trash"></i> Remove
+                                                <i class="bi bi-trash3"></i> <span>Remove</span>
                                             </button>
                                         </div>
                                     </div>
@@ -119,16 +125,18 @@
                 
                 <div class="col-lg-4">
                     <!-- Cart Summary -->
-                    <div class="card">
-                        <div class="card-header bg-warning text-white">
-                            <h5 class="mb-0">Cart Summary</h5>
+                    <div class="card border-0 shadow rounded-4 overflow-hidden sticky-top" style="top: 100px; z-index: 10;">
+                        <div class="card-header bg-dark text-white p-4 border-0">
+                            <h5 class="mb-0 fw-bold d-flex align-items-center gap-2">
+                                <i class="bi bi-receipt"></i> Order Summary
+                            </h5>
                         </div>
-                        <div class="card-body">
-                                                         @php
+                        <div class="card-body p-4">
+                            @php
                                 $rentalItems = $cartItems->where('purchase_type', '!=', 'buy');
                                 $buyItems = $cartItems->where('purchase_type', 'buy');
                                 
-                                 $rentalSubtotal = $rentalItems->sum(function($item) {
+                                $rentalSubtotal = $rentalItems->sum(function($item) {
                                     return $item->total_rental_cost ?? ($item->cloth->display_rent_price * $item->quantity);
                                 });
                                 $buySubtotal = $buyItems->sum('total_selling_price');
@@ -138,79 +146,86 @@
                                 });
                             @endphp
 
-                            <!-- Address Selection -->
-                            <div class="mb-3 border-bottom pb-3">
-                                <label class="d-block fw-bold mb-1">Delivery Address:</label>
-                                
+                            <!-- Delivery Info -->
+                            <div class="p-3 rounded-4 bg-light mb-4 border border-light-subtle">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-muted small fw-bold text-uppercase">Deliver to</span>
+                                    <button class="btn btn-link btn-sm p-0 text-decoration-none fw-bold" onclick="openAddressModal()">Change</button>
+                                </div>
                                 @if(Auth::user()->address)
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <p class="text-muted small mb-0" id="displayAddress" style="white-space: pre-wrap;">{{ Auth::user()->address }}</p>
-                                        <button class="btn btn-link btn-sm p-0 ms-2" onclick="openAddressModal()">Change</button>
+                                    <div class="d-flex gap-2">
+                                        <i class="bi bi-geo-alt text-primary mt-1"></i>
+                                        <p class="text-dark small mb-0" id="displayAddress" style="line-height: 1.5;">{{ Auth::user()->address }}</p>
                                     </div>
-                                    <!-- Hidden input to store the actual address to be sent -->
                                     <input type="hidden" id="finalDeliveryAddress" value="{{ Auth::user()->address }}">
                                 @else
-                                    <div class="alert alert-danger small mb-1 p-2">
-                                        <i class="bi bi-geo-alt-fill me-1"></i> No delivery address found.
+                                    <div class="d-flex align-items-center gap-2 text-danger small">
+                                        <i class="bi bi-exclamation-triangle-fill"></i>
+                                        <span>No address found in profile</span>
                                     </div>
-                                    <a href="{{ route('profile') }}" class="btn btn-sm btn-outline-danger w-100 mt-1">
-                                         + Add Profile Address
-                                    </a>
+                                    <a href="{{ route('profile') }}" class="btn btn-sm btn-outline-danger w-100 mt-2 rounded-pill">Add Address</a>
                                     <input type="hidden" id="finalDeliveryAddress" value="">
                                 @endif
                             </div>
                             
-                            @if($rentalItems->count() > 0)
-                                <div class="d-flex justify-content-between mb-2">
-                                    <span>Rental Cost:</span>
-                                    <span class="fw-bold subtotal-amount">₹{{ number_format($rentalSubtotal) }}</span>
+                            <div class="d-flex flex-column gap-3 mb-4">
+                                @if($rentalItems->count() > 0)
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted">Rental Subtotal</span>
+                                        <span class="fw-bold subtotal-amount">₹{{ number_format($rentalSubtotal) }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center text-primary">
+                                        <span class="small d-flex align-items-center gap-1">
+                                            <i class="bi bi-shield-check"></i> Security Deposit
+                                        </span>
+                                        <span class="fw-bold security-deposit-amount">₹{{ number_format($securityDeposit) }}</span>
+                                    </div>
+                                @endif
+                                
+                                @if($buyItems->count() > 0)
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted">Purchase Subtotal</span>
+                                        <span class="fw-bold text-success">₹{{ number_format($buySubtotal) }}</span>
+                                    </div>
+                                @endif
+
+                                <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-1">
+                                    <span class="h5 fw-bold mb-0">Total Pay</span>
+                                    <span class="h4 fw-bold text-dark total-amount mb-0">₹{{ number_format($total + $securityDeposit) }}</span>
                                 </div>
-                                <div class="d-flex justify-content-between mb-2">
-                                    <span>Security Deposit:</span>
-                                    <span class="fw-bold security-deposit-amount">₹{{ number_format($securityDeposit) }}</span>
-                                </div>
-                            @endif
-                            
-                            @if($buyItems->count() > 0)
-                                <div class="d-flex justify-content-between mb-2">
-                                    <span>Selling Price:</span>
-                                    <span class="fw-bold text-success">₹{{ number_format($buySubtotal) }}</span>
-                                </div>
-                            @endif
-                            <hr>
-                            <div class="d-flex justify-content-between mb-3">
-                                <span class="h5">Total:</span>
-                                <span class="h5 text-warning total-amount">₹{{ number_format($total + $securityDeposit) }}</span>
                             </div>
 
-                            <!-- Payment Method Selection -->
-                            <div class="mb-3">
-                                <label class="block text-gray-700 text-sm font-bold mb-2 fw-bold">Payment Method</label>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="payment_method" id="payment_online" value="online" checked>
-                                    <label class="form-check-label" for="payment_online">
-                                        Online Payment (Razorpay)
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="payment_method" id="payment_cod" value="cod">
-                                    <label class="form-check-label" for="payment_cod">
-                                        Cash on Delivery (COD)
-                                    </label>
+                            <!-- Payment Options -->
+                            <div class="mb-4">
+                                <label class="small fw-bold text-muted text-uppercase mb-3 d-block">Select Payment Method</label>
+                                <div class="payment-options d-flex gap-3">
+                                    <div class="payment-option flex-fill">
+                                        <input type="radio" class="btn-check" name="payment_method" id="payment_online" value="online" checked>
+                                        <label class="btn btn-outline-light text-dark w-100 p-3 rounded-4 d-flex flex-column align-items-center justify-content-center border gap-2 shadow-sm" for="payment_online">
+                                            <i class="bi bi-credit-card-2-front fs-4 text-primary"></i>
+                                            <span class="fw-bold small">ONLINE</span>
+                                        </label>
+                                    </div>
+                                    <div class="payment-option flex-fill">
+                                        <input type="radio" class="btn-check" name="payment_method" id="payment_cod" value="cod">
+                                        <label class="btn btn-outline-light text-dark w-100 p-3 rounded-4 d-flex flex-column align-items-center justify-content-center border gap-2 shadow-sm" for="payment_cod">
+                                            <i class="bi bi-cash-stack fs-4 text-success"></i>
+                                            <span class="fw-bold small">COD</span>
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                             
-                            <button class="btn btn-warning w-100 mb-2"
+                            <button class="btn btn-primary w-100 py-3 rounded-4 fw-bold shadow-sm mb-3"
                                     id="checkoutBtn"
                                     data-create-url="{{ route('checkout.create') }}"
                                     data-verify-url="{{ route('checkout.verify') }}">
-                                <i class="bi bi-credit-card me-2"></i>
-                                Place Order
+                                <i class="bi bi-lock-fill me-2"></i>
+                                Place Order securely
                             </button>
                             
-                            <a href="/" class="btn btn-outline-secondary w-100">
-                                <i class="bi bi-arrow-left me-2"></i>
-                                Continue Shopping
+                            <a href="/" class="btn btn-link w-100 text-muted text-decoration-none small fw-semibold">
+                                <i class="bi bi-arrow-left me-1"></i> Continue Shopping
                             </a>
                         </div>
                     </div>
@@ -218,87 +233,105 @@
             </div>
         @else
             <div class="text-center py-5">
-                <i class="bi bi-cart3 text-muted" style="font-size: 4rem;"></i>
-                <h4 class="mt-3">Your cart is empty</h4>
-                <p class="text-muted">Add some items to your cart to get started!</p>
-                <a href="/" class="btn btn-warning">
-                    <i class="bi bi-arrow-left me-2"></i>
-                    Continue Shopping
+                <div class="mb-4 d-inline-block p-4 rounded-circle bg-light">
+                    <i class="bi bi-cart-x text-muted" style="font-size: 5rem;"></i>
+                </div>
+                <h2 class="fw-bold text-dark">Your Bag is Empty</h2>
+                <p class="text-muted mx-auto mb-5" style="max-width: 400px;">Looks like you haven't added anything to your bag yet. Explore our premium collection and start your fashion journey!</p>
+                <a href="/" class="btn btn-primary btn-lg px-5 rounded-pill shadow">
+                    Start Browsing
                 </a>
             </div>
         @endif
     </div>
 </div>
 
-<!-- Custom Address Modal -->
-<div class="modal fade" id="addressModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Change Delivery Address</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p class="text-muted small">This will only change the address for <strong>this specific order</strong>. Your profile address will remain unchanged.</p>
-                <textarea class="form-control" id="modalAddressInput" rows="4" placeholder="Enter new delivery address..."></textarea>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="saveCustomAddress()">Use this Address</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <style>
-.cart-item {
-    transition: all 0.3s ease;
+:root {
+    --primary-color: #2563eb;
+    --primary-light: #eef2ff;
 }
 
-.cart-item:hover {
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+.payment-options .btn-check {
+    position: absolute;
+    clip: rect(0,0,0,0);
+    pointer-events: none;
+}
+
+.qty-btn {
+    width: 40px !important;
+    height: 38px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background-color: #fff !important;
+    color: #333 !important;
+    border: 1px solid #dee2e6 !important;
+    padding: 0 !important;
+    font-size: 1.2rem !important;
+}
+
+.qty-btn:hover {
+    background-color: #f8f9fa !important;
+    color: var(--primary-color) !important;
 }
 
 .quantity-input {
-    width: 80px;
+    height: 38px !important;
+    border-left: 0 !important;
+    border-right: 0 !important;
+    border-color: #dee2e6 !important;
+    box-shadow: none !important;
 }
 
-.item-total {
-    color: #ffc107;
+.cart-item {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.rental-info {
-    background: #f8f9fa;
-    padding: 10px;
-    border-radius: 5px;
-    margin-top: 10px;
-    border-left: 3px solid #ffc107;
+.cart-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08) !important;
 }
 
-.rental-info p {
-    margin-bottom: 5px;
+.quantity-input {
+    border: 1.5px solid #e2e8f0;
 }
 
-.rental-info strong {
-    color: #495057;
+.quantity-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: none;
 }
 
-.purchase-info {
-    background: #f8f9fa;
-    padding: 10px;
-    border-radius: 5px;
-    margin-top: 10px;
-    border-left: 3px solid #28a745;
+.payment-options .btn-check:checked + .btn {
+    background-color: var(--primary-light);
+    border-color: var(--primary-color) !important;
+    color: var(--primary-color) !important;
 }
 
-.purchase-info p {
-    margin-bottom: 5px;
+.payment-options .btn-check + .btn .check-icon {
+    display: none;
 }
 
-.purchase-info strong {
-    color: #495057;
+.payment-options .btn-check:checked + .btn .check-icon {
+    display: block;
+}
+
+.payment-options .btn:hover {
+    background-color: #f8fafc;
+}
+
+.sticky-top {
+    transition: top 0.3s ease;
+}
+
+@media (max-width: 991.98px) {
+    .sticky-top {
+        position: relative !important;
+        top: 0 !important;
+    }
+}
+</style>
+#495057;
 }
 </style>
 @endsection
@@ -307,6 +340,21 @@
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
 $(document).ready(function() {
+    // Custom quantity selector logic
+    $('.qty-btn').click(function() {
+        const $input = $(this).siblings('.quantity-input');
+        const action = $(this).data('action');
+        let val = parseInt($input.val());
+        const min = parseInt($input.attr('min'));
+        const max = parseInt($input.attr('max'));
+
+        if (action === 'plus' && val < max) {
+            $input.val(val + 1).trigger('change');
+        } else if (action === 'minus' && val > min) {
+            $input.val(val - 1).trigger('change');
+        }
+    });
+
     // Update quantity functionality
     $('.quantity-input').change(function() {
         const cartItemId = $(this).data('cart-item-id');
@@ -506,27 +554,31 @@ function updateCartCount(count) {
 // Show alert message
 // Show alert message
 function showAlert(type, message) {
-    // Check if alert container exists, if not create it
-    if ($('#alert-container').length === 0) {
-        $('body').append('<div id="alert-container" style="position: fixed; top: 20px; right: 20px; z-index: 1050; min-width: 300px; max-width: 400px;"></div>');
-    }
-
     const alertHtml = `
-        <div class="alert alert-${type} alert-dismissible fade show shadow-sm" role="alert">
-            <i class="bi ${type === 'success' ? 'bi-check-circle' : 'bi-exclamation-triangle'} me-2"></i>
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="premium-toast alert-${type}" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px; background: white; padding: 16px 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-left: 5px solid ${type === 'success' ? '#10b981' : '#ef4444'}; display: none;">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-${type === 'success' ? 'check-circle-fill text-success' : 'exclamation-circle-fill text-danger'} me-3" style="font-size: 1.25rem;"></i>
+                    <span class="fw-bold" style="font-size: 0.95rem; color: #1e293b;">${message}</span>
+                </div>
+                <button type="button" class="btn-close border-0 bg-transparent ms-3" onclick="$(this).closest('.premium-toast').fadeOut(400, function() { $(this).remove(); });" style="font-size: 0.8rem; opacity: 0.5;">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
         </div>
     `;
-    
+
+    // Remove existing alerts
+    $('.premium-toast').remove();
+
     // Add new alert
-    $('#alert-container').append(alertHtml);
-    
-    console.log('Alert:', type, message);
-    
+    const $alert = $(alertHtml);
+    $('body').append($alert);
+    $alert.fadeIn(400);
+
     // Auto-hide after 3 seconds
-    setTimeout(function() {
-        $('#alert-container .alert').first().fadeOut(function() {
+    setTimeout(function () {
+        $alert.fadeOut(400, function() {
             $(this).remove();
         });
     }, 4000);

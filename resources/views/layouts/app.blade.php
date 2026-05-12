@@ -23,7 +23,9 @@
     <link rel="stylesheet" href="{{ asset('css/layout.css') }}">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ asset('css/home.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/header.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
+    @stack('styles')
     @yield('styles')
 </head>
 <body class="d-flex flex-column min-vh-100">
@@ -44,6 +46,9 @@
     
     <!-- Notifications JS -->
     <script src="{{ asset('js/notifications.js') }}"></script>
+    
+    <!-- Rejections JS -->
+    <script src="{{ asset('js/rejections.js') }}"></script>
     
     <!-- Custom JS -->
     <script src="{{ asset('js/home.js') }}"></script>

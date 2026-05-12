@@ -43,6 +43,9 @@
     <!-- Notifications JS -->
     <script src="{{ asset('js/notifications.js') }}"></script>
     
+    <!-- Rejections JS -->
+    <script src="{{ asset('js/rejections.js') }}"></script>
+    
     <!-- Custom JS -->
     <script src="{{ asset('js/home.js') }}"></script>
     @yield('scripts')

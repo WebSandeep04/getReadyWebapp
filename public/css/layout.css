@@ -12,14 +12,15 @@ body {
 /* ─────────────── Fixed Navigation Adjustments ─────────────── */
 /* Add padding to main content to account for fixed navigation bar */
 main {
-    padding-top: 80px; /* offset for fixed header */
+    padding-top: 80px;
+    /* offset for fixed header */
     flex: 1 0 auto;
     margin: 0;
 }
 
 @media (max-width: 768px) {
     main {
-        padding-top: 120px;
+        padding-top: 0px;
     }
 }
 
@@ -122,7 +123,7 @@ main {
     transition: transform 0.2s ease;
 }
 
-.collapse.show + .admin-sidebar__link {
+.collapse.show+.admin-sidebar__link {
     margin-top: 0.35rem;
 }
 
@@ -186,7 +187,7 @@ body.admin-sidebar-collapsed .admin-sidebar__logo {
     display: block !important;
 }
 
-.admin-sidebar--collapsed ~ .content,
+.admin-sidebar--collapsed~.content,
 body.admin-sidebar-collapsed .content {
     margin-left: 100px;
 }
@@ -254,8 +255,8 @@ body.admin-sidebar-collapsed .content {
 
 /* ─────────────── Toggle Button ─────────────── */
 
-.sidebar.collapsed #toggleSidebar{
-left: 10px;
+.sidebar.collapsed #toggleSidebar {
+    left: 10px;
 }
 
 #toggleSidebar {
@@ -336,17 +337,20 @@ left: 10px;
     position: fixed;
     bottom: 20px;
     right: 20px;
-    z-index: 1055; /* Above Bootstrap modals and other content */
+    z-index: 1055;
+    /* Above Bootstrap modals and other content */
     display: flex;
     flex-direction: column;
     align-items: flex-end;
     gap: 10px;
     max-width: 100%;
-    pointer-events: none; /* Allows clicks to pass through if needed */
+    pointer-events: none;
+    /* Allows clicks to pass through if needed */
 }
 
 .custom-alert {
-    pointer-events: auto; /* Enables clicking on close button */
+    pointer-events: auto;
+    /* Enables clicking on close button */
     position: relative;
     width: 300px;
     padding: 12px 18px;
@@ -362,10 +366,22 @@ left: 10px;
     transition: transform 0.3s ease-in-out;
 }
 
-.custom-alert-success { background-color: #198754; }
-.custom-alert-error   { background-color: #dc3545; }
-.custom-alert-warning { background-color: #ffc107; color: #212529; }
-.custom-alert-info    { background-color: #0dcaf0; }
+.custom-alert-success {
+    background-color: #198754;
+}
+
+.custom-alert-error {
+    background-color: #dc3545;
+}
+
+.custom-alert-warning {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.custom-alert-info {
+    background-color: #0dcaf0;
+}
 
 .custom-alert-close {
     background: transparent;
@@ -380,7 +396,7 @@ left: 10px;
 /* button */
 
 .btn.button {
-    background: linear-gradient(135deg, #0d6efd, #1e90ff); 
+    background: linear-gradient(135deg, #0d6efd, #1e90ff);
     color: #fff;
     font-weight: 500;
     margin-bottom: 10px;
@@ -491,26 +507,27 @@ body {
 
 .glass-card .badge,
 .card .badge {
-.btn-gradient {
-    background: linear-gradient(135deg, #0d6efd, #1e90ff);
-    border: none;
-    color: #fff;
-}
+    .btn-gradient {
+        background: linear-gradient(135deg, #0d6efd, #1e90ff);
+        border: none;
+        color: #fff;
+    }
 
-.text-gradient {
-    background: none;
-    -webkit-text-fill-color: inherit;
-}
+    .text-gradient {
+        background: none;
+        -webkit-text-fill-color: inherit;
+    }
 
-.btn-outline-primary {
-    border-color: #0d6efd;
-    color: #0d6efd;
-}
+    .btn-outline-primary {
+        border-color: #0d6efd;
+        color: #0d6efd;
+    }
 
-.btn-outline-primary:hover {
-    background: #0d6efd;
-    color: #fff;
-}
+    .btn-outline-primary:hover {
+        background: #0d6efd;
+        color: #fff;
+    }
+
     font-size: 0.7rem;
     padding: 0.2rem 0.5rem;
 }
@@ -594,4 +611,35 @@ body {
     .btn.btn-lg {
         width: 100%;
     }
+}
+
+/* ─────────────── Global Scrollbar Styling (Capsule Style) ─────────────── */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #999;
+    border-radius: 20px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #FFA500;
+}
+
+::-webkit-scrollbar-button {
+    display: none;
+}
+
+/* Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #999 transparent;
 }

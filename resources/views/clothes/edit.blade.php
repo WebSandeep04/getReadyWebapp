@@ -1,641 +1,640 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Cloth')
+@section('title', 'Edit Outfit - Management')
 
 @section('styles')
 <link rel="stylesheet" href="{{ asset('css/listed-clothes.css') }}">
 <style>
-    /* Ensure proper spacing for fixed navigation on edit page */
-    .container {
-        margin-top: 70px;
+    :root {
+        --premium-gold: #f78c1c;
+        --card-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.07);
     }
 
-    .top-nav {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        z-index: 1030 !important;
-        background-color: #f8f9fa !important;
-        border-bottom: 1px solid #dee2e6 !important;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    .edit-container {
+        max-width: 1200px;
+        margin: 0 auto;
     }
-    
 
-    .image-preview {
-        width: 100px;
-        height: 100px;
-        object-fit: cover;
-        border-radius: 8px;
-        margin: 5px;
-        border: 2px solid #ddd;
+    .glass-card {
+        background: white;
+        border-radius: 24px;
+        border: 1px solid #f1f5f9;
+        box-shadow: var(--card-shadow);
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        
+        
     }
-    .image-container {
-        position: relative;
-        display: inline-block;
-        margin: 5px;
-    }
-    .remove-image {
+
+
+    .form-check-input {
         position: absolute;
-        top: -5px;
-        right: -5px;
-        background: red;
+        margin-top: .3rem;
+        margin-left: -2.5rem;
+    }
+
+
+
+
+
+
+    .form-section-title {
+        font-weight: 800;
+        color: #1e293b;
+        font-size: 1.25rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .form-section-title i {
+        color: var(--premium-gold);
+    }
+
+    .premium-input-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .premium-input-group label {
+        display: block;
+        font-weight: 700;
+        color: #475569;
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-control, .form-select {
+        height: 50px;
+        border-radius: 12px;
+        border: 1.5px solid #e2e8f0;
+        padding: 0 1.25rem;
+        font-weight: 500;
+        transition: all 0.2s;
+        background: #f8fafc;
+    }
+
+    textarea.form-control {
+        height: auto;
+        padding: 1rem 1.25rem;
+    }
+
+    .form-control:focus {
+        border-color: var(--premium-gold);
+        background: white;
+        box-shadow: 0 0 0 4px rgba(247, 140, 28, 0.1);
+    }
+
+    /* Sticky Sidebar Actions */
+    .sticky-sidebar {
+        position: sticky;
+        top: 100px;
+    }
+
+    .action-card {
+        background: #1e293b;
+        border-radius: 24px;
+        padding: 2rem;
+        color: white;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+
+    .image-grid-edit {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-top: 1rem;
+    }
+    @media (max-width: 768px) {
+        .image-grid-edit {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+    }
+
+    .edit-image-item {
+        position: relative;
+        aspect-ratio: 1;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 2px solid rgba(255,255,255,0.1);
+    }
+
+    .edit-image-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .remove-btn-overlay {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        width: 24px;
+        height: 24px;
+        background: #ef4444;
         color: white;
         border-radius: 50%;
-        width: 20px;
-        height: 20px;
-        text-align: center;
-        line-height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         cursor: pointer;
-        font-size: 12px;
+        font-size: 14px;
+        transition: all 0.2s;
     }
-    .upload-area {
-        border: 2px dashed #ddd;
-        border-radius: 8px;
-        padding: 20px;
-        text-align: center;
-        background: #f9f9f9;
+
+    .remove-btn-overlay:hover {
+        transform: scale(1.15);
+    }
+
+    .upload-btn-placeholder {
+        aspect-ratio: 1;
+        border: 2px dashed rgba(255,255,255,0.2);
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
         cursor: pointer;
+        transition: all 0.2s;
+        color: rgba(255,255,255,0.6);
+        font-size: 0.7rem;
+        text-align: center;
+        padding: 5px;
+    }
+
+    .upload-btn-placeholder:hover {
+        background: rgba(255,255,255,0.05);
+        border-color: var(--premium-gold);
+        color: white;
+    }
+
+    .btn-premium-save {
+        background: linear-gradient(135deg, #f78c1c 0%, #e87b11 100%);
+        color: white;
+        border: none;
+        border-radius: 14px;
+        padding: 1rem;
+        font-weight: 800;
+        width: 100%;
+        margin-top: 1.5rem;
+        letter-spacing: 1px;
+        box-shadow: 0 10px 20px rgba(247, 140, 28, 0.3);
         transition: all 0.3s;
     }
-    .upload-area:hover {
-        border-color: #007bff;
-        background: #f0f8ff;
+
+    .btn-premium-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 30px rgba(247, 140, 28, 0.4);
+        color: white;
     }
-    .upload-area.dragover {
-        border-color: #007bff;
-        background: #e3f2fd;
-    }
-    .availability-block {
-        border: 1px solid #e9ecef;
-        border-radius: 8px;
-        padding: 15px;
-        background: #f8f9fa;
-        transition: all 0.3s ease;
-    }
-    .availability-block:hover {
-        border-color: #007bff;
-        background: #f0f8ff;
-    }
-    .availability-block .form-control-sm {
-        font-size: 0.875rem;
-    }
-    .availability-block .btn-sm {
+
+    /* AI Button Mini */
+    .ai-btn-mini {
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        color: white;
+        border-radius: 10px;
+        padding: 4px 12px;
         font-size: 0.75rem;
-        padding: 0.25rem 0.5rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border: none;
     }
-    .alert-sm {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.875rem;
-        margin-bottom: 1rem;
-    }
-    
-    /* Rejection Alert Styling */
-    #rejectionAlert {
-        border-left: 4px solid #dc3545;
-        background: linear-gradient(135deg, #fff3cd, #ffeaa7);
-        border-color: #ffc107;
-        color: #856404;
-    }
-    
-    #rejectionAlert .alert-heading {
-        color: #dc3545;
-        font-weight: 600;
-    }
-    
-    #rejectionAlert .bi-exclamation-triangle-fill {
-        color: #dc3545;
-    }
-    
-    #rejectionAlert .btn-close {
-        filter: invert(1);
-    }
-    
-    #rejectionAlert:hover {
-        background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
-    }
+</style>
+<!-- Re-using AI Modal Styles from sell page -->
+<style>
+/* Premium AI Modal Styles */
+.cloud-modal .modal-content {
+    background-color: #fff;
+    border: none;
+    border-radius: 24px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+    padding: 0;
+    overflow: hidden;
+}
+.cloud-header {
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    color: white;
+}
+.cloud-body { padding: 2rem; text-align: center; }
+.cloud-textarea {
+    width: 100%; border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 1.25rem;
+    resize: none; background: #f8fafc; color: #1e293b; font-size: 1rem;
+    outline: none; transition: all 0.3s; height: 140px; margin-bottom: 1.5rem;
+}
+.cloud-btn {
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    border: none; border-radius: 12px; padding: 0.8rem 2.5rem;
+    color: white; font-weight: 700; display: inline-flex; align-items: center; gap: 8px;
+}
 </style>
 @endsection
 
 @section('content')
-<div class="container py-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="text-warning">Edit Cloth</h2>
-                <a href="{{ route('listed.clothes') }}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Back to Listed Clothes
-                </a>
+<div class="container py-5">
+    <div class="edit-container">
+        <!-- Breadcrumb / Header -->
+        <div class="management-header d-flex justify-content-between align-items-center mb-4">
+            <div class="management-title">
+                <nav aria-label="breadcrumb" class="d-none d-md-block">
+                    <ol class="breadcrumb mb-1 bg-transparent p-0">
+                        <li class="breadcrumb-item"><a href="{{ route('listed.clothes') }}" class="text-muted">My Listings</a></li>
+                        <li class="breadcrumb-item active fw-bold" aria-current="page">Edit Outfit</li>
+                    </ol>
+                </nav>
+                <h2 class="fw-800 text-dark mb-0">Management Center</h2>
             </div>
+            <a href="{{ route('listed.clothes') }}" class="btn-close-management">
+                <i class="bi bi-x"></i> <span>Close Edit</span>
+            </a>
+        </div>
 
-            @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ session('success') }}
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            @endif
-
-            <div class="card">
-                <div class="card-header">
-                    <!-- <h5 class="mb-0">Edit Cloth Details</h5> -->
-                </div>
-                <div class="card-body">
-                    <form id="editClothForm" enctype="multipart/form-data">
-                        @csrf
-                        @method('PUT')
+        <form id="editClothForm" enctype="multipart/form-data">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="sku" value="{{ $cloth->sku ?? 1 }}">
+            
+            <div class="row g-4">
+                <!-- Left Column: Form Details -->
+                <div class="col-lg-8">
+                    <!-- Basic Information -->
+                    <div class="glass-card">
+                        <div class="form-section-title">
+                            <i class="bi bi-info-circle-fill"></i> Basic Information
+                        </div>
                         
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="title">Title *</label>
-                                    <input type="text" class="form-control" id="title" name="title" value="{{ $cloth->title }}" required>
-                                </div>
+                        <div class="premium-input-group">
+                            <label>Outfit Title *</label>
+                            <input type="text" class="form-control" name="title" value="{{ $cloth->title }}" required placeholder="e.g. Designer Silk Wedding Saree">
+                        </div>
+
+                        <div class="row g-4">
+                            <div class="col-md-6 col-6 premium-input-group">
+                                <label>Category *</label>
+                                <select class="form-select" name="category" required>
+                                    @foreach($categories as $category)
+                                        <option value="{{ $category->id }}" {{ $cloth->category_id == $category->id ? 'selected' : '' }}>
+                                            {{ $category->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
                             </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="category">Category *</label>
-                                    <select class="form-control" id="category" name="category" required>
-                                        <option value="">Select Category</option>
-                                        @foreach($categories as $category)
-                                            <option value="{{ $category->id }}" {{ $cloth->category_id == $category->id ? 'selected' : '' }}>
-                                                {{ $category->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
+                            <div class="col-md-6 col-6 premium-input-group">
+                                <label>User Type *</label>
+                                <select class="form-select" name="gender" required>
+                                    <option value="Boy" {{ $cloth->gender == 'Boy' ? 'selected' : '' }}>Boy</option>
+                                    <option value="Girl" {{ $cloth->gender == 'Girl' ? 'selected' : '' }}>Girl</option>
+                                    <option value="Men" {{ $cloth->gender == 'Men' ? 'selected' : '' }}>Men</option>
+                                    <option value="Women" {{ $cloth->gender == 'Women' ? 'selected' : '' }}>Women</option>
+                                </select>
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="form-group">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <label for="description" class="mb-0">Description *</label>
-                                        <img src="{{ asset('images/icon/gemini_logo.jpeg') }}" alt="Generate with AI" data-toggle="modal" data-target="#aiDescriptionModal" title="Generate with AI" style="cursor: pointer; height: 30px; width: auto;">
-                                    </div>
-                                    <textarea class="form-control" id="description" name="description" rows="3" required>{{ $cloth->description ?? '' }}</textarea>
-                                </div>
+                        <div class="premium-input-group mt-2">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="mb-0">Description *</label>
+                                <button type="button" class="ai-btn-mini" data-toggle="modal" data-target="#aiDescriptionModal">
+                                    <i class="bi bi-stars"></i> AI IMPROVE
+                                </button>
+                            </div>
+                            <textarea class="form-control" name="description" rows="4" required>{{ $cloth->description }}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Specifications -->
+                    <div class="glass-card">
+                        <div class="form-section-title">
+                            <i class="bi bi-sliders"></i> Specifications & Fit
+                        </div>
+                        <div class="row g-4">
+                            <div class="col-md-6 col-6 premium-input-group">
+                                <label>Brand</label>
+                                <select class="form-select" name="brand">
+                                    <option value="">Select Brand</option>
+                                    @foreach($brands as $brand)
+                                        <option value="{{ $brand->id }}" {{ $cloth->brand_id == $brand->id ? 'selected' : '' }}>
+                                            {{ $brand->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-6 col-6 premium-input-group">
+                                <label>Fabric</label>
+                                <select class="form-select" name="fabric">
+                                    <option value="">Select Fabric</option>
+                                    @foreach($fabricTypes as $fabricType)
+                                        <option value="{{ $fabricType->id }}" {{ $cloth->fabric_id == $fabricType->id ? 'selected' : '' }}>
+                                            {{ $fabricType->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="gender">User Type *</label>
-                                    <select class="form-control" id="gender" name="gender" required>
-                                        <option value="">Select User Type</option>
-                                        <option value="Boy" {{ $cloth->gender == 'Boy' ? 'selected' : '' }}>Boy</option>
-                                        <option value="Girl" {{ $cloth->gender == 'Girl' ? 'selected' : '' }}>Girl</option>
-                                        <option value="Men" {{ $cloth->gender == 'Men' ? 'selected' : '' }}>Men</option>
-                                        <option value="Women" {{ $cloth->gender == 'Women' ? 'selected' : '' }}>Women</option>
-                                    </select>
-                                </div>
+                        <div class="row g-4">
+                            <div class="col-md-4 col-6 premium-input-group">
+                                <label>Color</label>
+                                <select class="form-select" name="color">
+                                    @foreach($colors as $color)
+                                        <option value="{{ $color->id }}" {{ $cloth->color_id == $color->id ? 'selected' : '' }}>
+                                            {{ $color->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
                             </div>
-
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="fabric">Fabric Type</label>
-                                    <select class="form-control" id="fabric" name="fabric">
-                                        <option value="">Select Fabric Type</option>
-                                        @foreach($fabricTypes as $fabricType)
-                                            <option value="{{ $fabricType->id }}" {{ $cloth->fabric_id == $fabricType->id ? 'selected' : '' }}>
-                                                {{ $fabricType->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
+                            <div class="col-md-4 col-6 premium-input-group">
+                                <label>Standard Size *</label>
+                                <select class="form-select" name="size" required>
+                                    @foreach($sizes as $size)
+                                        <option value="{{ $size->id }}" {{ $cloth->size_id == $size->id ? 'selected' : '' }}>
+                                            {{ $size->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
                             </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="color">Color</label>
-                                    <select class="form-control" id="color" name="color">
-                                        <option value="">Select Color</option>
-                                        @foreach($colors as $color)
-                                            <option value="{{ $color->id }}" {{ $cloth->color_id == $color->id ? 'selected' : '' }}>
-                                                {{ $color->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
+                            <div class="col-md-4 col-12 premium-input-group">
+                                <label>Condition *</label>
+                                <select class="form-select" name="condition" required>
+                                    @foreach($garmentConditions as $condition)
+                                        <option value="{{ $condition->id }}" {{ $cloth->condition_id == $condition->id ? 'selected' : '' }}>
+                                            {{ $condition->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="size">Size *</label>
-                                    <select class="form-control" id="size" name="size" required>
-                                        <option value="">Select Size</option>
-                                        @foreach($sizes as $size)
-                                            <option value="{{ $size->id }}" {{ $cloth->size_id == $size->id ? 'selected' : '' }}>
-                                                {{ $size->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
+                    <!-- Pricing Section -->
+                    <div class="glass-card">
+                        <div class="form-section-title">
+                            <i class="bi bi-currency-rupee"></i> Pricing & Deposits
+                        </div>
+                        <div class="row g-4">
+                            <div class="col-md-6 col-6 premium-input-group">
+                                <label>Rent Price *</label>
+                                <input type="number" class="form-control" name="rent_price" value="{{ $cloth->rent_price }}" required>
+                            </div>
+                            <div class="col-md-6 col-6 premium-input-group">
+                                <label>Security Deposit *</label>
+                                <input type="number" class="form-control" name="security_deposit" value="{{ $cloth->security_deposit }}" required>
+                            </div>
+                        </div>
+                        <div class="row align-items-center">
+                            <div class="col-md-6 premium-input-group">
+                                <label>Original MRP</label>
+                                <input type="number" class="form-control" name="mrp" value="{{ $cloth->mrp }}">
                             </div>
                             <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="brand">Brand</label>
-                                    <select class="form-control" id="brand" name="brand">
-                                        <option value="">Select Brand</option>
-                                        @foreach($brands as $brand)
-                                            <option value="{{ $brand->id }}" {{ $cloth->brand_id == $brand->id ? 'selected' : '' }}>
-                                                {{ $brand->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
+                                <div class="form-check form-switch mb-0" style="padding-left: 3.5rem;">
+                                    <input class="form-check-input" type="checkbox" id="is_purchased" name="is_purchased" value="1" {{ $cloth->is_purchased ? 'checked' : '' }} style="width: 3rem; height: 1.5rem; margin-left:-2.55rem cursor: pointer;">
+                                    <label class="form-check-label fw-bold ms-2" for="is_purchased" style="text-transform: none; margin-top:7px">Enable Selling</label>
                                 </div>
                             </div>
                         </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="fit_type">Fit Type</label>
-                                    <select class="form-control" id="fit_type" name="fit_type">
-                                        <option value="">Select Fit Type</option>
-                                        @foreach($fitTypes as $fitType)
-                                            <option value="{{ $fitType->id }}" {{ $cloth->fit_type_id == $fitType->id ? 'selected' : '' }}>
-                                                {{ $fitType->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="condition">Condition *</label>
-                                    <select class="form-control" id="condition" name="condition" required>
-                                        @foreach($garmentConditions as $condition)
-                                            <option value="{{ $condition->id }}" {{ $cloth->condition_id == $condition->id ? 'selected' : '' }}>
-                                                {{ $condition->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
+                        <div id="selling_price_section" class="mt-3" style="display: {{ $cloth->is_purchased ? 'block' : 'none' }};">
+                            <div class="premium-input-group">
+                                <label>Selling Price (₹)</label>
+                                <input type="number" class="form-control" name="selling_price" value="{{ $cloth->selling_price }}">
                             </div>
                         </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="rent_price">Rent Price (₹) *</label>
-                                    <input type="number" class="form-control" id="rent_price" name="rent_price" value="{{ $cloth->rent_price }}" min="0" step="0.01" required>
-                                    <div id="rent-error-message" class="text-danger small mt-1" style="display: none;"></div>
-                                    <small class="text-muted" id="rent-price-suggestion" style="display: none;">Suggested maximum rent: ₹<span id="max-rent-amount">0</span></small>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <div class="custom-control custom-checkbox">
-                                        <input type="checkbox" class="custom-control-input" id="is_purchased" name="is_purchased" value="1" {{ $cloth->is_purchased ? 'checked' : '' }}>
-                                        <label class="custom-control-label" for="is_purchased">Available for Purchase</label>
-                                    </div>
-                                </div>
-                                <div class="form-group" id="selling_price_section" style="display: {{ $cloth->is_purchased ? 'block' : 'none' }};">
-                                    <label for="selling_price">Selling Price (₹)</label>
-                                    <input type="number" class="form-control" id="selling_price" name="selling_price" value="{{ $cloth->selling_price }}" min="0" step="0.01">
-                                    <div id="sp-error-message" class="text-danger small mt-1" style="display: none;"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="security_deposit">Security Deposit (₹) *</label>
-                                    <input type="number" class="form-control" id="security_deposit" name="security_deposit" value="{{ $cloth->security_deposit }}" min="0" step="0.01" required>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="mrp">MRP (Original Price)</label>
-                                    <input type="number" class="form-control" id="mrp" name="mrp" value="{{ $cloth->mrp }}" min="0" step="0.01">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="sku">Quantity *</label>
-                                    <input type="number" class="form-control" id="sku" name="sku" value="{{ $cloth->sku }}" min="1" required>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-12 mb-2">
-                                <label><strong>Measurement Unit</strong></label>
-                                <div class="unit-toggle d-flex gap-3 mb-3">
-                                    <div class="custom-control custom-radio custom-control-inline">
-                                        <input type="radio" id="unit_inch" name="measurement_unit" class="custom-control-input unit-selector" value="inch" {{ $cloth->measurement_unit == 'inch' ? 'checked' : '' }}>
-                                        <label class="custom-control-label" for="unit_inch">Inch</label>
-                                    </div>
-                                    <div class="custom-control custom-radio custom-control-inline">
-                                        <input type="radio" id="unit_cm" name="measurement_unit" class="custom-control-input unit-selector" value="cm" {{ (isset($cloth->measurement_unit) && $cloth->measurement_unit == 'cm') ? 'checked' : '' }}>
-                                        <label class="custom-control-label" for="unit_cm">CM</label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="chest_bust" class="measurement-label">Chest/Bust ({{ $cloth->measurement_unit ?? 'inch' }})</label>
-                                    <input type="text" class="form-control measurement-input" id="chest_bust" name="chest_bust" value="{{ $cloth->chest_bust }}">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="waist" class="measurement-label">Waist ({{ $cloth->measurement_unit ?? 'inch' }})</label>
-                                    <input type="text" class="form-control measurement-input" id="waist" name="waist" value="{{ $cloth->waist }}">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="length" class="measurement-label">Length ({{ $cloth->measurement_unit ?? 'inch' }})</label>
-                                    <input type="text" class="form-control measurement-input" id="length" name="length" value="{{ $cloth->length }}">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="shoulder" class="measurement-label">Shoulder ({{ $cloth->measurement_unit ?? 'inch' }})</label>
-                                    <input type="text" class="form-control measurement-input" id="shoulder" name="shoulder" value="{{ $cloth->shoulder }}">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="sleeve_length" class="measurement-label">Sleeve Length ({{ $cloth->measurement_unit ?? 'inch' }})</label>
-                                    <input type="text" class="form-control measurement-input" id="sleeve_length" name="sleeve_length" value="{{ $cloth->sleeve_length }}">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="defects">Defects (if any)</label>
-                            <textarea class="form-control" id="defects" name="defects" rows="3">{{ $cloth->defects }}</textarea>
-                        </div>
-
-                        <div class="form-group">
-                            <div class="custom-control custom-checkbox">
-                                <input type="checkbox" class="custom-control-input" id="is_cleaned" name="is_cleaned" value="1" {{ $cloth->is_cleaned ? 'checked' : '' }}>
-                                <label class="custom-control-label" for="is_cleaned">Is Cleaned</label>
-                            </div>
-                        </div>
-
-                        <!-- Availability Section -->
-                        <div class="card mt-4">
-                            <div class="card-header">
-                                <h5 class="mb-0">📆 Availability Management</h5>
-                                <small class="text-muted">Manage when your cloth is available for rent or blocked for personal use</small>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <h6>Available Dates</h6>
-                                        <p class="text-muted small">Set specific dates when this cloth is available for rent</p>
-                                        <div class="alert alert-info alert-sm">
-                                            <i class="fas fa-info-circle"></i>
-                                            <small>Tip: Leave empty if the cloth is always available. Add specific dates for limited availability.</small>
-                                        </div>
-                                        <div id="available-dates">
-                                            @foreach($cloth->availabilityBlocks->where('type', 'available') as $index => $block)
-                                                <div class="availability-block mb-3" data-type="available">
-                                                    <div class="row">
-                                                        <div class="col-md-5">
-                                                            <label class="small">Start Date</label>
-                                                            <input type="date" class="form-control form-control-sm" name="availability_blocks[{{ $index }}][start_date]" value="{{ $block->start_date->format('Y-m-d') }}">
-                                                        </div>
-                                                        <div class="col-md-5">
-                                                            <label class="small">End Date</label>
-                                                            <input type="date" class="form-control form-control-sm" name="availability_blocks[{{ $index }}][end_date]" value="{{ $block->end_date->format('Y-m-d') }}">
-                                                        </div>
-                                                        <div class="col-md-2">
-                                                            <label class="small">&nbsp;</label>
-                                                            <button type="button" class="btn btn-danger btn-sm btn-block" onclick="removeAvailabilityBlock(this)">
-                                                                <i class="fas fa-trash"></i>
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                    <input type="hidden" name="availability_blocks[{{ $index }}][type]" value="available">
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                        <button type="button" class="btn btn-success btn-sm" onclick="addAvailabilityBlock('available')">
-                                            <i class="fas fa-plus"></i> Add Available Date
-                                        </button>
-                                    </div>
-                                    
-                                    <div class="col-md-6">
-                                        <h6>Blocked Dates</h6>
-                                        <p class="text-muted small">Set dates when you plan to use the cloth yourself</p>
-                                        <div class="alert alert-warning alert-sm">
-                                            <i class="fas fa-exclamation-triangle"></i>
-                                            <small>Tip: Block dates when you'll be using the cloth personally to avoid rental conflicts.</small>
-                                        </div>
-                                        <div id="blocked-dates">
-                                            @foreach($cloth->availabilityBlocks->where('type', 'blocked') as $index => $block)
-                                                <div class="availability-block mb-3" data-type="blocked">
-                                                    <div class="row">
-                                                        <div class="col-md-5">
-                                                            <label class="small">Start Date</label>
-                                                            <input type="date" class="form-control form-control-sm" name="availability_blocks[{{ $index + 100 }}][start_date]" value="{{ $block->start_date->format('Y-m-d') }}">
-                                                        </div>
-                                                        <div class="col-md-5">
-                                                            <label class="small">End Date</label>
-                                                            <input type="date" class="form-control form-control-sm" name="availability_blocks[{{ $index + 100 }}][end_date]" value="{{ $block->end_date->format('Y-m-d') }}">
-                                                        </div>
-                                                        <div class="col-md-2">
-                                                            <label class="small">&nbsp;</label>
-                                                            <button type="button" class="btn btn-danger btn-sm btn-block" onclick="removeAvailabilityBlock(this)">
-                                                                <i class="fas fa-trash"></i>
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row mt-2">
-                                                        <div class="col-12">
-                                                            <label class="small">Reason (optional)</label>
-                                                            <input type="text" class="form-control form-control-sm" name="availability_blocks[{{ $index + 100 }}][reason]" value="{{ $block->reason }}" placeholder="e.g., Personal use, Maintenance">
-                                                        </div>
-                                                    </div>
-                                                    <input type="hidden" name="availability_blocks[{{ $index + 100 }}][type]" value="blocked">
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                        <button type="button" class="btn btn-warning btn-sm" onclick="addAvailabilityBlock('blocked')">
-                                            <i class="fas fa-plus"></i> Add Blocked Date
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Update Cloth
-                            </button>
-                            <a href="{{ route('listed.clothes') }}" class="btn btn-secondary">
-                                <i class="fas fa-times"></i> Cancel
-                            </a>
-                        </div>
-                    </form>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Images Section -->
-            <div class="card mt-4">
-                <div class="card-header">
-                    <h5 class="mb-0">Manage Images</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-8">
-                            <div id="current-images">
+                <!-- Right Column: Sidebar Actions -->
+                <div class="col-lg-4">
+                    <div class="sticky-sidebar">
+                        <div class="action-card mb-4">
+                            <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                                <i class="bi bi-images"></i> Media Gallery
+                            </h5>
+                            <p class="extra-small text-white-50 mb-3">High quality images help you rent faster.</p>
+                            
+                            <div class="image-grid-edit" id="current-images">
                                 @foreach($cloth->images as $image)
-                                    <div class="image-container" data-image-id="{{ $image->id }}">
-                                        <img src="{{ asset('storage/' . $image->image_path) }}" alt="Cloth Image" class="image-preview">
-                                        <span class="remove-image" onclick="removeImage({{ $image->id }})">×</span>
+                                    <div class="edit-image-item" data-image-id="{{ $image->id }}">
+                                        <img src="{{ asset('storage/' . $image->image_path) }}" alt="Outfit">
+                                        <span class="remove-btn-overlay" onclick="removeImage({{ $image->id }})">
+                                            <i class="bi bi-x"></i>
+                                        </span>
                                     </div>
                                 @endforeach
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="upload-area" id="upload-area" onclick="document.getElementById('image-upload').click()">
-                                <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
-                                <p class="mb-0">Click to upload new images</p>
-                                <small class="text-muted">Drag and drop images here</small>
+                                
+                                <div id="upload-placeholder" class="upload-btn-placeholder" onclick="document.getElementById('image-upload').click()" style="{{ $cloth->images->count() >= 4 ? 'display: none;' : '' }}">
+                                    <i class="bi bi-plus-circle fs-4 mb-1"></i>
+                                    <span>Add More</span>
+                                </div>
                             </div>
                             <input type="file" id="image-upload" multiple accept="image/*" style="display: none;">
+
+                            <hr class="my-4 border-white-10" style="opacity: 0.1;">
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <span class="small fw-bold">Availability Status</span>
+                                <span class="badge rounded-pill bg-success px-3">Live</span>
+                            </div>
+
+                            <button type="submit" class="btn btn-premium-save">
+                                <i class="bi bi-cloud-arrow-up me-2"></i> UPDATE CHANGES
+                            </button>
+                        </div>
+
+                        <!-- Availability Quick Access -->
+                        <div class="glass-card p-4">
+                            <h6 class="fw-bold mb-3"><i class="bi bi-calendar-check me-2"></i> Rental Blocks</h6>
+                            <p class="extra-small text-muted mb-3">You have {{ $cloth->availabilityBlocks->count() }} active date blocks.</p>
+                            <a href="#availability-section" class="btn btn-light btn-sm w-100 rounded-pill fw-bold">Manage Calendar</a>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+
+            <!-- Full Width Measurement Section -->
+            <div class="glass-card mt-4" id="measurement-section">
+                <div class="form-section-title">
+                    <i class="bi bi-rulers"></i> Detailed Measurements
+                </div>
+                <div class="row g-2">
+                    <div class="col-4 col-md-2 premium-input-group">
+                        <label>Bust/Chest</label>
+                        <input type="text" class="form-control" name="chest_bust" value="{{ $cloth->chest_bust }}">
+                    </div>
+                    <div class="col-4 col-md-2 premium-input-group">
+                        <label>Waist</label>
+                        <input type="text" class="form-control" name="waist" value="{{ $cloth->waist }}">
+                    </div>
+                    <div class="col-4 col-md-2 premium-input-group">
+                        <label>Length</label>
+                        <input type="text" class="form-control" name="length" value="{{ $cloth->length }}">
+                    </div>
+                    <div class="col-4 col-md-2 premium-input-group">
+                        <label>Shoulder</label>
+                        <input type="text" class="form-control" name="shoulder" value="{{ $cloth->shoulder }}">
+                    </div>
+                    <div class="col-4 col-md-2 premium-input-group">
+                        <label>Sleeve</label>
+                        <input type="text" class="form-control" name="sleeve_length" value="{{ $cloth->sleeve_length }}">
+                    </div>
+                    <div class="col-4 col-md-2 premium-input-group">
+                        <label>Unit</label>
+                        <select class="form-select" name="measurement_unit">
+                            <option value="inch" {{ $cloth->measurement_unit == 'inch' ? 'selected' : '' }}>Inches</option>
+                            <option value="cm" {{ $cloth->measurement_unit == 'cm' ? 'selected' : '' }}>CM</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Availability Management -->
+            <div class="glass-card mt-4" id="availability-section">
+                <div class="form-section-title">
+                    <i class="bi bi-calendar-range"></i> Manage Availability
+                </div>
+                
+                <div class="row">
+                    <!-- Available Dates -->
+                    <div class="col-lg-6 mb-4 mb-lg-0">
+                        <div class="p-3 rounded-4" style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.1);">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h6 class="fw-bold text-success mb-0">RENTAL PERIODS</h6>
+                                <button type="button" class="btn btn-premium-success btn-sm rounded-pill px-3" onclick="addAvailabilityBlock('available')">
+                                    <i class="bi bi-plus-lg me-1"></i> ADD
+                                </button>
+                            </div>
+                            <div id="available-dates">
+                                @php $availableCounter = 0; @endphp
+                                @foreach($cloth->availabilityBlocks->where('type', 'available') as $index => $block)
+                                    <div class="availability-block mb-3 p-3 border-0 shadow-sm rounded-4 position-relative" data-type="available">
+                                        <button type="button" class="btn-remove-block" onclick="removeAvailabilityBlock(this)">
+                                            <i class="bi bi-x"></i>
+                                        </button>
+                                        <div class="row g-2">
+                                            <div class="col-6">
+                                                <label class="extra-small fw-800 text-muted mb-1 d-block">START</label>
+                                                <input type="date" class="form-control form-control-sm" name="availability_blocks[{{ $index }}][start_date]" value="{{ $block->start_date->format('Y-m-d') }}" required>
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="extra-small fw-800 text-muted mb-1 d-block">END</label>
+                                                <input type="date" class="form-control form-control-sm" name="availability_blocks[{{ $index }}][end_date]" value="{{ $block->end_date->format('Y-m-d') }}" required>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" name="availability_blocks[{{ $index }}][type]" value="available">
+                                    </div>
+                                    @php $availableCounter = $index + 1; @endphp
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Blocked Dates -->
+                    <div class="col-lg-6">
+                        <div class="p-3 rounded-4" style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.1);">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h6 class="fw-bold text-danger mb-0">BLOCKED DATES</h6>
+                                <button type="button" class="btn btn-premium-danger btn-sm rounded-pill px-3" onclick="addAvailabilityBlock('blocked')">
+                                    <i class="bi bi-plus-lg me-1"></i> ADD
+                                </button>
+                            </div>
+                            <div id="blocked-dates">
+                                @php $blockedCounter = 100; @endphp
+                                @foreach($cloth->availabilityBlocks->where('type', 'blocked') as $index => $block)
+                                    <div class="availability-block mb-3 p-3 border-0 shadow-sm rounded-4 position-relative" data-type="blocked">
+                                        <button type="button" class="btn-remove-block" onclick="removeAvailabilityBlock(this)">
+                                            <i class="bi bi-x"></i>
+                                        </button>
+                                        <div class="row g-2">
+                                            <div class="col-6">
+                                                <label class="extra-small fw-800 text-muted mb-1 d-block">START</label>
+                                                <input type="date" class="form-control form-control-sm" name="availability_blocks[{{ $index + 100 }}][start_date]" value="{{ $block->start_date->format('Y-m-d') }}" required>
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="extra-small fw-800 text-muted mb-1 d-block">END</label>
+                                                <input type="date" class="form-control form-control-sm" name="availability_blocks[{{ $index + 100 }}][end_date]" value="{{ $block->end_date->format('Y-m-d') }}" required>
+                                            </div>
+                                            <div class="col-12 mt-2">
+                                                <label class="extra-small fw-800 text-muted mb-1 d-block">REASON</label>
+                                                <input type="text" class="form-control form-control-sm" name="availability_blocks[{{ $index + 100 }}][reason]" value="{{ $block->reason }}" placeholder="Personal use, etc.">
+                                            </div>
+                                        </div>
+                                        <input type="hidden" name="availability_blocks[{{ $index + 100 }}][type]" value="blocked">
+                                    </div>
+                                    @php $blockedCounter = $index + 101; @endphp
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
 
-<!-- AI Description Modal -->
-<div class="modal fade" id="aiDescriptionModal" tabindex="-1" role="dialog" aria-labelledby="aiDescriptionModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
+<!-- AI Description Modal (Modernized) -->
+<div class="modal fade cloud-modal" id="aiDescriptionModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="aiDescriptionModalLabel">Generate Description with AI</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
+      <div class="cloud-header">
+        <h5 class="cloud-title text-white">✨ AI IMPROVE ✨</h5>
+        <p class="text-white-50 small mb-0">Describe your outfit simply, we'll make it professional</p>
+      </div>
+      <div class="cloud-body">
+        <textarea class="cloud-textarea" id="rawDescription" 
+          placeholder="e.g. Red silk saree, golden border, worn once, perfect for grand weddings"></textarea>
+
+        <div id="aiLoading" class="mb-4" style="display: none;">
+            <div class="spinner-border text-primary" role="status" style="width: 1.5rem; height: 1.5rem;"></div>
+            <p class="mt-2 text-muted small fw-bold">Crafting description...</p>
+        </div>
+
+        <button type="button" class="cloud-btn w-100" onclick="generateAiDescription()">
+           <i class="bi bi-stars"></i> Generate Now
         </button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label for="rawDescription">Enter basic details (keywords, condition, style):</label>
-          <textarea class="form-control" id="rawDescription" rows="4" placeholder="e.g. Blue silk saree, worn once, golden border, perfect for weddings"></textarea>
-        </div>
-        <div id="aiLoading" class="text-center" style="display: none;">
-          <div class="spinner-border text-primary" role="status">
-            <span class="sr-only">Loading...</span>
-          </div>
-          <p class="mt-2">Generating description...</p>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" onclick="generateAiDescription()">Generate</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- JavaScript Variables -->
+@endsection
+
+@section('scripts')
 <script>
-    // Pass PHP variables to JavaScript
     window.editClothUpdateUrl = '{{ route("listed.clothes.update", $cloth->id) }}';
     window.listedClothesUrl = '{{ route("listed.clothes") }}';
-    window.availableCounter = {{ $cloth->availabilityBlocks->where('type', 'available')->count() }};
-    window.blockedCounter = {{ $cloth->availabilityBlocks->where('type', 'blocked')->count() }};
+    window.availableCounter = {{ $availableCounter ?? 0 }};
+    window.blockedCounter = {{ $blockedCounter ?? 100 }};
 </script>
-
-<!-- Include external JavaScript file -->
 <script src="{{ asset('js/edit-cloth.js') }}"></script>
-
-<!-- Rejection Message Handler -->
-<script>
-$(document).ready(function() {
-    // Check if there's a rejection message in sessionStorage
-    const rejectionReason = sessionStorage.getItem('rejectionReason');
-    const notificationId = sessionStorage.getItem('rejectionNotificationId');
-    
-    if (rejectionReason && rejectionReason.trim() !== '') {
-        try {
-            // Display the rejection alert
-            $('#rejectionMessage').text(rejectionReason);
-            $('#rejectionAlert').show();
-            
-            // Clear the sessionStorage after displaying
-            sessionStorage.removeItem('rejectionReason');
-            sessionStorage.removeItem('rejectionNotificationId');
-            
-            // Scroll to the alert
-            $('#rejectionAlert')[0].scrollIntoView({ behavior: 'smooth', block: 'start' });
-            
-            // Auto-hide the alert after 10 seconds
-            setTimeout(function() {
-                $('#rejectionAlert').fadeOut();
-            }, 10000);
-        } catch (error) {
-            console.error('Error displaying rejection message:', error);
-        }
-    }
-});
-</script>
-
 <script>
 function generateAiDescription() {
     const rawDescription = $('#rawDescription').val();
-    if (!rawDescription) {
-        alert('Please enter some details.');
-        return;
-    }
-
+    if (!rawDescription) { alert('Please enter some keywords.'); return; }
     $('#aiLoading').show();
-    
-    const title = $('#title').val();
-    
     $.ajax({
         url: '{{ route("generate.description") }}',
         method: 'POST',
-        data: {
-            raw_description: rawDescription,
-            title: title,
-            _token: '{{ csrf_token() }}'
-        },
+        data: { raw_description: rawDescription, title: $('input[name="title"]').val(), _token: '{{ csrf_token() }}' },
         success: function(response) {
             if (response.description) {
-                // Use ID selector for the textarea in edit page
-                $('#description').val(response.description);
+                $('textarea[name="description"]').val(response.description);
                 $('#aiDescriptionModal').modal('hide');
             }
         },
-        error: function(xhr) {
-            alert('Error generating description: ' + (xhr.responseJSON?.error || 'Unknown error'));
-        },
-        complete: function() {
-            $('#aiLoading').hide();
-        }
+        error: function(xhr) { alert('AI Error: ' + (xhr.responseJSON?.error || 'Failed to generate')); },
+        complete: function() { $('#aiLoading').hide(); }
     });
 }
-</script>
 
-@endsection 
+$(document).ready(function() {
+    $('#is_purchased').on('change', function() {
+        $('#selling_price_section').toggle(this.checked);
+    });
+});
+</script>
+@endsection

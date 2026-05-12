@@ -72,26 +72,24 @@ $(document).ready(function() {
             const isRejectionNotification = notification.data && notification.data.cloth_id && notification.data.reject_reason;
             
             html += `
-                <a class="dropdown-item notification-item ${notification.read ? 'read' : 'unread'} px-3 py-2" 
+                <a class="notification-item ${notification.read ? 'read' : 'unread'}" 
                    href="#" 
-                   style="white-space: normal;"
                    data-notification-id="${notification.id}"
                    ${isRejectionNotification ? `data-cloth-id="${notification.data.cloth_id}" data-reject-reason="${notification.data.reject_reason}"` : ''}>
-                    <div class="d-flex align-items-start">
-                        <div class="flex-shrink-0 pt-1">
-                            <div class="${bgClass} rounded-circle d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">
-                                <i class="${iconClass} text-white small"></i>
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="notification-icon-wrapper ${bgClass}">
+                            <i class="${iconClass}"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="notification-title">${notification.title}</div>
+                                ${!notification.read ? '<div class="unread-dot mt-1"></div>' : ''}
                             </div>
+                            <div class="notification-msg">${notification.message}</div>
+                            <div class="notification-time">${timeAgo}</div>
                         </div>
-                        <div class="flex-grow-1 ml-3">
-                            <div class="font-weight-bold mb-1" style="font-size: 0.9rem; line-height: 1.2;">${notification.title}</div>
-                            <div class="text-muted mb-1" style="font-size: 0.8rem; line-height: 1.3;">${notification.message}</div>
-                            <div class="text-muted" style="font-size: 0.75rem;">${timeAgo}</div>
-                        </div>
-                        ${!notification.read ? '<div class="flex-shrink-0 ml-2"><span class="badge badge-primary badge-pill" style="font-size: 0.6rem;">New</span></div>' : ''}
                     </div>
                 </a>
-                <div class="dropdown-divider my-0"></div>
             `;
         });
         
@@ -112,16 +110,14 @@ $(document).ready(function() {
                 try {
                     // Show loading state
                     const $notificationItem = $(this);
-                    const originalContent = $notificationItem.html();
-                    $notificationItem.html('<i class="bi bi-hourglass-split me-1"></i>Loading...');
+                    $notificationItem.find('.notification-title').html('<i class="bi bi-hourglass-split me-1 small"></i>Redirecting...');
                     
                     // Navigate to the rejection management page
                     setTimeout(function() {
                         window.location.href = `/rejections/${clothId}`;
-                    }, 500);
+                    }, 400);
                 } catch (error) {
                     console.error('Error navigating to rejection page:', error);
-                    // Fallback: just mark as read
                 }
             }
         });
@@ -143,7 +139,7 @@ $(document).ready(function() {
                     $(`.notification-item[data-notification-id="${notificationId}"]`)
                         .removeClass('unread')
                         .addClass('read')
-                        .find('.badge')
+                        .find('.unread-dot')
                         .remove();
                 }
             },
@@ -166,20 +162,20 @@ $(document).ready(function() {
     // Get background class based on notification type
     function getNotificationBgClass(type) {
         switch (type) {
-            case 'success': return 'bg-success';
-            case 'warning': return 'bg-warning';
-            case 'danger': return 'bg-danger';
+            case 'success': return 'icon-bg-success';
+            case 'warning': return 'icon-bg-warning';
+            case 'danger': return 'icon-bg-danger';
             case 'info': 
-            default: return 'bg-info';
+            default: return 'icon-bg-info';
         }
     }
     
     // Get default icon based on notification type
     function getDefaultIcon(type) {
         switch (type) {
-            case 'success': return 'bi bi-check-circle';
+            case 'success': return 'bi bi-check-lg';
             case 'warning': return 'bi bi-exclamation-triangle';
-            case 'danger': return 'bi bi-x-circle';
+            case 'danger': return 'bi bi-x-lg';
             case 'info': 
             default: return 'bi bi-info-circle';
         }

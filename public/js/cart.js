@@ -3,6 +3,18 @@ $(document).ready(function () {
     // Load cart items on page load to check rented status
     loadCartItems();
 
+    // Refresh mini-cart on hover
+    $('.cart-dropdown-wrapper').hover(function() {
+        if ($(this).find('#cartDropdown').length > 0) {
+            loadCartItems();
+        }
+    });
+
+    // Skip generic interaction listeners on the full cart page to avoid conflicts with specialized scripts in cart.blade.php
+    if (window.location.pathname === '/cart') {
+        return;
+    }
+
     // Add to cart functionality
     $('.add-to-cart-btn').click(function (e) {
         e.preventDefault();
@@ -149,34 +161,109 @@ function loadCartItems() {
             if (response.cartItems) {
                 window.cartItems = response.cartItems;
                 checkRentedItems();
+                renderMiniCart(response.cartItems, response.formatted_subtotal);
             }
         },
         error: function () {
             // If error, assume no items in cart
             window.cartItems = [];
+            renderMiniCart([], '₹0');
         }
     });
 }
 
+// Render the mini-cart dropdown content
+function renderMiniCart(items, subtotal) {
+    const $container = $('#mini-cart-items-container');
+    const $subtotal = $('#mini-cart-subtotal');
+    const $badge = $('#mini-cart-count-badge');
+    
+    if (!$container.length) return;
+
+    $subtotal.text(subtotal);
+    $badge.text(items.length + ' Items');
+
+    if (items.length === 0) {
+        $container.html('<div class="text-center py-5"><i class="bi bi-bag-x text-muted mb-2 d-block fs-3"></i><p class="text-muted small mb-0">Your bag is empty</p></div>');
+        return;
+    }
+
+    let html = '';
+    items.forEach(item => {
+        html += `
+            <div class="mini-cart-item d-flex align-items-start py-3 px-3 border-bottom">
+                <div class="mini-cart-img-wrapper mr-3">
+                    <img src="${item.image}" class="mini-cart-img" alt="${item.title}" style="width: 60px; height: 80px; object-fit: cover; border-radius: 8px;">
+                </div>
+                <div class="mini-cart-details flex-grow-1">
+                    <h6 class="text-dark fw-bold mb-1" style="font-size: 0.9rem; line-height: 1.3;">${item.title}</h6>
+                    <p class="text-muted mb-2" style="font-size: 0.75rem;">${item.purchase_type.toUpperCase()} · Size ${item.size}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted small">${item.quantity} × <span class="text-dark fw-bold">${item.formatted_price}</span></span>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    $container.html(html);
+}
+
 // Update all rent buttons for a specific item
 function updateAllRentButtons(clothId, isRented) {
-    const buttons = $(`.add-to-cart-btn[data-cloth-id="${clothId}"]`);
+    const buttons = $(`.add-to-cart-btn[data-cloth-id="${clothId}"], #productRentBtn[data-cloth-id="${clothId}"]`);
 
     buttons.each(function () {
         const $btn = $(this);
 
         if (isRented) {
-            $btn.text('RENTED')
-                .addClass('btn-success')
-                .removeClass('btn-warning')
+            $btn.html('<i class="bi bi-check-circle-fill"></i> RENTED')
+                .addClass('rented-button')
+                .removeClass('rent-button btn-warning btn-success')
                 .prop('disabled', true)
                 .attr('title', 'Already in cart');
+            
+            // Also disable Buy button on the same card if it exists
+            const $buyBtn = $btn.closest('.card').find('.add-to-cart-buy-btn[data-cloth-id="' + clothId + '"]');
+            $buyBtn.prop('disabled', true);
         } else {
             $btn.html('<i class="bi bi-cart-plus me-2"></i>RENT NOW')
                 .removeClass('btn-success')
                 .addClass('btn-warning')
                 .prop('disabled', false)
                 .removeAttr('title');
+            
+            // Re-enable Buy button if not purchased
+            const $buyBtn = $btn.closest('.card').find('.add-to-cart-buy-btn[data-cloth-id="' + clothId + '"]');
+            if (!$buyBtn.data('purchased')) {
+                $buyBtn.prop('disabled', false);
+            }
+        }
+    });
+}
+
+// Update all buy buttons for a specific item
+function updateAllBuyButtons(clothId, isPurchased) {
+    const $buttons = $('.add-to-cart-buy-btn[data-cloth-id="' + clothId + '"]');
+    $buttons.each(function() {
+        const $btn = $(this);
+        if (isPurchased) {
+            $btn.html('<i class="bi bi-check-circle-fill"></i> PURCHASED')
+                .addClass('purchased-button')
+                .removeClass('buy-button btn-success btn-outline-dark')
+                .prop('disabled', true)
+                .attr('title', 'Already in cart')
+                .data('purchased', true);
+            
+            // Also disable Rent button on the same card
+            const $rentBtn = $btn.closest('.card').find('.add-to-cart-btn[data-cloth-id="' + clothId + '"]');
+            $rentBtn.prop('disabled', true).text('RENTED');
+        } else {
+            $btn.html('BUY NOW')
+                .removeClass('btn-success')
+                .addClass('btn-outline-dark')
+                .prop('disabled', false)
+                .removeAttr('title')
+                .data('purchased', false);
         }
     });
 }
@@ -185,8 +272,22 @@ function updateAllRentButtons(clothId, isRented) {
 function checkRentedItems() {
     if (!window.cartItems) return;
 
+    // First reset all buttons
+    $('.add-to-cart-btn').each(function() {
+        const id = $(this).data('cloth-id');
+        updateAllRentButtons(id, false);
+    });
+    $('.add-to-cart-buy-btn').each(function() {
+        const id = $(this).data('cloth-id');
+        updateAllBuyButtons(id, false);
+    });
+
     window.cartItems.forEach(function (item) {
-        updateAllRentButtons(item.cloth_id, true);
+        if (item.purchase_type === 'buy') {
+            updateAllBuyButtons(item.cloth_id, true);
+        } else {
+            updateAllRentButtons(item.cloth_id, true);
+        }
     });
 }
 
@@ -216,20 +317,31 @@ function updateItemTotal(cartItemId) {
 // Show alert message
 function showAlert(type, message) {
     const alertHtml = `
-        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="premium-toast alert-${type}" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px; background: white; padding: 16px 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-left: 5px solid ${type === 'success' ? '#10b981' : '#ef4444'}; display: none;">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-${type === 'success' ? 'check-circle-fill text-success' : 'exclamation-circle-fill text-danger'} me-3" style="font-size: 1.25rem;"></i>
+                    <span class="fw-bold" style="font-size: 0.95rem; color: #1e293b;">${message}</span>
+                </div>
+                <button type="button" class="btn-close border-0 bg-transparent ms-3" onclick="$(this).closest('.premium-toast').fadeOut(400, function() { $(this).remove(); });" style="font-size: 0.8rem; opacity: 0.5;">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
         </div>
     `;
 
     // Remove existing alerts
-    $('.alert').remove();
+    $('.premium-toast').remove();
 
     // Add new alert
-    $('body').prepend(alertHtml);
+    const $alert = $(alertHtml);
+    $('body').append($alert);
+    $alert.fadeIn(400);
 
     // Auto-hide after 3 seconds
     setTimeout(function () {
-        $('.alert').fadeOut();
-    }, 3000);
-} 
+        $alert.fadeOut(400, function() {
+            $(this).remove();
+        });
+    }, 4000);
+}

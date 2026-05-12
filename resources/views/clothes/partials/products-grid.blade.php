@@ -6,7 +6,12 @@
                     @if($cloth->images->count() > 0)
                         <img src="{{ asset('storage/' . $cloth->images->first()->image_path) }}" 
                              alt="{{ $cloth->title }}" 
-                             class="img-fluid product-img">
+                             class="img-fluid product-img main-img">
+                        @if($cloth->images->count() > 1)
+                            <img src="{{ asset('storage/' . $cloth->images[1]->image_path) }}" 
+                                 alt="{{ $cloth->title }}" 
+                                 class="img-fluid product-img hover-img">
+                        @endif
                     @else
                         <img src="{{ asset('images/1.jpg') }}" 
                              alt="{{ $cloth->title }}" 
@@ -14,7 +19,9 @@
                     @endif
                 </div>
                 @if($cloth->is_purchased)
-                    <span class="badge badge-buy">Buy Available</span>
+                    <span class="badge badge-buy" title="Available for Buy">
+                        <i class="bi bi-handbag"></i>
+                    </span>
                 @endif
             </div>
             <div class="product-info">
@@ -34,18 +41,18 @@
                 </div>
                 <div class="product-pricing">
                     <div class="price-row">
-                        <span class="price-label">Rent:</span>
+                        <span class="price-label"><i class="bi bi-calendar2-check me-1"></i> RENT:</span>
                         <span class="rent-price">₹{{ number_format($cloth->display_rent_price) }}</span>
                     </div>
                     @if($cloth->is_purchased && $cloth->selling_price)
                         <div class="price-row">
-                            <span class="price-label">Buy:</span>
+                            <span class="price-label"><i class="bi bi-handbag me-1"></i> BUY:</span>
                             <span class="buy-price">₹{{ number_format($cloth->selling_price) }}</span>
                         </div>
                     @endif
                     @if($cloth->mrp)
                         <div class="price-row">
-                            <span class="price-label">MRP:</span>
+                            <span class="price-label"><i class="bi bi-bookmark-star me-1"></i> MRP:</span>
                             <span class="text-muted small"><del>₹{{ number_format($cloth->mrp) }}</del></span>
                         </div>
                     @endif

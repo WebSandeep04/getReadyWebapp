@@ -17,6 +17,22 @@ const items = {
     ]
   };
   
+  // Navbar Scroll Effect
+  window.addEventListener('scroll', function() {
+    const nav = document.querySelector('.top-nav');
+    if (nav) {
+      if (window.scrollY > 50) {
+        nav.style.backgroundColor = 'rgba(255, 255, 255, 0.98) !important';
+        nav.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.1) !important';
+        nav.style.padding = '0.4rem 1.5rem !important';
+      } else {
+        nav.style.backgroundColor = 'rgba(255, 255, 255, 0.85) !important';
+        nav.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.05) !important';
+        nav.style.padding = '0.6rem 1.5rem !important';
+      }
+    }
+  });
+
   // Switch active tab and update carousel
   function switchTab(category) {
     // Remove active from all tabs

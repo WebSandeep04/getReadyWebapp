@@ -253,6 +253,47 @@ class RejectionController extends Controller
     }
 
     /**
+     * Get rejected items for AJAX (Header Dropdown)
+     */
+    public function getRejectedItems()
+    {
+        if (!Auth::check()) {
+            return response()->json(['rejectedItems' => []]);
+        }
+
+        $rejectedClothes = Cloth::where('user_id', Auth::id())
+            ->where(function($query) {
+                $query->where('is_approved', -1) // Rejected items
+                      ->orWhere(function($q) {
+                          $q->where('is_approved', null)
+                            ->where('resubmission_count', '>', 0); // Re-approval items
+                      });
+            })
+            ->with(['images', 'category'])
+            ->get();
+
+        $items = $rejectedClothes->map(function($cloth) {
+            $notification = $this->findRejectionNotification($cloth->id);
+            $reason = $notification ? ($notification->data['reject_reason'] ?? 'N/A') : 'No reason found';
+            
+            return [
+                'id' => $cloth->id,
+                'title' => $cloth->title,
+                'image' => $cloth->images->count() ? asset('storage/' . $cloth->images->first()->image_path) : asset('images/placeholder.jpg'),
+                'category' => $cloth->category->name ?? 'N/A',
+                'reason' => $reason,
+                'rejected_at' => $notification ? $notification->created_at->diffForHumans() : 'N/A',
+                'url' => route('rejections.show', $cloth->id)
+            ];
+        });
+
+        return response()->json([
+            'rejectedItems' => $items,
+            'count' => $items->count()
+        ]);
+    }
+
+    /**
      * Find rejection notification for a specific cloth
      */
     private function findRejectionNotification($clothId)

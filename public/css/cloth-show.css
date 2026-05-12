@@ -1,46 +1,153 @@
-/* Flatpickr Customization */
+/* Flatpickr Premium Modern Theme - Airbnb Style */
 .flatpickr-calendar {
-    font-family: inherit;
+    background: #fff !important;
+    box-shadow: 0 12px 28px 0 rgba(0, 0, 0, 0.06), 0 2px 4px 0 rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid #ebebeb !important;
+    border-radius: 16px !important;
+    padding: 10px !important;
+    width: 320px !important;
+    /* Standard width to prevent cutting */
+    box-sizing: border-box !important;
 }
 
-/* Available days (Green) */
-.flatpickr-day:not(.flatpickr-disabled):not(.disabled) {
-    color: #2e7d32 !important;
-    background-color: #e8f5e9 !important;
+.flatpickr-innerContainer {
+    width: 100% !important;
+}
+
+.flatpickr-rContainer {
+    width: 100% !important;
+}
+
+.flatpickr-days {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: space-between !important;
+}
+
+.dayContainer {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+}
+
+.flatpickr-months {
+    padding: 0 10px 10px 10px !important;
+}
+
+.flatpickr-month {
+    color: #222222 !important;
+    height: 40px !important;
+}
+
+.flatpickr-current-month {
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    color: #222222 !important;
+}
+
+.flatpickr-weekday {
+    color: #717171 !important;
+    font-weight: 600 !important;
+    font-size: 0.8rem !important;
+    text-transform: uppercase;
+}
+
+.flatpickr-day {
     border-radius: 50% !important;
-    border: 1px solid #2e7d32 !important;
+    height: 38px !important;
+    width: 38px !important;
+    line-height: 38px !important;
+    margin: 2px !important;
+    color: #222222 !important;
+    font-weight: 500 !important;
+    border: none !important;
+    max-width: none !important;
 }
 
-/* Disabled days (Red Cross) */
+/* Available Days - Soft Green Background */
+.flatpickr-day:not(.flatpickr-disabled):not(.disabled) {
+    background-color: #f0fdf4 !important;
+    /* Soft Green */
+    color: #166534 !important;
+    /* Deep Green Text */
+    border: 1px solid #dcfce7 !important;
+}
+
+.flatpickr-day:not(.flatpickr-disabled):not(.disabled):hover {
+    background-color: #22c55e !important;
+    color: #fff !important;
+    transform: scale(1.05);
+}
+
+/* Selected & Range Styles */
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange {
+    background: #FFA500 !important;
+    color: #fff !important;
+    border: none !important;
+    box-shadow: 0 4px 10px rgba(255, 165, 0, 0.3) !important;
+}
+
+.flatpickr-day.inRange {
+    background: #fff8eb !important;
+    box-shadow: -5px 0 0 #fff8eb, 5px 0 0 #fff8eb !important;
+}
+
+/* Disabled Days - Faded */
 .flatpickr-day.flatpickr-disabled,
 .flatpickr-day.disabled {
-    color: #c62828 !important;
-    /* Date number color red */
+    color: #d5d5d5 !important;
     cursor: not-allowed;
-    background-color: #ffebee !important;
-    opacity: 1 !important;
-    /* Make it fully visible for the cross */
+    background: none !important;
+    text-decoration: line-through !important;
+    opacity: 0.4;
+}
+
+/* Navigation Arrows */
+.flatpickr-prev-month,
+.flatpickr-next-month {
+    padding: 10px !important;
+    color: #222222 !important;
+}
+
+.flatpickr-prev-month:hover,
+.flatpickr-next-month:hover {
+    background: #f7f7f7 !important;
+    border-radius: 50% !important;
+}
+
+/* Input Fields Styling */
+.date-input-wrapper {
     position: relative;
-    border: 1px solid #ffcdd2 !important;
+    display: flex;
+    align-items: center;
 }
 
-.flatpickr-day.flatpickr-disabled:hover,
-.flatpickr-day.disabled:hover {
-    background-color: #ffebee !important;
-    color: #c62828 !important;
-}
-
-.flatpickr-day.flatpickr-disabled::after,
-.flatpickr-day.disabled::after {
-    content: "✕" !important;
+.date-input-wrapper i {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 1.2em;
-    font-weight: bold;
-    color: #c62828 !important;
-    opacity: 0.7;
+    left: 14px;
+    color: #FFA500;
+    font-size: 1.1rem;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.date-input-wrapper input {
+    padding-left: 42px !important;
+    height: 42px !important;
+    border-radius: 12px !important;
+    border: 1px solid #dddddd !important;
+    font-weight: 500 !important;
+    color: #222222 !important;
+    background-color: #fff !important;
+    transition: all 0.2s ease;
+}
+
+.date-input-wrapper input:focus {
+    border-color: #FFA500 !important;
+    box-shadow: 0 0 0 2px rgba(255, 165, 0, 0.1) !important;
+    outline: none !important;
 }
 
 /* Star Rating Styles */
@@ -54,13 +161,6 @@
 .star-rating-input .bi-star,
 .star-rating-input .bi-star-fill {
     color: #ffc107;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.star-rating-input .bi-star:hover,
-.star-rating-input .bi-star-fill:hover {
-    transform: scale(1.1);
 }
 
 .star-rating-display {

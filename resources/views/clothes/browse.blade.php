@@ -23,14 +23,14 @@
 
 @section('content')
 <div class="browse-container">
-    <div class="container-fluid">
+    <div class="container-fluid px-lg-5">
         <div class="row">
             <!-- Left Sidebar - Filters -->
             <div class="col-md-3 col-lg-2 sidebar-filters">
                 <div class="filter-section">
                     <div class="d-flex justify-content-between align-items-center mb-3 sidebar-header-fixed">
                         <h5 class="filter-title mb-0">Filter by</h5>
-                        <a href="{{ route('clothes.index') }}" class="text-warning small text-decoration-none font-weight-bold">Clear all</a>
+                        <a href="{{ route('clothes.index') }}" class="clear-all-btn text-decoration-none">Clear all</a>
                     </div>
                     
                     <form id="filterForm" method="GET" action="{{ route('clothes.index') }}">
@@ -52,7 +52,7 @@
 
                             <!-- User Type Filter -->
                             <h6 class="filter-group-title filter-group-spacing">User Type</h6>
-                            <div class="filter-options-scroll">
+                            <div class="filter-options-scroll filter-grid">
                                 @foreach($genders as $gender)
                                     <div class="filter-item">
                                         <label class="filter-checkbox">
@@ -67,7 +67,7 @@
 
                             <!-- Size Filter -->
                             <h6 class="filter-group-title filter-group-spacing">Size</h6>
-                            <div class="filter-options-scroll">
+                            <div class="filter-options-scroll filter-grid-3">
                                 @foreach($sizes as $size)
                                     <div class="filter-item">
                                         <label class="filter-checkbox">
@@ -304,7 +304,158 @@
             </div>
 
             <!-- Main Content Area -->
-            <div class="col-md-9 col-lg-10 main-content">
+            <div class="col-md-9 col-lg-10 main-content pe-lg-5">
+                <!-- Mobile Filter Slider -->
+                <div class="mobile-filter-bar d-lg-none mb-3">
+                    <div class="filter-slider">
+                        <!-- Category -->
+                        <div class="dropdown filter-pill-dropdown">
+                            <button class="filter-pill {{ request('categories') ? 'active' : '' }}" type="button" data-toggle="dropdown" data-boundary="viewport">
+                                Category <i class="bi bi-chevron-down ms-1"></i>
+                            </button>
+                            <div class="dropdown-menu shadow-lg border-0">
+                                @foreach($categories as $category)
+                                    <div class="dropdown-item">
+                                        <label class="filter-checkbox mb-0 d-flex align-items-center">
+                                            <input type="checkbox" name="categories[]" value="{{ $category->id }}" 
+                                                   {{ in_array($category->id, (array)request('categories', [])) ? 'checked' : '' }}>
+                                            <span class="checkmark"></span>
+                                            <span class="filter-label ms-2">{{ $category->name }}</span>
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <!-- User Type -->
+                        <div class="dropdown filter-pill-dropdown">
+                            <button class="filter-pill {{ request('genders') ? 'active' : '' }}" type="button" data-toggle="dropdown" data-boundary="viewport">
+                                User <i class="bi bi-chevron-down ms-1"></i>
+                            </button>
+                            <div class="dropdown-menu shadow-lg border-0">
+                                @foreach($genders as $gender)
+                                    <div class="dropdown-item">
+                                        <label class="filter-checkbox mb-0 d-flex align-items-center">
+                                            <input type="checkbox" name="genders[]" value="{{ $gender }}" 
+                                                   {{ in_array($gender, (array)request('genders', [])) ? 'checked' : '' }}>
+                                            <span class="checkmark"></span>
+                                            <span class="filter-label ms-2">{{ $gender }}</span>
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <!-- Size -->
+                        <div class="dropdown filter-pill-dropdown">
+                            <button class="filter-pill {{ request('sizes') ? 'active' : '' }}" type="button" data-toggle="dropdown" data-boundary="viewport">
+                                Size <i class="bi bi-chevron-down ms-1"></i>
+                            </button>
+                            <div class="dropdown-menu shadow-lg border-0 p-3" style="min-width: 250px;">
+                                <div class="filter-grid-3">
+                                    @foreach($sizes as $size)
+                                        <div class="filter-item mb-2">
+                                            <label class="filter-checkbox d-flex align-items-center">
+                                                <input type="checkbox" name="sizes[]" value="{{ $size->id }}" 
+                                                       {{ in_array($size->id, (array)request('sizes', [])) ? 'checked' : '' }}>
+                                                <span class="checkmark"></span>
+                                                <span class="filter-label ms-2">{{ $size->name }}</span>
+                                            </label>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Brand -->
+                        <div class="dropdown filter-pill-dropdown">
+                            <button class="filter-pill {{ request('brands') ? 'active' : '' }}" type="button" data-toggle="dropdown" data-boundary="viewport">
+                                Brand <i class="bi bi-chevron-down ms-1"></i>
+                            </button>
+                            <div class="dropdown-menu shadow-lg border-0 scrollable-dropdown">
+                                @foreach($brands as $brand)
+                                    <div class="dropdown-item">
+                                        <label class="filter-checkbox mb-0 d-flex align-items-center">
+                                            <input type="checkbox" name="brands[]" value="{{ $brand->id }}" 
+                                                   {{ in_array($brand->id, (array)request('brands', [])) ? 'checked' : '' }}>
+                                            <span class="checkmark"></span>
+                                            <span class="filter-label ms-2">{{ $brand->name }}</span>
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <!-- Fabric -->
+                        <div class="dropdown filter-pill-dropdown">
+                            <button class="filter-pill {{ request('fabrics') ? 'active' : '' }}" type="button" data-toggle="dropdown" data-boundary="viewport">
+                                Fabric <i class="bi bi-chevron-down ms-1"></i>
+                            </button>
+                            <div class="dropdown-menu shadow-lg border-0 scrollable-dropdown">
+                                @foreach($fabrics as $fabric)
+                                    <div class="dropdown-item">
+                                        <label class="filter-checkbox mb-0 d-flex align-items-center">
+                                            <input type="checkbox" name="fabrics[]" value="{{ $fabric->id }}" 
+                                                   {{ in_array($fabric->id, (array)request('fabrics', [])) ? 'checked' : '' }}>
+                                            <span class="checkmark"></span>
+                                            <span class="filter-label ms-2">{{ $fabric->name }}</span>
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <!-- Color -->
+                        <div class="dropdown filter-pill-dropdown">
+                            <button class="filter-pill {{ request('colors') ? 'active' : '' }}" type="button" data-toggle="dropdown" data-boundary="viewport">
+                                Color <i class="bi bi-chevron-down ms-1"></i>
+                            </button>
+                            <div class="dropdown-menu shadow-lg border-0 scrollable-dropdown">
+                                @foreach($colors as $color)
+                                    <div class="dropdown-item">
+                                        <label class="filter-checkbox mb-0 d-flex align-items-center">
+                                            <input type="checkbox" name="colors[]" value="{{ $color->id }}" 
+                                                   {{ in_array($color->id, (array)request('colors', [])) ? 'checked' : '' }}>
+                                            <span class="checkmark"></span>
+                                            <span class="filter-label ms-2">{{ $color->name }}</span>
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <!-- Price -->
+                        <div class="dropdown filter-pill-dropdown">
+                            <button class="filter-pill {{ request('price_min') || request('price_max') ? 'active' : '' }}" type="button" data-toggle="dropdown" data-boundary="viewport">
+                                Price <i class="bi bi-chevron-down ms-1"></i>
+                            </button>
+                            <div class="dropdown-menu shadow-lg border-0 p-4" style="min-width: 280px;">
+                                <h6 class="mb-3 fw-bold">Rent Range</h6>
+                                <div class="range-slider-container">
+                                    <div class="range-slider">
+                                        <div class="range-track"></div>
+                                        <input type="range" class="range-min" min="0" max="20000" step="50" name="price_min" value="{{ request('price_min', 0) }}">
+                                        <input type="range" class="range-max" min="0" max="20000" step="50" name="price_max" value="{{ request('price_max', 20000) }}">
+                                    </div>
+                                    <div class="range-values mt-2 d-flex justify-content-between align-items-center">
+                                        <div class="manual-range-inputs">
+                                            <div class="input-wrapper">
+                                                <span class="currency-symbol">₹</span>
+                                                <input type="number" class="manual-min" value="{{ request('price_min', 0) }}" placeholder="Min">
+                                            </div>
+                                            <div class="divider">-</div>
+                                            <div class="input-wrapper">
+                                                <span class="currency-symbol">₹</span>
+                                                <input type="number" class="manual-max" value="{{ request('price_max', 20000) }}" placeholder="Max">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Top Filter Bar -->
                 <div class="top-filters mb-4">
                     <div class="d-flex justify-content-between align-items-center flex-wrap">
@@ -346,15 +497,18 @@
                             </div>
                         </div>
                         
-                        <div class="header-date-filter d-none d-md-flex align-items-center gap-1">
-                            <div class="input-group input-group-sm" style="width: 140px;">
-                                <span class="input-group-text bg-white border-end-0 text-warning"><i class="bi bi-calendar-range"></i></span>
-                                <input type="date" id="fromDateFilter" class="form-control border-start-0 ps-0 text-muted" 
-                                       placeholder="From" value="{{ request('from_date') }}" style="font-size: 0.8rem;">
+                        <div class="header-date-filter d-flex align-items-center">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-calendar2-week" style="color: #FFA500;"></i>
+                                </span>
+                                <input type="date" id="fromDateFilter" class="form-control" placeholder="From" value="{{ request('from_date') }}">
                             </div>
-                            <div class="input-group input-group-sm" style="width: 130px;">
-                                <input type="date" id="toDateFilter" class="form-control text-muted" 
-                                       placeholder="To" value="{{ request('to_date') }}" style="font-size: 0.8rem;" min="{{ request('from_date') }}">
+                            <div class="input-group ms-2">
+                                <span class="input-group-text">
+                                    <i class="bi bi-calendar2-week" style="color: #FFA500;"></i>
+                                </span>
+                                <input type="date" id="toDateFilter" class="form-control" placeholder="To" value="{{ request('to_date') }}" min="{{ request('from_date') }}">
                             </div>
                         </div>
                         <div class="sort-section">
@@ -494,7 +648,7 @@ $(document).ready(function() {
             filters.bottoms.push($(this).val());
         });
 
-        filters.is_cleaned = $('input[name="is_cleaned"]').is(':checked') ? '1' : '';
+        filters.is_cleaned = $('input[name="is_cleaned"]:checked').length > 0 ? '1' : '';
         
         return filters;
     }
@@ -546,9 +700,14 @@ $(document).ready(function() {
     // Debounced filter update
     const debouncedLoadProducts = debounce(loadProducts, 300);
     
-    // Handle all filter changes
-    $(document).on('change', '#filterForm input[type="checkbox"], #filterForm input[type="radio"], #filterForm input[type="range"]', function() {
+    // Handle all filter changes (Sidebar & Mobile Bar)
+    $(document).on('change', '.sidebar-filters input, .mobile-filter-bar input, #sortBy', function() {
         debouncedLoadProducts(1);
+    });
+
+    // Prevent mobile dropdown from closing when clicking inside
+    $(document).on('click', '.filter-pill-dropdown .dropdown-menu', function (e) {
+        e.stopPropagation();
     });
 
     // Handle range slider dual thumbs visually
@@ -750,10 +909,27 @@ $(document).ready(function() {
                 $('#toDateFilter').val(filters.to_date);
             }
             
+            // Mobile filter toggle
+            if (window.innerWidth < 992) {
+                $('.filter-title').on('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const $parent = $(this).parent('.filter-group');
+                    $('.filter-group').not($parent).removeClass('active');
+                    $parent.toggleClass('active');
+                });
+
+                // Close when clicking outside
+                $(document).on('click', function(e) {
+                    if (!$(e.target).closest('.filter-group').length) {
+                        $('.filter-group').removeClass('active');
+                    }
+                });
+            }
+            
             loadProducts(filters.page || 1);
         }
     });
 });
 </script>
 @endsection
-

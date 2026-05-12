@@ -1,23 +1,24 @@
 // Global functions
 function showAlert(message, type) {
     const alertHtml = `
-        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-            ${message}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
+        <div class="alert alert-${type} alert-dismissible fade show rounded-4 border-0 shadow-sm mb-4" role="alert" style="position: fixed; top: 100px; right: 20px; z-index: 9999; max-width: 400px;">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-${type === 'success' ? 'check-circle-fill' : 'exclamation-triangle-fill'} me-2 fs-5"></i>
+                <span>${message}</span>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     `;
 
     // Remove any existing alerts
-    $('.alert').remove();
-
-    // Add new alert at the top
-    $('.container').prepend(alertHtml);
+    $('.alert-fixed-msg').remove();
+    
+    const $alert = $(alertHtml).addClass('alert-fixed-msg');
+    $('body').append($alert);
 
     // Auto-dismiss after 5 seconds
     setTimeout(function () {
-        $('.alert').fadeOut(300, function () {
+        $alert.fadeOut(300, function () {
             $(this).remove();
         });
     }, 5000);
@@ -32,6 +33,10 @@ function uploadImages(files) {
         formData.append('images[]', files[i]);
     }
 
+    const $btn = $('.btn-premium-save');
+    const originalHtml = $btn.html();
+    $btn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Uploading...');
+
     $.ajax({
         url: window.editClothUpdateUrl,
         type: 'POST',
@@ -40,12 +45,15 @@ function uploadImages(files) {
         contentType: false,
         success: function (response) {
             if (response.success) {
-                showAlert('Images uploaded successfully!', 'success');
+                showAlert('Gallery updated successfully!', 'success');
                 location.reload();
             }
         },
         error: function (xhr, status, error) {
-            showAlert('An error occurred while uploading images.', 'danger');
+            showAlert('Failed to upload images.', 'danger');
+        },
+        complete: function() {
+            $btn.prop('disabled', false).html(originalHtml);
         }
     });
 }
@@ -60,20 +68,22 @@ function removeImage(imageId) {
             },
             success: function (response) {
                 if (response.success) {
-                    $(`.image-container[data-image-id="${imageId}"]`).remove();
+                    $(`.edit-image-item[data-image-id="${imageId}"]`).fadeOut(300, function() {
+                        $(this).remove();
+                        // Check if we should show the add button
+                        if ($('.edit-image-item').length < 4) {
+                            $('#upload-placeholder').fadeIn(300);
+                        }
+                    });
                     showAlert('Image removed successfully!', 'success');
                 }
             },
             error: function (xhr, status, error) {
-                showAlert('An error occurred while removing the image.', 'danger');
+                showAlert('Error removing image.', 'danger');
             }
         });
     }
 }
-
-// Availability block counters
-let availableCounter = window.availableCounter || 0;
-let blockedCounter = window.blockedCounter || 0;
 
 // Handle purchase checkbox functionality
 document.addEventListener('DOMContentLoaded', function () {
@@ -81,76 +91,32 @@ document.addEventListener('DOMContentLoaded', function () {
     const purchaseValueSection = document.getElementById('selling_price_section');
     const purchaseValueInput = document.querySelector('input[name="selling_price"]');
 
-    if (isPurchasedCheckbox && purchaseValueSection) {
-        // Show/hide purchase value section based on checkbox state
-        function togglePurchaseValueSection() {
-            if (isPurchasedCheckbox.checked) {
-                purchaseValueSection.style.display = 'block';
-                if (purchaseValueInput) {
-                    purchaseValueInput.required = true;
-                }
-            } else {
-                purchaseValueSection.style.display = 'none';
-                if (purchaseValueInput) {
-                    purchaseValueInput.required = false;
-                    purchaseValueInput.value = '';
-                }
-            }
-            checkAndShowRentSuggestion();
-        }
-
-        // Add event listener
-        isPurchasedCheckbox.addEventListener('change', togglePurchaseValueSection);
-    }
-
-    const mrpInput = document.getElementById('mrp');
-    const rentPriceInput = document.getElementById('rent_price');
-    const rentPriceSuggestion = document.getElementById('rent-price-suggestion');
-    const maxRentAmount = document.getElementById('max-rent-amount');
+    const mrpInput = document.querySelector('input[name="mrp"]');
+    const rentPriceInput = document.querySelector('input[name="rent_price"]');
 
     function checkAndShowRentSuggestion() {
-        if (!mrpInput || !purchaseValueInput || !rentPriceInput) return;
+        if (!mrpInput || !rentPriceInput) return;
 
         const mrp = parseFloat(mrpInput.value) || 0;
-        const sellingPrice = parseFloat(purchaseValueInput.value) || 0;
         const rentPrice = parseFloat(rentPriceInput.value) || 0;
-
-        const rentErrorMessage = document.getElementById('rent-error-message');
-        const spErrorMessage = document.getElementById('sp-error-message');
+        const sellingPrice = purchaseValueInput ? (parseFloat(purchaseValueInput.value) || 0) : 0;
 
         if (mrp > 0) {
             const maxRent = mrp * 0.2; // 20% of MRP
-            if (maxRentAmount) maxRentAmount.textContent = Math.round(maxRent);
 
             // Rent Price Validation
             if (rentPrice > maxRent) {
-                if (rentPriceSuggestion) rentPriceSuggestion.style.display = 'block';
-                if (rentErrorMessage) {
-                    rentErrorMessage.textContent = `Rent price should not exceed 20% of MRP (₹${Math.round(maxRent)})`;
-                    rentErrorMessage.style.display = 'block';
-                }
-                rentPriceInput.classList.add('is-invalid');
+                rentPriceInput.style.borderColor = '#ef4444';
             } else {
-                if (rentPriceSuggestion) rentPriceSuggestion.style.display = 'none';
-                if (rentErrorMessage) rentErrorMessage.style.display = 'none';
-                rentPriceInput.classList.remove('is-invalid');
+                rentPriceInput.style.borderColor = '#e2e8f0';
             }
 
             // Selling Price Validation
-            if (sellingPrice > mrp) {
-                if (spErrorMessage) {
-                    spErrorMessage.textContent = 'Selling price should not exceed MRP';
-                    spErrorMessage.style.display = 'block';
-                }
-                purchaseValueInput.classList.add('is-invalid');
-            } else {
-                if (spErrorMessage) spErrorMessage.style.display = 'none';
-                purchaseValueInput.classList.remove('is-invalid');
+            if (purchaseValueInput && sellingPrice > mrp) {
+                purchaseValueInput.style.borderColor = '#ef4444';
+            } else if(purchaseValueInput) {
+                purchaseValueInput.style.borderColor = '#e2e8f0';
             }
-        } else {
-            if (rentPriceSuggestion) rentPriceSuggestion.style.display = 'none';
-            if (rentErrorMessage) rentErrorMessage.style.display = 'none';
-            if (spErrorMessage) spErrorMessage.style.display = 'none';
         }
     }
 
@@ -158,10 +124,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (purchaseValueInput) purchaseValueInput.addEventListener('input', checkAndShowRentSuggestion);
     if (rentPriceInput) {
         rentPriceInput.addEventListener('input', checkAndShowRentSuggestion);
-
-        // Auto-update security deposit as per existing functionality in sell.js
         rentPriceInput.addEventListener('input', function () {
-            const securityDepositInput = document.getElementById('security_deposit');
+            const securityDepositInput = document.querySelector('input[name="security_deposit"]');
             if (securityDepositInput) {
                 securityDepositInput.value = this.value;
             }
@@ -172,49 +136,47 @@ document.addEventListener('DOMContentLoaded', function () {
     checkAndShowRentSuggestion();
 });
 
+// Availability block counters
+let availableCounter = window.availableCounter || 0;
+let blockedCounter = window.blockedCounter || 0;
+
 function addAvailabilityBlock(type) {
     const container = document.getElementById(type === 'available' ? 'available-dates' : 'blocked-dates');
     const counter = type === 'available' ? availableCounter++ : blockedCounter++;
     const index = type === 'available' ? counter : counter + 100;
 
     const blockHtml = `
-        <div class="availability-block mb-3" data-type="${type}">
-            <div class="row">
-                <div class="col-md-5">
-                    <label class="small">Start Date</label>
-                    <input type="date" class="form-control form-control-sm" name="availability_blocks[${index}][start_date]" required>
+        <div class="availability-block mb-4 p-3 border rounded-4 bg-light shadow-sm" data-type="${type}">
+            <div class="row align-items-end">
+                <div class="col-md-5 mb-2 mb-md-0">
+                    <label class="small fw-bold text-muted mb-2 d-block">START DATE</label>
+                    <input type="date" class="form-control" name="availability_blocks[${index}][start_date]" required>
                 </div>
-                <div class="col-md-5">
-                    <label class="small">End Date</label>
-                    <input type="date" class="form-control form-control-sm" name="availability_blocks[${index}][end_date]" required>
+                <div class="col-md-5 mb-2 mb-md-0">
+                    <label class="small fw-bold text-muted mb-2 d-block">END DATE</label>
+                    <input type="date" class="form-control" name="availability_blocks[${index}][end_date]" required>
                 </div>
                 <div class="col-md-2">
-                    <label class="small">&nbsp;</label>
-                    <button type="button" class="btn btn-danger btn-sm btn-block" onclick="removeAvailabilityBlock(this)">
-                        <i class="fas fa-trash"></i>
+                    <button type="button" class="btn btn-danger w-100 rounded-3 py-2" onclick="removeAvailabilityBlock(this)">
+                        <i class="bi bi-trash3"></i>
                     </button>
                 </div>
             </div>
             ${type === 'blocked' ? `
-            <div class="row mt-2">
+            <div class="row mt-3">
                 <div class="col-12">
-                    <label class="small">Reason (optional)</label>
-                    <input type="text" class="form-control form-control-sm" name="availability_blocks[${index}][reason]" placeholder="e.g., Personal use, Maintenance">
+                    <label class="small fw-bold text-muted mb-2 d-block">REASON (OPTIONAL)</label>
+                    <input type="text" class="form-control" name="availability_blocks[${index}][reason]" placeholder="e.g. Personal use, Maintenance">
                 </div>
             </div>
-            ` : ''}
+            ` : `
+            <div class="row mt-2">
+                <div class="col-12">
+                    <div class="text-danger small availability-error" style="display: none;"></div>
+                </div>
+            </div>
+            `}
             <input type="hidden" name="availability_blocks[${index}][type]" value="${type}">
-            ${type === 'available' ? `
-            <div class="row mt-2">
-                <div class="col-12">
-                    <small class="text-info">
-                        <i class="fas fa-info-circle"></i> 
-                        Minimum 4 days rental required.
-                    </small>
-                    <div class="text-danger small mt-1 availability-error" style="display: none;"></div>
-                </div>
-            </div>
-            ` : ''}
         </div>
     `;
 
@@ -222,8 +184,10 @@ function addAvailabilityBlock(type) {
 }
 
 function removeAvailabilityBlock(button) {
-    if (confirm('Are you sure you want to remove this availability block?')) {
-        button.closest('.availability-block').remove();
+    if (confirm('Are you sure you want to remove this block?')) {
+        $(button).closest('.availability-block').fadeOut(300, function() {
+            $(this).remove();
+        });
     }
 }
 
@@ -243,7 +207,7 @@ $(document).ready(function () {
         const submitBtn = $(this).find('button[type="submit"]');
 
         // Disable submit button and show loading
-        submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Updating...');
+        submitBtn.prop('disabled', true).html('<i class="bi bi-hourglass-split me-2"></i> SAVING...');
 
         $.ajax({
             url: window.editClothUpdateUrl,
@@ -256,26 +220,21 @@ $(document).ready(function () {
             },
             success: function (response) {
                 if (response.success) {
-                    showAlert('Cloth updated successfully!', 'success');
+                    showAlert('Changes saved successfully!', 'success');
                     setTimeout(function () {
                         window.location.href = window.listedClothesUrl;
-                    }, 1500);
+                    }, 1000);
                 }
             },
             error: function (xhr, status, error) {
-                let errorMessage = 'An error occurred while updating the cloth.';
-
+                let errorMessage = 'Failed to update changes.';
                 if (xhr.responseJSON && xhr.responseJSON.errors) {
-                    const errors = xhr.responseJSON.errors;
-                    errorMessage = Object.values(errors).flat().join('\n');
-                } else if (xhr.responseText) {
-                    errorMessage = xhr.responseText;
+                    errorMessage = Object.values(xhr.responseJSON.errors).flat().join('<br>');
                 }
-
                 showAlert(errorMessage, 'danger');
             },
             complete: function () {
-                submitBtn.prop('disabled', false).html('<i class="fas fa-save"></i> Update Cloth');
+                submitBtn.prop('disabled', false).html('<i class="bi bi-cloud-arrow-up me-2"></i> UPDATE CHANGES');
             }
         });
     });
@@ -283,28 +242,6 @@ $(document).ready(function () {
     // Handle image upload
     $('#image-upload').change(function () {
         const files = this.files;
-        if (files.length > 0) {
-            uploadImages(files);
-        }
-    });
-
-    // Drag and drop functionality
-    const uploadArea = document.getElementById('upload-area');
-
-    uploadArea.addEventListener('dragover', function (e) {
-        e.preventDefault();
-        this.classList.add('dragover');
-    });
-
-    uploadArea.addEventListener('dragleave', function (e) {
-        e.preventDefault();
-        this.classList.remove('dragover');
-    });
-
-    uploadArea.addEventListener('drop', function (e) {
-        e.preventDefault();
-        this.classList.remove('dragover');
-        const files = e.dataTransfer.files;
         if (files.length > 0) {
             uploadImages(files);
         }
@@ -325,24 +262,11 @@ $(document).ready(function () {
             const daysDiff = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
 
             if (daysDiff < 4) {
-                if (errorDiv.length) {
-                    errorDiv.text(`Minimum 4 days rental required. Currently: ${daysDiff} day(s).`).show();
-                } else {
-                    // Create error div if it doesn't exist (for pre-existing blocks)
-                    block.append(`
-                    <div class="row mt-2 err-row">
-                        <div class="col-12">
-                            <div class="text-danger small mt-1 availability-error">Minimum 4 days rental required. Currently: ${daysDiff} day(s).</div>
-                        </div>
-                    </div>
-                    `);
-                }
+                errorDiv.text(`Minimum 4 days rental required. Currently: ${daysDiff} day(s).`).show();
+                endDateInput.addClass('is-invalid');
             } else {
-                if (errorDiv.length) {
-                    errorDiv.hide();
-                } else {
-                    block.find('.err-row').hide();
-                }
+                errorDiv.hide();
+                endDateInput.removeClass('is-invalid');
             }
         }
     }
@@ -362,7 +286,9 @@ $(document).ready(function () {
             const block = $(this).closest('.availability-block');
             const endDateInput = block.find('input[name*="[end_date]"]');
 
-            endDateInput.val(formattedEndDate);
+            if (!endDateInput.val()) {
+                endDateInput.val(formattedEndDate);
+            }
 
             handleAvailabilityDateChange(block);
         }
@@ -373,31 +299,26 @@ $(document).ready(function () {
         handleAvailabilityDateChange(block);
     });
 
-    // Measurement unit toggle and conversion
-    const unitSelectors = document.querySelectorAll('.unit-selector');
-    const measurementInputs = document.querySelectorAll('.measurement-input');
-    const measurementLabels = document.querySelectorAll('.measurement-label');
+    // Initial check for existing blocks
+    $('.availability-block[data-type="available"]').each(function() {
+        handleAvailabilityDateChange($(this));
+    });
 
-    unitSelectors.forEach(selector => {
-        selector.addEventListener('change', function () {
-            const unit = this.value;
-            const isCm = unit === 'cm';
-            const factor = isCm ? 2.54 : (1 / 2.54);
+    // Measurement unit conversion logic
+    $('select[name="measurement_unit"]').on('change', function() {
+        const unit = this.value;
+        const isCm = unit === 'cm';
+        const factor = isCm ? 2.54 : (1 / 2.54);
 
-            measurementLabels.forEach(label => {
-                const text = label.textContent.replace(/\s*\((inch|inches|cm)\)/gi, '');
-                label.textContent = `${text} (${unit})`;
-            });
-
-            measurementInputs.forEach(input => {
-                // Convert value if it exists
-                if (input.value) {
-                    let val = parseFloat(input.value.replace(/[^0-9.]/g, ''));
-                    if (!isNaN(val)) {
-                        input.value = (val * factor).toFixed(1).replace(/\.0$/, '');
-                    }
+        const measurements = ['chest_bust', 'waist', 'length', 'shoulder', 'sleeve_length'];
+        measurements.forEach(m => {
+            const $input = $(`input[name="${m}"]`);
+            if ($input.val()) {
+                let val = parseFloat($input.val().replace(/[^0-9.]/g, ''));
+                if (!isNaN(val)) {
+                    $input.val((val * factor).toFixed(1).replace(/\.0$/, ''));
                 }
-            });
+            }
         });
     });
-}); 
+});

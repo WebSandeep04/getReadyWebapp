@@ -1,184 +1,504 @@
 @extends('layouts.app')
+
+@section('styles')
+<style>
+/* Category Slider Styles */
+.category-slider-container {
+    position: relative;
+    padding: 10px 0;
+    margin-bottom: 0.5rem;
+    overflow: visible;
+    width: 100%;
+}
+
+.category-slider {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 10px 5px;
+    cursor: grab;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* IE and Edge */
+    user-select: none;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+.category-slider::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+}
+
+.category-slider.dragging {
+    cursor: grabbing;
+    scroll-behavior: auto;
+}
+
+.category-pill {
+    flex: 0 0 auto;
+    padding: 8px 22px;
+    background: #fff;
+    border: 1px solid #eaeaec;
+    border-radius: 50px;
+    color: #282c3f !important;
+    font-weight: 700;
+    font-size: 13px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    text-decoration: none !important;
+}
+
+.category-pill:hover, .category-pill.active-pill {
+    background: #FFA500;
+    color: #fff !important;
+    border-color: #FFA500;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 165, 0, 0.2);
+}
+
+.category-pill.active-pill {
+    background: linear-gradient(135deg, #FFA500 0%, #FF7F50 100%);
+    border: none;
+}
+
+/* Slider Arrows */
+.slider-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+    color: #282c3f;
+}
+
+.slider-arrow:hover {
+    background: #FFA500;
+    color: #fff;
+    border-color: #FFA500;
+}
+
+.arrow-left { left: -18px; }
+.arrow-right { right: -18px; }
+
+@media (max-width: 1200px) {
+    .arrow-left { left: 0; }
+    .arrow-right { right: 0; }
+}
+</style>
+@endsection
 <!-- before removing storage in public -->
  <!-- before implementing delivery self logic -->
 @section('title', frontend_setting('site_title', 'Get Ready - Home'))
 
 @push('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 <link rel="stylesheet" href="{{ asset('css/hero.css') }}">
 <link rel="stylesheet" href="{{ asset('css/home.css') }}">
+<link rel="stylesheet" href="{{ asset('css/browse.css') }}">
 @endpush
 
 @section('content')
-<!-- Hero Section -->
-<section class="hero text-center d-flex align-items-center justify-content-center" style="background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('{{ asset(frontend_setting('hero_image', 'images/main.png')) }}') center/cover; height: 100vh; min-height: 100vh;">
-  <div class="container text-center d-flex flex-column align-items-center justify-content-center">
-    <h1 class="text-white display-4 mb-3 text-center">{{ frontend_setting('hero_title', 'Welcome to GetReady') }}</h1>
-    <h3 class="text-white mb-3 text-center">{{ frontend_setting('hero_subtitle', 'Your premier destination for fashion rental') }}</h3>
-    <p class="text-white mb-4 text-center">{{ frontend_setting('hero_description', 'Discover amazing fashion pieces for your special occasions. Rent, wear, and return with ease.') }}</p>
-    <a href="{{ frontend_setting('hero_button_url', '/clothes') }}" class="btn btn-warning btn-lg text-center">{{ frontend_setting('hero_button_text', 'Start Shopping') }}</a>
+<!-- Hero Section Slider -->
+<section class="hero-slider swiper">
+  <div class="swiper-wrapper">
+    <!-- Slide 1 -->
+    <div class="swiper-slide" style="background: url('{{ asset('images/1.jpg') }}') center/cover no-repeat;">
+    </div>
+    <!-- Slide 2 -->
+    <div class="swiper-slide" style="background: url('{{ asset('images/2.jpg') }}') center/cover no-repeat;">
+    </div>
+    <!-- Slide 3 -->
+    <div class="swiper-slide" style="background: url('{{ asset('images/3.jpg') }}') center/cover no-repeat;">
+    </div>
   </div>
+  <!-- Swiper Navigation -->
+  <div class="swiper-button-next"></div>
+  <div class="swiper-button-prev"></div>
+  <!-- Swiper Pagination -->
+  <div class="swiper-pagination"></div>
 </section>
 
-<!-- About -->
-<section class="about text-center py-4">
-  <h2 class="text-warning">{{ frontend_setting('about_title', 'About Us') }}</h2>
-  <p>{{ frontend_setting('about_content', 'Celebrate every occasion in style — without compromise. At GetReady, we make it easy to buy, sell, or rent premium outfits for weddings, festivals, and events. Smart fashion choices for modern wardrobes.') }}</p>
-</section>
-
-
-
-<!-- Most Loved -->
-<section class="most-loved text-center py-4 bg-light">
-  <h2 class="text-warning mb-3">Most Loved</h2>
-  <div class="tabs mb-4">
-    <button class="tab btn btn-outline-warning active" onclick="switchTab('men')">Men</button>
-    <button class="tab btn btn-outline-warning" onclick="switchTab('women')">Women</button>
-    <button class="tab btn btn-outline-warning" onclick="switchTab('kids')">Kids</button>
-  </div>
-
-  <div id="mostLovedCarousel" class="carousel slide w-75 mx-auto" data-ride="carousel">
-    <ol class="carousel-indicators">
-      <li data-target="#mostLovedCarousel" data-slide-to="0" class="active"></li>
-      <li data-target="#mostLovedCarousel" data-slide-to="1"></li>
-      <li data-target="#mostLovedCarousel" data-slide-to="2"></li>
-    </ol>
-
-    <div class="carousel-inner">
-      <div class="carousel-item active">
-        <img src="{{ asset('images/lehenga.jpg') }}" class="d-block mx-auto" alt="Outfit 1" style="height: 400px;">
+<!-- Category Section -->
+<section class="category-section py-5 bg-white">
+  <div class="container">
+    <div class="category-wrapper d-flex justify-content-center flex-wrap gap-5">
+      <div class="category-item text-center">
+        <a href="{{ url('/clothes?genders[]=Men') }}" class="text-decoration-none">
+          <div class="category-img-wrapper mb-2">
+            <img src="{{ asset('images/cat_men.png') }}" alt="Men" class="category-img shadow-sm" onerror="this.src='https://placehold.co/120x120?text=Men'">
+          </div>
+          <span class="category-name text-dark font-weight-bold">Men</span>
+        </a>
       </div>
-      <div class="carousel-item">
-        <img src="{{ asset('images/lehenga.jpg') }}" class="d-block mx-auto" alt="Outfit 2" style="height: 400px;">
+      <div class="category-item text-center">
+        <a href="{{ url('/clothes?genders[]=Women') }}" class="text-decoration-none">
+          <div class="category-img-wrapper mb-2">
+            <img src="{{ asset('images/cat_women.png') }}" alt="Women" class="category-img shadow-sm" onerror="this.src='https://placehold.co/120x120?text=Women'">
+          </div>
+          <span class="category-name text-dark font-weight-bold">Women</span>
+        </a>
       </div>
-      <div class="carousel-item">
-        <img src="{{ asset('images/lehenga.jpg') }}" class="d-block mx-auto" alt="Outfit 3" style="height: 400px;">
+      <div class="category-item text-center">
+        <a href="{{ url('/clothes?genders[]=Boy') }}" class="text-decoration-none">
+          <div class="category-img-wrapper mb-2">
+            <img src="{{ asset('images/cat_boy.png') }}" alt="Boy" class="category-img shadow-sm" onerror="this.src='https://placehold.co/120x120?text=Boy'">
+          </div>
+          <span class="category-name text-dark font-weight-bold">Boy</span>
+        </a>
+      </div>
+      <div class="category-item text-center">
+        <a href="{{ url('/clothes?genders[]=Girl') }}" class="text-decoration-none">
+          <div class="category-img-wrapper mb-2">
+            <img src="{{ asset('images/cat_girl.png') }}" alt="Girl" class="category-img shadow-sm" onerror="this.src='https://placehold.co/120x120?text=Girl'">
+          </div>
+          <span class="category-name text-dark font-weight-bold">Girl</span>
+        </a>
       </div>
     </div>
 
-    <a class="carousel-control-prev" href="#mostLovedCarousel" role="button" data-slide="prev">
-      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-      <span class="sr-only">Previous</span>
-    </a>
-    <a class="carousel-control-next" href="#mostLovedCarousel" role="button" data-slide="next">
-      <span class="carousel-control-next-icon" aria-hidden="true"></span>
-      <span class="sr-only">Next</span>
-    </a>
+    <div class="text-center mt-5">
+      <a href="{{ route('clothes.index') }}" id="viewAllBtn" class="btn btn-warning rounded-pill px-5 py-3 font-weight-bold shadow-lg text-decoration-none">Check all Outfits</a>
+    </div>
+    
   </div>
 </section>
 
-<!-- Brands Carousel -->
-@if(isset($brands) && $brands->count() > 0)
-<section class="brands-carousel-section py-5 bg-white">
-  <div class="container position-relative">
-    <h2 class="text-center text-warning mb-5">Our Brands</h2>
-    <div id="brandsCarousel" class="carousel slide" data-ride="carousel" data-interval="3000">
-      <div class="carousel-inner">
-        @php
-          $brandsPerSlide = 5;
-          $totalSlides = ceil($brands->count() / $brandsPerSlide);
-        @endphp
-        @for($i = 0; $i < $totalSlides; $i++)
-          <div class="carousel-item {{ $i === 0 ? 'active' : '' }}">
-            <div class="row justify-content-center align-items-start">
-              @foreach($brands->slice($i * $brandsPerSlide, $brandsPerSlide) as $brand)
-                <div class="col-6 col-md-2 text-center mb-3">
-                  <div class="d-flex flex-column align-items-center">
-                    <div class="brand-logo-wrapper mb-3">
-                        @if($brand->logo)
-                          <img src="{{ asset('storage/' . $brand->logo) }}" alt="{{ $brand->name }}" class="brand-logo">
-                        @else
-                          <i class="bi bi-tag-fill text-warning" style="font-size: 3rem;"></i>
-                        @endif
-                    </div>
-                    <h6 class="text-dark font-weight-bold px-2 w-100" style="font-size: 1rem; line-height: 1.3;" title="{{ $brand->name }}">{{ $brand->name }}</h6>
-                  </div>
-                </div>
-              @endforeach
-            </div>
+<!-- How it Works Section -->
+<section class="how-it-works py-5 bg-white">
+  <div class="container">
+    <div class="text-center mb-3">
+      <h2 class="display-5 font-weight-bold" style="color: #282c3f;">Elevate Your Wardrobe in <span class="text-warning">3 Simple Steps</span></h2>
+    </div>
+
+    <div class="row g-4">
+      <!-- Step 1 -->
+      <div class="col-md-4">
+        <div class="step-card">
+          <div class="step-img-wrapper">
+            <span class="step-badge">1</span>
+            <img src="{{ asset('images/step-1.jpg') }}?v=1" alt="Browse" class="step-img">
+            <div class="step-overlay"></div>
           </div>
-        @endfor
+          <div class="step-content text-center mt-3">
+            <h4 class="font-weight-bold mb-2">List Your Collection Effortlessly</h4> 
+          </div>
+        </div>
       </div>
-      @if($totalSlides > 1)
-        <a class="carousel-control-prev" href="#brandsCarousel" role="button" data-slide="prev">
-          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-          <span class="sr-only">Previous</span>
-        </a>
-        <a class="carousel-control-next" href="#brandsCarousel" role="button" data-slide="next">
-          <span class="carousel-control-next-icon" aria-hidden="true"></span>
-          <span class="sr-only">Next</span>
-        </a>
-        <ol class="carousel-indicators">
-          @for($i = 0; $i < $totalSlides; $i++)
-            <li data-target="#brandsCarousel" data-slide-to="{{ $i }}" class="{{ $i === 0 ? 'active' : '' }}"></li>
-          @endfor
-        </ol>
-      @endif
+
+      <!-- Step 2 -->
+      <div class="col-md-4">
+        <div class="step-card">
+          <div class="step-img-wrapper">
+            <span class="step-badge">2</span>
+            <img src="{{ asset('images/step-2.jpg') }}?v=1" alt="Rent" class="step-img">
+            <div class="step-overlay"></div>
+          </div>
+          <div class="step-content text-center mt-3">
+            <h4 class="font-weight-bold mb-2">Pickup & Pan-India Delivery</h4> 
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="col-md-4">
+        <div class="step-card">
+          <div class="step-img-wrapper">
+            <span class="step-badge">3</span>
+            <img src="{{ asset('images/step-3.jpg') }}?v=1" alt="Return" class="step-img">
+            <div class="step-overlay"></div>
+          </div>
+          <div class="step-content text-center mt-3">
+            <h4 class="font-weight-bold mb-2">Secure & Hassle-Free Earnings</h4> 
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center mt-5">
+      <a href="/sell" class="btn btn-warning rounded-pill px-5 py-3 font-weight-bold shadow-lg">Easy to List & Earn</a>
+    </div>
+  </div>
+</section>
+
+
+<!-- Dynamic 3-Line Brand Marquee -->
+@if(isset($brands) && $brands->count() > 0)
+<section class="brands-marquee-section py-3 bg-white overflow-hidden">
+  <div class="container-fluid px-0">
+    <div class="section-header text-center mb-2">
+      <h2 class="text-warning font-weight-bold display-4">Our Trusted Brands</h2>
+      <p class="text-muted">Partnering with 70+ Premium Fashion Labels</p>
+    </div>
+    
+    @php
+      $chunks = $brands->chunk(ceil($brands->count() / 3));
+    @endphp
+
+    <div class="marquees-wrapper">
+      @foreach($chunks as $index => $rowBrands)
+        <div class="marquee-container {{ $index % 2 == 0 ? 'marquee-left' : 'marquee-right' }}">
+          <div class="marquee-content">
+            @foreach($rowBrands as $brand)
+              <div class="brand-logo-item">
+                <div class="brand-logo-inner shadow-sm">
+                  @if($brand->logo)
+                    <img src="{{ asset('storage/' . $brand->logo) }}" alt="{{ $brand->name }}" class="img-fluid">
+                  @else
+                    <div class="brand-placeholder-marquee">
+                      <i class="bi bi-tag-fill text-warning"></i>
+                      <span>{{ $brand->name }}</span>
+                    </div>
+                  @endif
+                </div>
+              </div>
+            @endforeach
+            <!-- Duplicate for seamless loop -->
+            @foreach($rowBrands as $brand)
+              <div class="brand-logo-item">
+                <div class="brand-logo-inner shadow-sm">
+                  @if($brand->logo)
+                    <img src="{{ asset('storage/' . $brand->logo) }}" alt="{{ $brand->name }}" class="img-fluid">
+                  @else
+                    <div class="brand-placeholder-marquee">
+                      <i class="bi bi-tag-fill text-warning"></i>
+                      <span>{{ $brand->name }}</span>
+                    </div>
+                  @endif
+                </div>
+              </div>
+            @endforeach
+          </div>
+        </div>
+      @endforeach
     </div>
   </div>
 </section>
 @endif
 
-<!-- Occasion -->
-<section class="occasion text-center py-4">
-  <h2 class="text-warning mb-3">Choose Your Outfits According To Your Occasion</h2>
-  <div class="occasion-tabs mb-3">
-    <button class="btn btn-outline-secondary mx-1">Wedding</button>
-    <button class="btn btn-outline-secondary mx-1">Corporate Event</button>
-    <button class="btn btn-outline-secondary mx-1">Party</button>
-    <button class="btn btn-outline-secondary mx-1">Others</button>
-  </div>
-
+<!-- Occasion Section -->
+<section class="occasion-section py-5 bg-light">
   <div class="container">
-    <div class="row justify-content-center">
-      @forelse($clothes as $cloth)
-        <div class="col-6 col-md-3 mb-3">
-          <div class="card h-100">
-            <a href="{{ route('clothes.show', $cloth->id) }}">
-              @if($cloth->images->count() > 0)
-                <img src="{{ asset('storage/' . $cloth->images->first()->image_path) }}" alt="{{ $cloth->title }}" class="card-img-top">
-              @else
-                <img src="{{ asset('images/1.jpg') }}" alt="{{ $cloth->title }}" class="card-img-top">
-              @endif
-            </a>
-            <div class="card-body d-flex flex-column">
-              <h6 class="card-title">{{ $cloth->title }}</h6>
-              @if($cloth->user && $cloth->user->average_rating > 0)
-                  <div class="mb-2">
-                      <span class="badge badge-light border text-warning border-warning" title="Seller Rating">
-                          <i class="bi bi-star-fill text-warning"></i> {{ $cloth->user->average_rating }}
-                      </span>
-                  </div>
-              @endif
-                              <p class="card-text text-warning fw-bold">₹{{ number_format($cloth->display_rent_price) }}</p>
-                <div class="d-flex flex-column gap-1 mt-auto">
-                  <!-- <button class="btn btn-warning btn-sm add-to-cart-btn" data-cloth-id="{{ $cloth->id }}" style="cursor: pointer;">
-                    <i class="bi bi-cart-plus me-1"></i>Rent
-                  </button>
-                  @if($cloth->is_purchased)
-                    <button class="btn btn-success btn-sm add-to-cart-buy-btn" data-cloth-id="{{ $cloth->id }}" style="cursor: pointer; background-color: #28a745; border-color: #28a745;">
-                      <i class="bi bi-bag-check me-1"></i>Buy - ₹{{ number_format($cloth->selling_price) }}
-                    </button>
-                  @endif -->
-                </div>
+    <div class="text-center mb-5">
+      <h2 class="section-title-premium">Styles For Every <span class="text-warning">Occasion</span></h2>
+      <p class="section-subtitle-premium">Handpicked outfits tailored for your special moments.</p>
+      
+      <div class="category-slider-container">
+        <button class="slider-arrow arrow-left" onclick="scrollSlider(-200)"><i class="bi bi-chevron-left"></i></button>
+        <div class="category-slider" id="categorySlider">
+          <a href="{{ route('clothes.index') }}" class="category-pill active-pill" data-category-id="">All Outfits</a>
+          @foreach($categories as $category)
+            <a href="{{ route('clothes.index') }}?categories[]={{ $category->id }}" class="category-pill" data-category-id="{{ $category->id }}">{{ $category->name }}</a>
+          @endforeach
+        </div>
+        <button class="slider-arrow arrow-right" onclick="scrollSlider(200)"><i class="bi bi-chevron-right"></i></button>
+      </div>
+    </div>
+
+    <div class="products-grid" id="homeProductsGrid">
+      @include('clothes.partials.products-grid', ['clothes' => $clothes])
+    </div>
+
+    <div class="text-center mt-5">
+      <a href="{{ route('clothes.index') }}" id="viewAllBtn" class="btn btn-warning rounded-pill px-5 py-3 font-weight-bold shadow-lg text-decoration-none">Check all Outfits</a>
+    </div>
+  </div>
+</section>
+
+<!-- Recently Added Section -->
+<section class="recently-added-section py-5 bg-white">
+  <div class="container">
+    <div class="mb-4 text-center">
+      <h2 class="section-title-premium mb-1">Recently Added <span class="text-warning">Collections</span></h2>
+      <p class="text-muted mb-0">Discover the freshest designer arrivals curated just for you.</p>
+    </div>
+
+    <div class="recently-added-scroll">
+      @include('clothes.partials.products-grid', ['clothes' => $latestClothes])
+    </div>
+
+    <div class="text-center mt-4 d-lg-none">
+      <a href="{{ route('clothes.index') }}?sort_by=newest" class="see-all-btn">See All</a>
+    </div>
+    <div class="text-center mt-4 d-none d-lg-block">
+      <a href="{{ route('clothes.index') }}?sort_by=newest" class="see-all-btn">See All</a>
+    </div>
+  </div>
+</section>
+
+<!-- Professional About Us Section - Reimagined -->
+<section class="about-premium py-5 bg-white">
+  <div class="container">
+    <div class="text-center mb-5">
+      <span class="text-warning font-weight-bold text-uppercase letter-spacing-2 mb-2 d-block">Why GetReady?</span>
+      <h2 class="display-4 font-weight-bold" style="color: #282c3f;">Fashion Rental, <span class="text-warning">Reimagined</span></h2>
+    </div>
+
+    <div class="row g-3 justify-content-center">
+      <!-- Card 1: Curated Luxury -->
+      <div class="col-lg-4 col-md-6">
+        <div class="feature-card h-100 p-4 border-0 shadow-sm rounded-lg transition-all hover-up">
+          <div class="card-icon-wrapper mb-3">
+            <i class="bi bi-gem text-warning"></i>
+          </div>
+          <div class="feature-content">
+            <h5 class="font-weight-bold mb-2">Curated Luxury</h5>
+            <p class="text-muted mb-0">Hand-picked designer pieces from prestigious fashion houses for your special moments.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Sustainable Style -->
+      <div class="col-lg-4 col-md-6">
+        <div class="feature-card h-100 p-4 border-0 shadow-sm rounded-lg active-card transition-all hover-up">
+          <div class="card-icon-wrapper mb-3">
+            <i class="bi bi-recycle text-warning"></i>
+          </div>
+          <div class="feature-content">
+            <h5 class="font-weight-bold mb-2">Sustainable Style</h5>
+            <p class="text-muted mb-0">Join the revolution of conscious consumption. Renting reduces waste responsibly.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Pristine Quality -->
+      <div class="col-lg-4 col-md-6">
+        <div class="feature-card h-100 p-4 border-0 shadow-sm rounded-lg transition-all hover-up">
+          <div class="card-icon-wrapper mb-3">
+            <i class="bi bi-stars text-warning"></i>
+          </div>
+          <div class="feature-content">
+            <h5 class="font-weight-bold mb-2">Pristine Quality</h5>
+            <p class="text-muted mb-0">Every outfit undergoes a 7-step sanitization process for showroom condition.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Stats Row -->
+    <div class="row mt-5 pt-4 border-top text-center">
+      <div class="col-md-4 mb-3">
+        <h2 class="font-weight-bold text-warning mb-1">5000+</h2>
+        <p class="text-muted small text-uppercase font-weight-bold">Designer Outfits</p>
+      </div>
+      <div class="col-md-4 mb-3">
+        <h2 class="font-weight-bold text-warning mb-1">24hr</h2>
+        <p class="text-muted small text-uppercase font-weight-bold">Express Delivery</p>
+      </div>
+      <div class="col-md-4 mb-3">
+        <h2 class="font-weight-bold text-warning mb-1">100%</h2>
+        <p class="text-muted small text-uppercase font-weight-bold">Fit Guarantee</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Get the App Section -->
+<section class="get-app-section py-0   overflow-hidden">
+  <div class="get-app-card border-0">
+    <div class="container">
+      <div class="row align-items-center">
+        <!-- Phone Mockup Side -->
+        <div class="col-lg-6 text-center position-relative py-5">
+          <div class="mockup-bg-circle"></div>
+          <img src="{{ asset('images/app_mockup.png') }}" alt="App Mockup" class="img-fluid app-mockup-img">
+        </div>
+        
+        <!-- Content Side -->
+        <div class="col-lg-6 py-5 px-lg-5">
+          <div class="app-info text-dark">
+            <h2 class="display-4 font-weight-bold mb-3" style="color: #282c3f;">Get the App</h2>
+            <p class="lead mb-4" style="color: #696e79; font-size:16px;">Experience premium fashion rental at your fingertips. Join our community of over 5 million fashion enthusiasts.</p>
+            
+            <div class="app-links d-flex flex-wrap gap-3 mb-5">
+              <a href="#" class="store-badge">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play" height="48">
+              </a>
+               
+            </div>
+
+            <div class="qr-section d-flex align-items-center">
+              <div class="qr-box p-2 bg-white rounded shadow-sm mr-4">
+                <img src="{{ asset('images/demo_qr.png') }}" alt="QR Code" width="110" height="110">
+              </div>
+              <div class="qr-text">
+                <h6 class="mb-1 font-weight-bold">Scan to Download</h6>
+                <p class="small text-muted mb-0">Point your camera to the QR code to install the app instantly.</p>
+              </div>
             </div>
           </div>
         </div>
-      @empty
-        <div class="col-12 text-center">
-          <p>No clothes available at the moment.</p>
-        </div>
-      @endforelse
+      </div>
     </div>
   </div>
-
-  <button class="btn btn-warning mt-3">Load More</button>
 </section>
 
+@endsection
+
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
 $(document).ready(function() {
-    // On load, disable buttons for items already in the user's cart
-    loadCartItems();
+    // Initialize Swiper Hero Slider
+    const heroSwiper = new Swiper('.hero-slider', {
+        loop: true,
+        autoplay: {
+            delay: 5000,
+            disableOnInteraction: false,
+        },
+        pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+        },
+        navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+        },
+        effect: 'fade',
+        fadeEffect: {
+            crossFade: true
+        },
+    });
+
+    // Initialize Swiper Brands Slider
+    const brandsSwiper = new Swiper('.brands-swiper', {
+        slidesPerView: 2,
+        spaceBetween: 20,
+        loop: true,
+        autoplay: {
+            delay: 3000,
+            disableOnInteraction: false,
+        },
+        pagination: {
+            el: '.brands-pagination',
+            clickable: true,
+        },
+        navigation: {
+            nextEl: '.brands-next',
+            prevEl: '.brands-prev',
+        },
+        breakpoints: {
+            640: {
+                slidesPerView: 3,
+            },
+            768: {
+                slidesPerView: 4,
+            },
+            1024: {
+                slidesPerView: 5,
+            },
+        },
+    });
+
 
     // Buy button functionality for home page
     $('.add-to-cart-buy-btn').click(function(e) {
@@ -219,6 +539,9 @@ $(document).ready(function() {
                     // Also disable the Rent button on the same card
                     const $rentBtn = $btn.closest('.card').find('.add-to-cart-btn[data-cloth-id="' + clothId + '"]');
                     $rentBtn.prop('disabled', true).text('RENTED');
+
+                    // Refresh mini-cart
+                    loadCartItems();
                 } else {
                     showAlert('danger', response.message);
                     $btn.prop('disabled', false).html('<i class="bi bi-bag-check me-1"></i>Buy - ₹' + purchaseValue.toLocaleString());
@@ -236,95 +559,110 @@ $(document).ready(function() {
     });
 });
 
-// Load cart items and disable corresponding buttons
-function loadCartItems() {
-    $.ajax({
-        url: '/cart/items',
-        type: 'GET',
-        success: function(response) {
-            if (response.cartItems) {
-                response.cartItems.forEach(function(item) {
-                    if (item.purchase_type === 'buy') {
-                        updateAllBuyButtons(item.cloth_id, true);
-                    } else {
-                        updateAllRentButtons(item.cloth_id, true);
-                    }
-                });
+
+// Category Slider Global Logic
+(function() {
+    function initSlider() {
+        const slider = document.getElementById('categorySlider');
+        if (!slider) return;
+
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+        let moved = false;
+
+        // Mouse Events
+        slider.addEventListener('mousedown', (e) => {
+            isDown = true;
+            moved = false;
+            startX = e.pageX - slider.offsetLeft;
+            scrollLeft = slider.scrollLeft;
+            slider.style.cursor = 'grabbing';
+            slider.style.scrollBehavior = 'auto';
+        });
+
+        slider.addEventListener('mouseleave', () => {
+            isDown = false;
+            slider.style.cursor = 'grab';
+            slider.style.scrollBehavior = 'smooth';
+        });
+
+        slider.addEventListener('mouseup', () => {
+            isDown = false;
+            slider.style.cursor = 'grab';
+            slider.style.scrollBehavior = 'smooth';
+        });
+
+        slider.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - slider.offsetLeft;
+            const walk = (x - startX) * 2;
+            if (Math.abs(walk) > 10) moved = true;
+            slider.scrollLeft = scrollLeft - walk;
+        });
+
+        // Click Prevention
+        slider.addEventListener('click', (e) => {
+            if (moved) {
+                e.preventDefault();
+                e.stopPropagation();
             }
-        }
-    });
-}
+        }, true);
 
-// Disable/enabled Rent buttons for a cloth id
-function updateAllRentButtons(clothId, isRented) {
-    const $buttons = $('.add-to-cart-btn[data-cloth-id="' + clothId + '"]');
-    $buttons.each(function() {
-        const $btn = $(this);
-        if (isRented) {
-            $btn.text('RENTED').prop('disabled', true).attr('title', 'Already in cart');
-            // Also disable Buy button on the same card
-            const $buyBtn = $btn.closest('.card').find('.add-to-cart-buy-btn[data-cloth-id="' + clothId + '"]');
-            $buyBtn.prop('disabled', true);
-        } else {
-            $btn.html('<i class="bi bi-cart-plus me-1"></i>Rent').prop('disabled', false).removeAttr('title');
-            const $buyBtn = $btn.closest('.card').find('.add-to-cart-buy-btn[data-cloth-id="' + clothId + '"]');
-            $buyBtn.prop('disabled', false);
-        }
-    });
-}
+        // Arrow Scroll Function
+        window.scrollSlider = function(amount) {
+            slider.style.scrollBehavior = 'smooth';
+            slider.scrollLeft += amount;
+        };
 
-// Disable/enabled Buy buttons for a cloth id
-function updateAllBuyButtons(clothId, isPurchased) {
-    const $buttons = $('.add-to-cart-buy-btn[data-cloth-id="' + clothId + '"]');
-    $buttons.each(function() {
-        const $btn = $(this);
-        if (isPurchased) {
-            $btn.text('PURCHASED').prop('disabled', true).attr('title', 'Already purchased');
-            // Also disable Rent button on the same card
-            const $rentBtn = $btn.closest('.card').find('.add-to-cart-btn[data-cloth-id="' + clothId + '"]');
-            $rentBtn.prop('disabled', true).text('RENTED');
-        } else {
-            // Re-enable
-            // We reconstruct button text conservatively without price to avoid parsing issues
-            $btn.html('<i class="bi bi-bag-check me-1"></i>Buy').prop('disabled', false).removeAttr('title');
-            const $rentBtn = $btn.closest('.card').find('.add-to-cart-btn[data-cloth-id="' + clothId + '"]');
-            $rentBtn.prop('disabled', false).html('<i class="bi bi-cart-plus me-1"></i>Rent');
-        }
-    });
-}
+        // AJAX Filtering Logic
+        const categoryPills = slider.querySelectorAll('.category-pill');
+        const productsGrid = document.getElementById('homeProductsGrid');
+        const viewAllBtn = document.getElementById('viewAllBtn');
 
-// Update cart count in header
-function updateCartCount(count) {
-    const $cartCount = $('#cart-count');
-    if ($cartCount.length > 0) {
-        $cartCount.text(count);
-        if (count > 0) {
-            $cartCount.show();
-        } else {
-            $cartCount.hide();
-        }
+        categoryPills.forEach(pill => {
+            pill.addEventListener('click', function(e) {
+                // Only act if not dragged
+                if (moved) return;
+                
+                e.preventDefault();
+                const categoryId = this.getAttribute('data-category-id');
+
+                // Update active state
+                categoryPills.forEach(p => p.classList.remove('active-pill'));
+                this.classList.add('active-pill');
+
+                // Show loading state in grid
+                productsGrid.style.opacity = '0.5';
+
+                // Fetch filtered products
+                fetch(`/?category_id=${categoryId}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    productsGrid.innerHTML = data.html;
+                    productsGrid.style.opacity = '1';
+                    if (viewAllBtn) {
+                        viewAllBtn.href = data.category_url;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching categories:', error);
+                    productsGrid.style.opacity = '1';
+                });
+            });
+        });
+        
+        console.log("Category Slider Initialized Successfully");
     }
-}
 
-// Show alert message
-function showAlert(type, message) {
-    const alertHtml = `
-        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    `;
-    
-    // Remove existing alerts
-    $('.alert').remove();
-    
-    // Add new alert
-    $('body').prepend(alertHtml);
-    
-    // Auto-hide after 3 seconds
-    setTimeout(function() {
-        $('.alert').fadeOut();
-    }, 3000);
-}
+    // Attempt to initialize multiple times to ensure success
+    setTimeout(initSlider, 100);
+    window.addEventListener('load', initSlider);
+})();
 </script>
 @endsection

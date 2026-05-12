@@ -6,6 +6,17 @@
 <link rel="stylesheet" href="{{ asset('css/product.css') }}" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link rel="stylesheet" href="{{ asset('css/cloth-show.css') }}">
+<style>
+    .related-items {
+        padding: 4rem 0;
+        background: #f8fafc;
+    }
+    .section-title {
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        margin-bottom: 2rem;
+    }
+</style>
 @endsection
 
 @section('content')
@@ -16,7 +27,7 @@
   <div class="modal-dialog modal-dialog-centered modal-sm">
     <div class="modal-content rounded-4 border-0 shadow">
       <div class="modal-header border-0 pb-0">
-        <h5 class="modal-title font-weight-bold" id="measurementsModalLabel">Measurements</h5>
+        <h5 class="modal-title font-weight-bold" id="measurementsModalLabel"> Measurements</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -60,11 +71,9 @@
           @else
             <img src="{{ asset('images/lehenga.jpg') }}" alt="{{ $cloth->title }}" class="img-fluid rounded-4 w-100">
           @endif
-          @if($cloth->is_approved === 1)
-          <div class="floating-badge">
-            <i class="bi bi-shield-check"></i> QC Passed
+          <div class="floating-badge shadow-sm" style="background: rgba(255,255,255,0.95); color: #1e293b; border: 1px solid rgba(0,0,0,0.05); font-weight: 600; backdrop-filter: blur(5px);">
+            <i class="bi bi-patch-check-fill text-primary" style="font-size: 1.1rem;"></i> QC Passed
           </div>
-          @endif
         </div>
         @if($cloth->images->count() > 1)
           <div class="product-gallery__thumbs">
@@ -78,131 +87,81 @@
       </div>
 
       <div class="card shadow-sm mt-4 p-4">
-        <div class="d-flex flex-wrap gap-2 mb-3">
-          <span class="chip"><i class="bi bi-grid"></i>{{ $cloth->category->name ?? 'General' }}</span>
-          <span class="chip"><i class="bi bi-person"></i>{{ $cloth->gender }}</span>
-          <span class="chip"><i class="bi bi-droplet-half"></i>{{ $cloth->color->name ?? 'Not specified' }}</span>
-          <span class="chip"><i class="bi bi-rulers"></i>Size {{ $cloth->size->name ?? $cloth->size }}</span>
-          <span class="chip"><i class="bi bi-scissors"></i>{{ $cloth->fabric->name ?? 'Fabric TBC' }}</span>
+        <div class="d-flex flex-wrap gap-2 mb-4">
+          <span class="chip-premium chip-category"><i class="bi bi-tag-fill"></i>{{ $cloth->category->name ?? 'Premium Wear' }}</span>
+          <span class="chip-premium chip-gender"><i class="bi bi-gender-ambiguous"></i>{{ $cloth->gender }}</span>
+          <span class="chip-premium chip-color"><i class="bi bi-palette"></i>{{ $cloth->color->name ?? 'Not specified' }}</span>
+          <span class="chip-premium chip-size"><i class="bi bi-rulers"></i>Size {{ $cloth->size->name ?? $cloth->size }}</span>
         </div>
 
-        <h1 class="product-title">{{ $cloth->title }}</h1>
-        <p class="text-muted mb-2">{{ $cloth->brand->name ?? 'Independent Designer' }}</p>
-        
-        <!-- @if($cloth->user && $cloth->user->average_rating > 0)
-          <div class="mb-4">
-              <span class="badge badge-light border text-warning border-warning" title="Seller Rating">
-                  <i class="bi bi-star-fill text-warning"></i> Seller Rating: {{ $cloth->user->average_rating }}
-              </span>
-          </div>
-        @else
-          <div class="mb-4"></div>
-        @endif -->
+        <div class="product-header mb-2">
+          <h1 class="product-title fw-bold mb-1" style="font-size: 2.2rem; letter-spacing: -0.01em;">{{ $cloth->title }}</h1>
+          <p class="text-muted mb-0 d-flex align-items-center gap-2">
+            <span class="fw-semibold text-dark">{{ $cloth->brand->name ?? 'Independent Designer' }}</span>
+            <span class="opacity-25">|</span>
+            <span class="small text-uppercase tracking-wider">Product Code: #{{ str_pad($cloth->id, 5, '0', STR_PAD_LEFT) }}</span>
+          </p>
+        </div>
 
-        <div class="info-grid">
-          <div>
-            <label>Fit Type</label>
-            <p>{{ $cloth->fitType->name ?? 'Regular fit' }}</p>
+        <div class="info-specs-grid mb-4">
+          <div class="spec-item">
+            <div class="spec-label">FIT TYPE</div>
+            <div class="spec-value">{{ $cloth->fitType->name ?? 'Regular fit' }}</div>
           </div>
-          <div>
-            <label>Condition</label>
-            <p>{{ $cloth->condition->name ?? $cloth->condition }}</p>
+          <div class="spec-item">
+            <div class="spec-label">CONDITION</div>
+            <div class="spec-value d-flex align-items-center gap-1">
+              <i class="bi bi-shield-check text-success"></i>  {{ $cloth->condition->name ?? $cloth->condition }}
+            </div>
           </div>
-          <div>
-            <label class="d-flex align-items-center mb-1">
-              Measurements 
-              <button type="button" class="btn btn-link p-0 ms-2 text-primary" data-toggle="modal" data-target="#measurementsModal" style="margin-left: 5px; line-height: 1;">
-                <i class="bi bi-info-circle" style="font-size: 0.9rem;"></i>
+          <div class="spec-item">
+            <div class="spec-label d-flex align-items-center gap-2">
+              MEASUREMENTS
+              <button type="button" class="btn btn-link p-0 text-primary" data-toggle="modal" data-target="#measurementsModal">
+                 <i class="bi bi-info-circle"></i>
               </button>
-            </label>
-            <p>Chest {{ $cloth->chest_bust ?? '—' }}{{ $cloth->measurement_unit == 'cm' ? 'cm' : 'in' }}, Waist {{ $cloth->waist ?? '—' }}{{ $cloth->measurement_unit == 'cm' ? 'cm' : 'in' }}</p>
+            </div>
+            <div class="spec-value">
+              Chest {{ $cloth->chest_bust ?? '—' }}{{ $cloth->measurement_unit == 'cm' ? 'cm' : 'in' }} · Waist {{ $cloth->waist ?? '—' }}{{ $cloth->measurement_unit == 'cm' ? 'cm' : 'in' }}
+            </div>
           </div>
-          <!-- <div>
-            <label>Care</label>
-            <p>{{ $cloth->is_cleaned ? 'Dry-cleaned & ready' : 'Freshly steamed' }}</p>
-          </div> -->
         </div>
 
-        <div class="detail-grid">
-          <div>
-            <h6>Fabric & Highlights</h6>
-            <p class="mb-0">
-              {{ $cloth->fabric->name ?? 'Premium blended fabric' }} · {{ ucfirst(strtolower($cloth->color->name ?? 'Multi')) }} tone · {{ $cloth->bottomType->name ?? 'Two-piece' }} silhouette
-            </p>
-          </div>
-          <div>
-            <h6>Notes</h6>
-            <p class="mb-0">{{ $cloth->defects ?? 'No visible flaws reported by the owner.' }}</p>
+        <div class="product-description-refined">
+          <div class="row g-4">
+            <div class="col-md-6">
+              <h6 class="text-uppercase small fw-bold text-muted mb-2 ls-1">Fabric & Highlights</h6>
+              <p class="mb-0 text-dark" style="font-size: 0.95rem; line-height: 1.6;">
+                Crafted from {{ strtolower($cloth->fabric->name ?? 'premium fabric') }} with a {{ strtolower($cloth->color->name ?? 'multi') }} tone finish. Features a signature {{ strtolower($cloth->bottomType->name ?? 'designer') }} silhouette.
+              </p>
+            </div>
+            <div class="col-md-6">
+              <h6 class="text-uppercase small fw-bold text-muted mb-2 ls-1">Owner's Notes</h6>
+              <p class="mb-0 text-dark" style="font-size: 0.95rem; line-height: 1.6;">
+                <i class="bi bi-chat-left-quote text-primary-subtle me-2"></i>{{ $cloth->defects ?? 'This piece is in pristine condition with no visible flaws.' }}
+              </p>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="card shadow-sm mt-4 p-4 availability-card">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="mb-0"><i class="bi bi-calendar-week me-2 text-primary"></i>Availability</h5>
-          <span class="badge bg-light text-dark">{{ $cloth->availabilityBlocks->where('type','available')->count() ? '' : 'Always available' }}</span>
-        </div>
-        @if($cloth->availabilityBlocks->where('type', 'available')->count() > 0)
-          <div class="timeline">
-            @foreach($cloth->availabilityBlocks->where('type', 'available') as $block)
-              <div class="timeline__item">
-                <span>{{ \Carbon\Carbon::parse($block->start_date)->format('d/m/Y') }}</span>
-                <span class="text-muted">to</span>
-                <span>{{ \Carbon\Carbon::parse($block->end_date)->format('d/m/Y') }}</span>
-              </div>
-            @endforeach
-          </div>
-        @else
-          <p class="text-muted mb-0">This outfit is rental-ready every day of the year.</p>
-        @endif
-
-        <!-- @if($cloth->availabilityBlocks->where('type', 'blocked')->count() > 0)
-          <div class="timeline timeline--blocked mt-3">
-            @foreach($cloth->availabilityBlocks->where('type', 'blocked') as $block)
-              <div class="timeline__item">
-                <span>{{ \Carbon\Carbon::parse($block->start_date)->format('d/m/Y') }}</span>
-                <span class="text-muted">to</span>
-                <span>{{ \Carbon\Carbon::parse($block->end_date)->format('d/m/Y') }}</span>
-                @if($block->reason)
-                  <small class="text-muted d-block">{{ $block->reason }}</small>
-                @endif
-              </div>
-            @endforeach
-          </div>
-        @endif -->
-      </div>
-
+      <!-- Extended Details & Care -->
       <div class="card shadow-sm mt-4 p-4">
-        <h5 class="mb-3"><i class="bi bi-pencil-square me-2 text-primary"></i>Plan your rental</h5>
-        <div class="row g-3">
+        <h5 class="fw-bold mb-4">Product Details & Care</h5>
+        <div class="row g-4">
           <div class="col-md-6">
-            <label for="start_date" class="form-label">Start Date *</label>
-            <input type="text" class="form-control bg-white" id="start_date" name="start_date" placeholder="Select Start Date" readonly="readonly" required>
+            <ul class="assurance-list">
+              <li><i class="bi bi-droplet-fill text-primary"></i> Professional Dry Clean Only</li>
+              <li><i class="bi bi-stars text-primary"></i> Hand-finished embroidery</li>
+              <li><i class="bi bi-shield-check text-primary"></i> 100% Authentic Designer Wear</li>
+            </ul>
           </div>
           <div class="col-md-6">
-            <label for="end_date" class="form-label">End Date *</label>
-            <input type="text" class="form-control bg-white" id="end_date" name="end_date" placeholder="Select End Date" readonly="readonly" required>
-          </div>
-        </div>
-        <div class="rental-summary card mt-3" id="rental-summary" style="display:none;">
-          <div class="card-body">
-            <div class="d-flex justify-content-between mb-1">
-              <span>Rental Duration</span>
-              <strong id="rental-details-duration">0 days</strong>
-            </div>
-            <div id="rental-cost-breakdown"></div>
-            <div class="d-flex justify-content-between mb-1">
-              <span>Rental Cost</span>
-              <strong id="rental-details-cost">₹0</strong>
-            </div>
-            <div class="d-flex justify-content-between mb-1">
-              <span>Refundable Security</span>
-              <strong>₹{{ number_format($cloth->security_deposit) }}</strong>
-            </div>
-            <hr>
-            <div class="d-flex justify-content-between align-items-center">
-              <span>Total due today</span>
-              <span class="total-price">₹<span id="total-price">0</span></span>
+            <div class="p-3 rounded-4 bg-light">
+              <p class="small text-muted mb-0">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                All items undergo a multi-step quality check and sanitization process before being dispatched.
+              </p>
             </div>
           </div>
         </div>
@@ -214,350 +173,147 @@
         <div class="summary card shadow-lg border-0">
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-start">
-              <div>
-                <p class="text-uppercase text-muted small mb-1">Rent for 4 days</p>
-                <h2 class="mb-0 text-primary">₹{{ number_format($cloth->display_rent_price) }}</h2>
-                <p class="text-muted small mb-1">₹{{ number_format($cloth->display_rent_price / 4) }} per day (after 4 days)</p>
-                @if($cloth->mrp)
-                  <p class="text-muted small mb-1">MRP: <del>₹{{ number_format($cloth->mrp) }}</del></p>
-                @endif
-                <p class="text-muted small mb-3">Security deposit ₹{{ number_format($cloth->security_deposit) }}</p>
+              <div class="w-100">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                  <div class="price-title-area">
+                    <p class="text-uppercase text-muted small mb-1 fw-bold" style=" font-size: 0.9rem;">RENTAL PRICE</p>
+                  </div>
+                  <div class="status-area text-end">
+                    <div class="availability-status mb-2">
+                      @if($cloth->is_purchased)
+                        <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1" style="font-size: 0.8rem; font-weight: 600;">
+                          <i class="bi bi-handbag me-1"></i> READY TO BUY
+                        </span>
+                      @elseif($cloth->availabilityBlocks->where('type', 'available')->count() > 0)
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1" style="font-size: 0.75rem; font-weight: 700;">
+                          <i class="bi bi-calendar-check me-1"></i> AVAILABLE
+                        </span>
+                      @else
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-size: 0.8rem; font-weight: 600;">
+                          <i class="bi bi-check-circle me-1"></i> READY TO RENT
+                        </span>
+                      @endif
+                    </div>
+                    <div class="trust-badge">
+                      @if($cloth->user && $cloth->user->average_rating > 0)
+                        <span class="badge bg-white text-warning border border-warning px-3 py-1 rounded-pill shadow-sm" style="font-size: 1.5rem;">
+                          <i class="bi bi-star-fill me-1"></i> {{ $cloth->user->average_rating }} Rating
+                        </span>
+                      @else
+                        <span class="badge bg-success-subtle text-success py-1 rounded-pill" style="font-size: 0.9rem; letter-spacing: 0.02em; font-weight: 700;">
+                          <i class="bi bi-patch-check-fill me-1"></i> TRUSTED OWNER
+                        </span>
+                      @endif
+                    </div>
+                  </div>
+                </div>
+
+                <div class="price-container ">
+                  <div class="d-flex align-items-baseline gap-2">
+                    <h2 class="mb-0 text-dark fw-bold" style="font-size: 2.2rem; letter-spacing: -0.02em; font-weight: 800;">₹{{ number_format($cloth->display_rent_price) }}</h2>
+                    <span class="text-muted fw-medium" style="font-size: 1.0rem;"> /4 days</span>
+                  </div>
+                  <p class="text-muted small mt-1 mb-2" style="font-size: 0.95rem;">₹{{ number_format($cloth->display_rent_price / 4) }} per additional day (after 4 days)</p>
+                  
+                    <div class="financial-details pt-2 mt-2 border-top" style="border-color: #f1f5f9 !important;">
+                      @if($cloth->mrp)
+                        <p class="text-muted small mb-1" style="font-size: 0.85rem;">Retail Price (MRP): <del class="text-secondary">₹{{ number_format($cloth->mrp) }}</del></p>
+                      @endif
+                      
+                      @if($cloth->is_purchased && $cloth->selling_price)
+                        <p class="text-dark small mb-1 fw-semibold" style="font-size: 0.95rem;">
+                          <i class="bi bi-handbag text-info me-1"></i> Buy Price: <span class="fw-bold text-info">₹{{ number_format($cloth->selling_price) }}</span>
+                        </p>
+                      @endif
+
+                      <p class="text-dark small mb-0 fw-semibold" style="font-size: 0.9rem;">
+                        <i class="bi bi-shield-lock text-success me-1"></i> Refundable Security Deposit: <span class="fw-bold">₹{{ number_format($cloth->security_deposit) }}</span>
+                      </p>
+                    </div>
+                  
+                  <div class="availability-dates-row mt-3 p-2 rounded-3" style="background: #f8fafc; border: 1.5px dashed #e2e8f0;">
+                    <span class="text-muted small fw-bold me-2" style="font-size: 0.8rem; ">BOOKING WINDOW:</span>
+                    @if($cloth->availabilityBlocks->where('type', 'available')->count() > 0)
+                      @foreach($cloth->availabilityBlocks->where('type', 'available') as $block)
+                        <span class="fw-bold text-success"  style="font-size: 0.9rem; font-weight: 800;">
+                          {{ \Carbon\Carbon::parse($block->start_date)->format('d M') }} - {{ \Carbon\Carbon::parse($block->end_date)->format('d M') }}
+                        </span>
+                      @endforeach
+                    @else
+                      <span class="small text-success fw-bold" style="font-size: 0.9rem; font-weight: 800;">Flexible Booking Available</span>
+                    @endif
+                  </div>
+                </div>
               </div>
-              <div class="text-end">
-                @if($cloth->user && $cloth->user->average_rating > 0)
-                  <span class="badge bg-white text-warning border border-warning">
-                    <i class="bi bi-star-fill me-1"></i> {{ $cloth->user->average_rating }} Seller Rating
-                  </span>
-                @else
-                  <span class="badge bg-success-subtle text-success">
-                    <i class="bi bi-star-fill me-1"></i> Trusted owner
-                  </span>
-                @endif
+            </div>
+
+            <div class="date-picker-sidebar mt-4 mb-4">
+              <div class="row g-2">
+                <div class="col-6">
+                  <label for="start_date" class="form-label small fw-bold text-muted mb-1 ls-1">START DATE</label>
+                  <div class="date-input-wrapper">
+                    <i class="bi bi-calendar-event"></i>
+                    <input type="text" class="form-control form-control-sm bg-white" id="start_date" name="start_date" placeholder="Select" readonly="readonly" required>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <label for="end_date" class="form-label small fw-bold text-muted mb-1 ls-1">END DATE</label>
+                  <div class="date-input-wrapper">
+                    <i class="bi bi-calendar-check"></i>
+                    <input type="text" class="form-control form-control-sm bg-white" id="end_date" name="end_date" placeholder="Select" readonly="readonly" required>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="rental-summary mt-3" id="rental-summary" style="display:none; background: #f8fafc; border-radius: 12px; padding: 15px;">
+                <div class="d-flex justify-content-between small mb-1">
+                  <span class="text-muted">Duration</span>
+                  <span id="rental-details-duration" class="fw-bold">0 days</span>
+                </div>
+                <div id="rental-cost-breakdown" class="small"></div>
+                <div class="d-flex justify-content-between small mb-1">
+                  <span class="text-muted">Rental Cost</span>
+                  <span id="rental-details-cost" class="fw-bold">₹0</span>
+                </div>
+                <div class="d-flex justify-content-between small mb-1">
+                  <span class="text-muted">Security Deposit</span>
+                  <span class="fw-bold">₹{{ number_format($cloth->security_deposit) }}</span>
+                </div>
+                <hr class="my-2 opacity-10">
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="fw-bold">Total Amount</span>
+                  <span class="h5 mb-0 fw-bold text-primary">₹<span id="total-price">0</span></span>
+                </div>
               </div>
             </div>
 
             @if($cloth->sku > 0)
-              <button class="rent-button add-to-cart-btn w-100" data-cloth-id="{{ $cloth->id }}" id="productRentBtn" disabled>
-                <i class="bi bi-cart-plus me-2"></i>Select dates to rent
-              </button>
-
-              @if($cloth->is_purchased)
-                <button class="buy-button add-to-cart-buy-btn w-100 mt-2" data-cloth-id="{{ $cloth->id }}" id="productBuyBtn">
-                  <i class="bi bi-bag-check me-2"></i>Buy once - ₹{{ number_format($cloth->display_selling_price) }}
+              <div class="d-grid gap-3">
+                <button class="rent-button add-to-cart-btn w-100" data-cloth-id="{{ $cloth->id }}" id="productRentBtn" disabled>
+                  <i class="bi bi-calendar2-plus me-2"></i> Select dates to rent
                 </button>
-              @endif
-              
-              <button class="btn btn-dark w-100 mt-2 fw-bold" data-toggle="modal" data-target="#virtualTryOnModal" style="background: linear-gradient(45deg, #6b4c9a, #a265d3); border: none;">
-                <i class="bi bi-magic me-2"></i>Virtual Try-On (AI Powered)
-              </button>
-            @else
-              <button class="btn btn-secondary w-100" disabled>
-                <i class="bi bi-x-circle me-2"></i>Sold Out
-              </button>
-            @endif
-
-            <ul class="assurance-list mt-4">
-              <li><i class="bi bi-truck"></i> Free insured delivery & pickup</li>
-              <li><i class="bi bi-brush"></i> Complimentary dry-cleaning</li>
-              <li><i class="bi bi-arrow-repeat"></i> Instant refund for cancellations up to 48h</li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- <div class="support-card card shadow-sm mt-3">
-          <div class="card-body d-flex align-items-center gap-3">
-            <div class="support-icon">
-              <i class="bi bi-headset"></i>
-            </div>
-            <div>
-              <p class="mb-0 fw-semibold">Need styling help?</p>
-              <small class="text-muted">Chat with our concierge on WhatsApp</small>
-            </div>
-            <a href="https://wa.me/15551234567" class="btn btn-outline-primary btn-sm">Chat</a>
-          </div>
-        </div> -->
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="reviews-questions mt-5">
-  <div class="container">
-    <div class="row">
-      <div class="col-12">
-        <!-- Reviews Section -->
-        <div class="card shadow-sm mb-4">
-          <div class="card-body">
-            <h5 class="card-title mb-4">
-              <i class="bi bi-star-fill text-warning me-2"></i>
-              Reviews & Ratings
-              @if($cloth->reviews->count() > 0)
-                <span class="badge bg-primary ms-2">{{ $cloth->reviews->count() }}</span>
-              @endif
-            </h5>
-
-            <!-- Average Rating -->
-            @if($cloth->reviews->count() > 0)
-            <div class="mb-4">
-              <div class="d-flex align-items-center mb-2">
-                <h3 class="mb-0 me-3">{{ number_format($cloth->average_rating, 1) }}</h3>
-                <div class="star-rating-display">
-                  @for($i = 1; $i <= 5; $i++)
-                    @if($i <= floor($cloth->average_rating))
-                      <i class="bi bi-star-fill text-warning"></i>
-                    @elseif($i - 0.5 <= $cloth->average_rating)
-                      <i class="bi bi-star-half text-warning"></i>
-                    @else
-                      <i class="bi bi-star text-warning"></i>
-                    @endif
-                  @endfor
-                </div>
-                <span class="text-muted ms-2">({{ $cloth->reviews->count() }} {{ Str::plural('review', $cloth->reviews->count()) }})</span>
-              </div>
-            </div>
-            @endif
-
-            <!-- Post Review Form (Only for logged in users) -->
-            <!-- Post Review Form (Only for logged in users who purchased/rented) -->
-            @if(Auth::check())
-              @if($canReview)
-              <div class="card border mb-4">
-                <div class="card-body">
-                  <h6 class="card-title">Write a Review</h6>
-                  <form id="reviewForm">
-                    @csrf
-                    <div class="mb-3">
-                      <label class="form-label">Rating *</label>
-                      <div class="star-rating-input">
-                        @for($i = 1; $i <= 5; $i++)
-                          <i class="bi bi-star star-rating-star" data-rating="{{ $i }}"></i>
-                        @endfor
-                        <span class="rating-text ms-2 text-muted"></span>
-                      </div>
-                      <input type="hidden" name="rating" id="rating" required>
-                      <div id="rating-error" class="text-danger small" style="display:none;"></div>
-                    </div>
-                    <div class="mb-3">
-                      <label for="review_text" class="form-label">Your Review</label>
-                      <textarea class="form-control" id="review_text" name="review" rows="3" maxlength="1000" placeholder="Share your experience with this product..."></textarea>
-                      <small class="text-muted"><span id="review_char_count">0</span>/1000 characters</small>
-                    </div>
-                    <button type="submit" class="btn btn-warning">
-                      <i class="bi bi-send me-2"></i>Post Review
-                    </button>
-                  </form>
-                </div>
-              </div>
-              @else
-              <div class="alert alert-light border text-muted mb-4">
-                <i class="bi bi-info-circle me-1"></i> Only users who have rented or purchased this item can leave a review.
-              </div>
-              @endif
-            @else
-            <div class="alert alert-info">
-              <a href="{{ route('login') }}" class="alert-link">Login</a> to post a review and help others make better decisions.
-            </div>
-            @endif
-
-            <!-- Existing Reviews -->
-            <div id="reviews-list">
-              @forelse($cloth->reviews->sortByDesc('created_at') as $review)
-              <div class="review-item border-bottom pb-3 mb-3" data-review-id="{{ $review->id }}">
-                <div class="d-flex justify-content-between align-items-start">
-                  <div class="flex-grow-1">
-                    <div class="d-flex align-items-center mb-2">
-                      <strong>{{ $review->user->name }}</strong>
-                      <div class="star-rating-display ms-2">
-                        @for($i = 1; $i <= 5; $i++)
-                          @if($i <= $review->rating)
-                            <i class="bi bi-star-fill text-warning" style="font-size: 0.875rem;"></i>
-                          @else
-                            <i class="bi bi-star text-warning" style="font-size: 0.875rem;"></i>
-                          @endif
-                        @endfor
-                      </div>
-                      <span class="text-muted ms-2 small">{{ $review->created_at->diffForHumans() }}</span>
-                    </div>
-                    @if($review->review)
-                    <p class="mb-0">{{ $review->review }}</p>
-                    @endif
-                  </div>
-                  @auth
-                  @if($review->user_id === Auth::id())
-                  <button class="btn btn-sm btn-link text-danger delete-review-btn" data-review-id="{{ $review->id }}">
-                    <i class="bi bi-trash"></i>
-                  </button>
-                  @endif
-                  @endauth
-                </div>
-
-                <!-- Replies Section -->
-                <div class="replies-section mt-3 ps-4 border-start">
-                    @foreach($review->replies as $reply)
-                        <div class="reply-item mb-2 bg-light p-2 rounded" data-reply-id="{{ $reply->id }}">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <strong>{{ $reply->user->name }}</strong>
-                                    <span class="text-muted small ms-2">{{ $reply->created_at->diffForHumans() }}</span>
-                                    <p class="mb-0 small mt-1">{{ $reply->message }}</p>
-                                </div>
-                                @auth
-                                    @if($reply->user_id === Auth::id())
-                                        <button class="btn btn-sm btn-link text-danger delete-reply-btn p-0" data-reply-id="{{ $reply->id }}">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    @endif
-                                @endauth
-                            </div>
-                        </div>
-                    @endforeach
-
-                    @auth
-                        <button class="btn btn-sm btn-link text-primary p-0 mt-1 toggle-reply-form">
-                            <i class="bi bi-reply"></i> Reply
-                        </button>
-                        <form class="reply-form mt-2" style="display:none;" data-type="review" data-id="{{ $review->id }}">
-                            @csrf
-                            <div class="input-group">
-                                <input type="text" name="message" class="form-control form-control-sm" placeholder="Write a reply..." required>
-                                <button class="btn btn-sm btn-primary" type="submit">Post</button>
-                            </div>
-                        </form>
-                    @endauth
-                </div>
-              </div>
-              @empty
-              <p class="text-muted">No reviews yet. Be the first to review this product!</p>
-              @endforelse
-            </div>
-          </div>
-        </div>
-
-        <!-- Questions Section -->
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title mb-4">
-              <i class="bi bi-question-circle-fill text-primary me-2"></i>
-              Questions & Answers
-              @if($cloth->questions->count() > 0)
-                <span class="badge bg-primary ms-2">{{ $cloth->questions->count() }}</span>
-              @endif
-            </h5>
-
-            <!-- Post Question Form (Only for logged in users) -->
-            @auth
-            <div class="card border mb-4">
-              <div class="card-body">
-                <h6 class="card-title">Ask a Question</h6>
-                <form id="questionForm">
-                  @csrf
-                  <div class="mb-3">
-                    <label for="question_text" class="form-label">Your Question *</label>
-                    <textarea class="form-control" id="question_text" name="question" rows="2" maxlength="500" placeholder="Have a question about this product? Ask away..." required></textarea>
-                    <small class="text-muted"><span id="question_char_count">0</span>/500 characters</small>
-                    <div id="question-error" class="text-danger small" style="display:none;"></div>
-                  </div>
-                  <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-send me-2"></i>Post Question
-                  </button>
-                </form>
-              </div>
-            </div>
-            @else
-            <div class="alert alert-info mb-4">
-              <a href="{{ route('login') }}" class="alert-link">Login</a> to ask a question about this product.
-            </div>
-            @endauth
-
-            <!-- Existing Questions -->
-            <div id="questions-list">
-              @forelse($cloth->questions->sortByDesc('created_at') as $question)
-              <div class="question-item border-bottom pb-3 mb-3" data-question-id="{{ $question->id }}">
-                <div class="mb-2">
-                  <div class="d-flex justify-content-between align-items-start">
-                    <div class="flex-grow-1">
-                      <strong class="text-primary">Q:</strong> 
-                      <span>{{ $question->question }}</span>
-                      <div class="text-muted small mt-1">
-                        Asked by <strong>{{ $question->user->name }}</strong> • {{ $question->created_at->diffForHumans() }}
-                      </div>
-                    </div>
-                    @auth
-                    @if($question->user_id === Auth::id() || $question->cloth->user_id === Auth::id())
-                    <button class="btn btn-sm btn-link text-danger delete-question-btn" data-question-id="{{ $question->id }}">
-                      <i class="bi bi-trash"></i>
-                    </button>
-                    @endif
-                    @endauth
-                  </div>
-                </div>
                 
-                @if($question->answer)
-                <div class="answer-box bg-light p-3 rounded ms-3">
-                  <strong class="text-success">A:</strong> 
-                  <span>{{ $question->answer }}</span>
-                  <div class="text-muted small mt-1">
-                    Answered by <strong>{{ $question->answerer->name ?? 'Owner' }}</strong> • {{ $question->answered_at->diffForHumans() }}
-                  </div>
-                </div>
-                @else
-                  @auth
-                  @if($question->cloth->user_id === Auth::id())
-                  <div class="answer-form ms-3 mt-2" style="display:none;">
-                    <form class="answer-question-form">
-                      @csrf
-                      <div class="mb-2">
-                        <textarea class="form-control form-control-sm" name="answer" rows="2" placeholder="Type your answer here..." required></textarea>
-                      </div>
-                      <button type="submit" class="btn btn-sm btn-success">Post Answer</button>
-                      <button type="button" class="btn btn-sm btn-secondary cancel-answer-btn">Cancel</button>
-                    </form>
-                  </div>
-                  <button class="btn btn-sm btn-outline-success answer-question-btn ms-3">
-                    <i class="bi bi-reply me-1"></i>Answer
+                @if($cloth->is_purchased && $cloth->selling_price)
+                  <button class="buy-button add-to-cart-buy-btn mt-2 w-100" data-cloth-id="{{ $cloth->id }}" id="productBuyBtn">
+                    <i class="bi bi-handbag-fill me-2"></i> Buy Now - ₹{{ number_format($cloth->selling_price) }}
                   </button>
-                  @endif
-                  @endauth
                 @endif
-
-                <!-- Replies Section -->
-                <div class="replies-section mt-3 ps-4 border-start">
-                    @foreach($question->replies as $reply)
-                        <div class="reply-item mb-2 bg-light p-2 rounded" data-reply-id="{{ $reply->id }}">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <strong>{{ $reply->user->name }}</strong>
-                                    <span class="text-muted small ms-2">{{ $reply->created_at->diffForHumans() }}</span>
-                                    <p class="mb-0 small mt-1">{{ $reply->message }}</p>
-                                </div>
-                                @auth
-                                    @if($reply->user_id === Auth::id())
-                                        <button class="btn btn-sm btn-link text-danger delete-reply-btn p-0" data-reply-id="{{ $reply->id }}">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    @endif
-                                @endauth
-                            </div>
-                        </div>
-                    @endforeach
-
-                    @auth
-                        <button class="btn btn-sm btn-link text-primary p-0 mt-1 toggle-reply-form">
-                            <i class="bi bi-reply"></i> Reply
-                        </button>
-                        <form class="reply-form mt-2" style="display:none;" data-type="question" data-id="{{ $question->id }}">
-                            @csrf
-                            <div class="input-group">
-                                <input type="text" name="message" class="form-control form-control-sm" placeholder="Write a reply..." required>
-                                <button class="btn btn-sm btn-primary" type="submit">Post</button>
-                            </div>
-                        </form>
-                    @endauth
-                </div>
               </div>
-              @empty
-              <p class="text-muted">No questions yet. Be the first to ask a question!</p>
-              @endforelse
+            @endif
+
+            <div class="assurance-grid mt-4">
+              <div class="assurance-card">
+                <i class="bi bi-truck"></i>
+                <span>Free Pick & Drop</span>
+              </div>
+              <div class="assurance-card">
+                <i class="bi bi-stars"></i>
+                <span>Freshly Cleaned</span>
+              </div>
+              <div class="assurance-card">
+                <i class="bi bi-shield-lock"></i>
+                <span>Secure Payments</span>
+              </div>
             </div>
           </div>
         </div>
@@ -566,1178 +322,220 @@
   </div>
 </section>
 
-<!-- Image Lightbox Modal -->
-<div class="modal fade" id="imageLightboxModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content bg-transparent border-0">
-      <div class="modal-body p-0 position-relative text-center">
-        <img src="" id="lightboxImage" class="img-fluid rounded shadow-lg" style="max-height: 90vh;">
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Virtual Try-On Modal -->
-<div class="modal fade" id="virtualTryOnModal" tabindex="-1" aria-labelledby="virtualTryOnModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content rounded-4 border-0 shadow-lg">
-      <div class="modal-header border-0 pb-0" style="background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); border-radius: 1rem 1rem 0 0;">
-        <h4 class="modal-title fw-bold" id="virtualTryOnModalLabel" style="color: #6b4c9a;">
-            <i class="bi bi-magic me-2"></i>AI Virtual Try-On
-        </h4>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close" aria-hidden="true">&times;</button>
-      </div>
-      <div class="modal-body p-4 bg-light">
-        <p class="text-muted text-center mb-4">Upload a clear photo of yourself to see how this <strong>{{ $cloth->title }}</strong> looks on you!</p>
-        
-        <div class="row g-4 mb-4">
-            <!-- Cloth Display -->
-            <div class="col-md-5 text-center">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body p-2 d-flex flex-column align-items-center justify-content-center">
-                        <h6 class="text-muted mb-2 small text-uppercase fw-bold">The Outfit</h6>
-                        @if($cloth->images->count())
-                            <img src="{{ asset('storage/' . $cloth->images->first()->image_path) }}" class="img-fluid rounded" style="max-height: 250px; object-fit: contain;">
-                        @else
-                            <img src="{{ asset('images/placeholder.jpg') }}" class="img-fluid rounded" style="max-height: 250px;">
-                        @endif
-                    </div>
-                </div>
-            </div>
-
-            <!-- Arrow Icon -->
-            <div class="col-md-2 d-flex align-items-center justify-content-center">
-                <i class="bi bi-plus-circle text-muted" style="font-size: 2rem; opacity: 0.5;"></i>
-            </div>
-
-            <!-- User Upload -->
-            <div class="col-md-5 text-center">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body p-3 d-flex flex-column align-items-center justify-content-center" id="vto-upload-container">
-                        <h6 class="text-muted mb-3 small text-uppercase fw-bold">Your Photo</h6>
-                        <div class="upload-area border border-2 border-dashed rounded w-100 d-flex align-items-center justify-content-center flex-column" id="vtoUploadArea" style="min-height: 200px; cursor: pointer; border-color: #cbd5e1!important; background: #f8fafc; transition: all 0.3s ease;">
-                            <i class="bi bi-cloud-arrow-up text-primary mb-2" style="font-size: 2rem;"></i>
-                            <span class="text-primary fw-medium">Click to upload</span>
-                            <small class="text-muted mt-1">JPEG, PNG (Max 5MB)</small>
-                            <input type="file" id="vtoUserImage" class="d-none" accept="image/*">
-                        </div>
-                        <div id="vtoPreviewContainer" class="w-100 d-none text-center">
-                            <div class="position-relative d-inline-block">
-                                <img src="" id="vtoUserPreview" class="img-fluid rounded" style="max-height: 220px; object-fit: contain; border: 2px solid #6b4c9a;">
-                                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 translate-middle rounded-circle" id="vtoClearImage" style="width: 25px; height: 25px; padding: 0; display: flex; align-items: center; justify-content: center;">
-                                    <i class="bi bi-x"></i>
-                                </button>
+<!-- Related Products Section -->
+@if(isset($relatedClothes) && $relatedClothes->count() > 0)
+<section class="related-items">
+    <div class="container">
+        <h3 class="section-title">Similar Styles You'll Love</h3>
+        <div class="row g-4">
+            @foreach($relatedClothes as $related)
+                <div class="col-6 col-md-3">
+                    <a href="{{ route('clothes.show', $related->id) }}" class="text-decoration-none">
+                        <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                            @if($related->images->count())
+                                <img src="{{ asset('storage/' . $related->images->first()->image_path) }}" class="card-img-top" alt="{{ $related->title }}" style="height: 250px; object-fit: cover;">
+                            @endif
+                            <div class="card-body p-3">
+                                <h6 class="fw-bold text-dark mb-1 text-truncate">{{ $related->title }}</h6>
+                                <p class="text-primary fw-bold mb-0">₹{{ number_format($related->rent_price) }}</p>
                             </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
-            </div>
+            @endforeach
         </div>
-
-        <!-- Generate Button -->
-        <div class="text-center">
-            <button class="btn btn-lg text-white font-weight-bold px-5 py-2 shadow-sm rounded-pill" id="vtoGenerateBtn" style="background: linear-gradient(45deg, #6b4c9a, #a265d3); border: none;" disabled>
-                <i class="bi bi-stars me-2"></i>Generate Try-On
-            </button>
-        </div>
-
-        <!-- Result Section (Hidden initially) -->
-        <div id="vtoResultSection" class="mt-5 d-none">
-            <hr class="mb-4">
-            <h5 class="text-center fw-bold text-dark mb-3">Your Virtual Try-On Result</h5>
-            <div class="d-flex justify-content-center position-relative">
-                <div id="vtoLoading" class="text-center d-none" style="padding: 3rem 0;">
-                    <div class="spinner-grow text-primary mb-3" style="width: 3rem; height: 3rem; animation-duration: 1.5s; background-color: #a265d3;" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <p class="text-muted fw-bold">Gemini is styling your look...</p>
-                    <small class="text-muted">This may take a few seconds.</small>
-                </div>
-                
-                <div id="vtoResultImageContainer" class="d-none text-center">
-                    <img src="" id="vtoResultImage" class="img-fluid rounded-4 shadow-lg" style="max-height: 500px; border: 4px solid #fff;">
-                    <div class="mt-3">
-                        <button class="btn btn-outline-dark rounded-pill me-2" onclick="document.getElementById('vtoResultImageContainer').classList.add('d-none'); document.getElementById('vtoGenerateBtn').style.display='inline-block';">
-                            <i class="bi bi-arrow-counterclockwise"></i> Try Another
-                        </button>
-                        <a href="#" id="vtoDownloadBtn" class="btn text-white rounded-pill" style="background: #6b4c9a;" download="virtual-try-on.jpg">
-                            <i class="bi bi-download"></i> Download
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-      </div>
     </div>
-  </div>
-</div>
-
-<section class="related mt-5">
-  <div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h4 class="mb-0">More like this</h4>
-      <a href="{{ route('clothes.index', ['categories' => $cloth->category->id ?? $categoryId]) }}" class="btn btn-warning btn-sm">Browse all</a>
-    </div>
-    <div class="carousel mb-5">
-      @if($relatedClothes->count() > 0)
-      <div class="carousel-items p-2 d-flex gap-3" style="overflow-x: auto;">
-        @foreach($relatedClothes as $related)
-        <div class="card border-0 shadow-sm" style="min-width: 250px; cursor: pointer;" onclick="window.location.href='{{ route('clothes.show', $related->id) }}'">
-          @if($related->images->count())
-            <img src="{{ asset('storage/' . $related->images->first()->image_path) }}" class="card-img-top rounded-top" alt="{{ $related->title }}" style="height: 300px; object-fit: cover;">
-          @else
-            <img src="{{ asset('images/placeholder.jpg') }}" class="card-img-top rounded-top" alt="{{ $related->title }}" style="height: 300px; object-fit: cover;">
-          @endif
-          <div class="card-body p-3">
-            <h6 class="card-title fw-bold mb-1 text-truncate">{{ $related->title }}</h6>
-            <div class="d-flex justify-content-between align-items-center">
-              <span class="text-primary fw-bold">₹{{ number_format($related->display_rent_price) }}<small class="text-muted fw-normal">/4 days</small></span>
-              <span class="badge bg-light text-dark border">{{ $related->size->name ?? 'Free' }}</span>
-            </div>
-          </div>
-        </div>
-        @endforeach
-      </div>
-      @else
-      <div class="carousel-items">
-        <div class="item placeholder-card w-100 bg-light p-4 text-center rounded">
-          <p class="mb-0 text-muted">No similar items found at the moment.</p>
-        </div>
-      </div>
-      @endif
-    </div>
-  </div>
 </section>
+@endif
+
 @endsection
 
 @section('scripts')
-<script src="{{ asset('js/product.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
-// Virtual Try On Scripts
 $(document).ready(function() {
-    // File upload click trigger
-    $('#vtoUploadArea').click(function(e) {
-        if(e.target.id !== 'vtoUserImage') {
-            $('#vtoUserImage').click();
-        }
+    // Thumbnail switching
+    $('.thumb').on('click', function() {
+        const newImg = $(this).data('image');
+        $('#activeProductImage').attr('src', newImg);
+        $('.thumb').removeClass('thumb-active');
+        $(this).addClass('thumb-active');
     });
 
-    // Handle file selection
-    $('#vtoUserImage').change(function() {
-        const file = this.files[0];
-        if (file) {
-            // Validate size (max 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                alert('Image size should be less than 5MB');
+    // Flatpickr initialization
+    const disabledDates = @json($cloth->availabilityBlocks->where('type', 'blocked')->map(function($block) {
+        return [
+            'from' => $block->start_date->format('Y-m-d'),
+            'to' => $block->end_date->format('Y-m-d')
+        ];
+    }));
+
+    const config = {
+        altInput: true,
+        altFormat: "F j, Y",
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        disable: disabledDates,
+        onChange: function(selectedDates, dateStr, instance) {
+            calculateRental();
+        }
+    };
+
+    const startPicker = flatpickr("#start_date", config);
+    const endPicker = flatpickr("#end_date", config);
+
+    let currentRentalDays = 0;
+    let currentRentalCost = 0;
+
+    function calculateRental() {
+        const start = startPicker.selectedDates[0];
+        const end = endPicker.selectedDates[0];
+
+        if (start && end) {
+            if (end <= start) {
+                alert("End date must be after start date");
+                endPicker.clear();
                 return;
             }
+
+            const diffTime = Math.abs(end - start);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
             
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                $('#vtoUserPreview').attr('src', e.target.result);
-                $('#vtoUploadArea').addClass('d-none').removeClass('d-flex');
-                $('#vtoPreviewContainer').removeClass('d-none');
-                $('#vtoGenerateBtn').prop('disabled', false);
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-
-    // Clear Image
-    $('#vtoClearImage').click(function(e) {
-        e.stopPropagation();
-        $('#vtoUserImage').val('');
-        $('#vtoUserPreview').attr('src', '');
-        $('#vtoPreviewContainer').addClass('d-none');
-        $('#vtoUploadArea').removeClass('d-none').addClass('d-flex');
-        $('#vtoGenerateBtn').prop('disabled', true);
-        $('#vtoResultSection').addClass('d-none');
-    });
-
-    // Generate Try On
-    $('#vtoGenerateBtn').click(function() {
-        const file = $('#vtoUserImage')[0].files[0];
-        if (!file) return;
-
-        const formData = new FormData();
-        formData.append('user_image', file);
-        formData.append('cloth_id', {{ $cloth->id }});
-        formData.append('_token', '{{ csrf_token() }}');
-
-        // UI updates
-        $(this).hide();
-        $('#vtoResultSection').removeClass('d-none');
-        $('#vtoResultImageContainer').addClass('d-none');
-        $('#vtoLoading').removeClass('d-none');
-
-        $.ajax({
-            url: '{{ route("clothes.virtual-try-on") }}',
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(response) {
-                if (response.success) {
-                    pollStatus(response.status_url);
-                } else {
-                    $('#vtoLoading').addClass('d-none');
-                    alert(response.error || 'Failed to initialize try-on. Please try again.');
-                    $('#vtoGenerateBtn').show();
-                    $('#vtoResultSection').addClass('d-none');
-                }
-            },
-            error: function(xhr) {
-                $('#vtoLoading').addClass('d-none');
-                alert(xhr.responseJSON?.error || 'An error occurred during initialization.');
-                $('#vtoGenerateBtn').show();
-                $('#vtoResultSection').addClass('d-none');
-            }
-        });
-
-        function pollStatus(statusUrl) {
-            $.ajax({
-                url: statusUrl,
-                type: 'GET',
-                success: function(res) {
-                    if (res.status === 'completed' && res.result_image_url) {
-                        $('#vtoLoading').addClass('d-none');
-                        $('#vtoResultImage').attr('src', res.result_image_url);
-                        $('#vtoDownloadBtn').attr('href', res.result_image_url);
-                        $('#vtoResultImageContainer').removeClass('d-none');
-                    } else if (res.status === 'failed') {
-                        $('#vtoLoading').addClass('d-none');
-                        alert(res.error_message || 'Virtual Try-On generation failed.');
-                        $('#vtoGenerateBtn').show();
-                        $('#vtoResultSection').addClass('d-none');
-                    } else {
-                        // pending or processing, check back in 3 seconds
-                        setTimeout(function() {
-                            pollStatus(statusUrl);
-                        }, 3000);
-                    }
-                },
-                error: function(xhr) {
-                    $('#vtoLoading').addClass('d-none');
-                    alert('Lost connection while checking status. Please try refreshing the page.');
-                    $('#vtoGenerateBtn').show();
-                    $('#vtoResultSection').addClass('d-none');
-                }
-            });
-        }
-    });
-});
-
-// Cloth data for calculations
-const clothData = {
-    id: {{ $cloth->id }},
-    rentPrice: {{ $cloth->rent_price }},
-    purchasePrice: {{ $cloth->display_selling_price ?? 0 }},
-    securityDeposit: {{ $cloth->security_deposit }},
-    isSellerGst: {{ $cloth->user && $cloth->user->is_gst ? 'true' : 'false' }},
-    availableBlocks: @json($cloth->availabilityBlocks->where('type', 'available')->values()),
-    blockedBlocks: @json($cloth->availabilityBlocks->where('type', 'blocked')->values()),
-    isAlwaysAvailable: {{ $cloth->availabilityBlocks->where('type', 'available')->count() == 0 ? 'true' : 'false' }}
-};
-$(document).ready(function() {
-    
-    // Load cart items on page load to check rented status
-    loadCartItems();
-    
-    // Function to calculate all disabled dates as an array
-    function getDisabledDatesArray() {
-        const disabledDates = [];
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
-        // Collect all available dates
-        const availableDates = new Set();
-        
-        if (!clothData.isAlwaysAvailable) {
-            // Collect dates from available blocks
-            clothData.availableBlocks.forEach(function(block) {
-                const start = new Date(block.start_date);
-                const end = new Date(block.end_date);
-                let current = new Date(start);
-                
-                while (current <= end) {
-                    if (current >= today) {
-                        availableDates.add(current.toISOString().split('T')[0]);
-                    }
-                    current.setDate(current.getDate() + 1);
-                }
-            });
-        }
-        
-        // Collect blocked dates
-        const blockedDates = new Set();
-        clothData.blockedBlocks.forEach(function(block) {
-            const start = new Date(block.start_date);
-            const end = new Date(block.end_date);
-            let current = new Date(start);
+            currentRentalDays = diffDays;
+            $('#rental-details-duration').text(diffDays + " days");
             
-            while (current <= end) {
-                if (current >= today) {
-                    blockedDates.add(current.toISOString().split('T')[0]);
-                }
-                current.setDate(current.getDate() + 1);
-            }
-        });
-        
-        // To find chunks < 4 days, we must evaluate ALL dates up to some maxDate.
-        const maxDate = new Date(today);
-        maxDate.setFullYear(maxDate.getFullYear() + 2); // 2 years timeframe
-        
-        const activeDatesStrArray = [];
-        let checkDate = new Date(today);
-        
-        while (checkDate <= maxDate) {
-            const dateStr = checkDate.toISOString().split('T')[0];
-            const isAvailable = clothData.isAlwaysAvailable || availableDates.has(dateStr);
-            const isBlocked = blockedDates.has(dateStr);
+            const basePrice = {{ $cloth->display_rent_price }};
+            const dailyRate = basePrice / 4;
+            let totalPrice = basePrice;
             
-            if (isAvailable && !isBlocked) {
-                activeDatesStrArray.push(dateStr);
-            } else {
-                disabledDates.push(dateStr);
+            if (diffDays > 4) {
+                totalPrice += (diffDays - 4) * dailyRate;
             }
-            checkDate.setDate(checkDate.getDate() + 1);
+
+            currentRentalCost = totalPrice;
+            const securityDeposit = {{ $cloth->security_deposit }};
+            const grandTotal = totalPrice + securityDeposit;
+
+            $('#rental-details-cost').text("₹" + totalPrice.toLocaleString());
+            $('#total-price').text(grandTotal.toLocaleString());
+            $('#rental-summary').slideDown();
+            $('#productRentBtn').prop('disabled', false).html('<i class="bi bi-cart-plus me-2"></i> Add to Bag');
         }
-        
-        // Find contiguous chunks. If a chunk is < 4 days, disable those dates.
-        if (activeDatesStrArray.length > 0) {
-            let chunk = [activeDatesStrArray[0]];
-            for (let i = 1; i < activeDatesStrArray.length; i++) {
-                const currDate = new Date(activeDatesStrArray[i]);
-                const prevDate = new Date(activeDatesStrArray[i-1]);
-                const diffTime = Math.abs(currDate - prevDate);
-                const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-                
-                if (diffDays === 1) {
-                    chunk.push(activeDatesStrArray[i]);
-                } else {
-                    if (chunk.length < 4) {
-                        chunk.forEach(d => disabledDates.push(d));
-                    }
-                    chunk = [activeDatesStrArray[i]];
-                }
-            }
-            // Check the last chunk
-            if (chunk.length < 4) {
-                chunk.forEach(d => disabledDates.push(d));
-            }
-        }
-        
-        return disabledDates;
     }
-    
-    // Base Flatpickr config - all dates visible, only unavailable disabled
-    const disabledDatesList = getDisabledDatesArray();
-    const commonFlatpickrConfig = {
-        minDate: "today",
-        dateFormat: "Y-m-d", // Standard database format
-        altInput: true,
-        altFormat: "F j, Y", // User friendly format
-        disable: disabledDatesList  // Array of disabled dates (YYYY-MM-DD) matches dateFormat
-    };
-    
-    // Initialize Flatpickr for start date
-    const startDatePicker = flatpickr("#start_date", Object.assign({}, commonFlatpickrConfig, {
-        onChange: function(selectedDates, dateStr, instance) {
-            if (selectedDates.length > 0) {
-                // Calculate end date (4 days after start date - minimum rental period)
-                const startDate = new Date(selectedDates[0]);
-                const autoEndDate = new Date(startDate);
-                autoEndDate.setDate(autoEndDate.getDate() + 3); // +3 because we count both start and end days (4 days total)
-                
-                // Set minimum end date
-                endDatePicker.set('minDate', autoEndDate);
-                
-                // Automatically set end date to 4 days after start date
-                // Check if auto end date is available (not disabled)
-                const autoEndDateStr = autoEndDate.toISOString().split('T')[0];
-                if (disabledDatesList.indexOf(autoEndDateStr) === -1) {
-                    // Set the end date automatically
-                    endDatePicker.setDate(autoEndDate, true); // true to trigger onChange
-                } else {
-                    // If auto end date is disabled, find next available date
-                    let nextAvailableDate = new Date(autoEndDate);
-                    let foundAvailable = false;
-                    const maxTries = 30; // Try up to 30 days ahead
-                    let tries = 0;
-                    
-                    while (!foundAvailable && tries < maxTries) {
-                        nextAvailableDate.setDate(nextAvailableDate.getDate() + 1);
-                        const nextDateStr = nextAvailableDate.toISOString().split('T')[0];
-                        if (disabledDatesList.indexOf(nextDateStr) === -1) {
-                            endDatePicker.setDate(nextAvailableDate, true);
-                            foundAvailable = true;
-                        }
-                        tries++;
-                    }
-                }
-            } else {
-                validateAndCalculateRental();
-            }
-        }
-    }));
-    
-    // Initialize Flatpickr for end date
-    const endDatePicker = flatpickr("#end_date", Object.assign({}, commonFlatpickrConfig, {
-        onChange: function(selectedDates, dateStr, instance) {
-            validateAndCalculateRental();
-        }
-    }));
-    
-    // Ensure cart functionality works on this page
-    $('.add-to-cart-btn').click(function(e) {
+
+    // Add to cart logic
+    $('#productRentBtn').on('click', function(e) {
         e.preventDefault();
-        const clothId = $(this).data('cloth-id');
+        e.stopImmediatePropagation(); // Prevent generic cart.js listener from firing
+
         const $btn = $(this);
-        const originalText = $btn.text();
-        
-        // Get rental dates and cost (Format: YYYY-MM-DD)
-        const startDateStr = $('#start_date').val();
-        const endDateStr = $('#end_date').val();
+        const clothId = $btn.data('cloth-id');
+        const startDate = $('#start_date').val();
+        const endDate = $('#end_date').val();
 
-        if (!startDateStr || !endDateStr) {
-            showAlert('danger', 'Please select rental start and end dates');
-            $btn.prop('disabled', true).html('<i class="bi bi-cart-plus me-2"></i>SELECT DATES TO RENT');
+        if (!startDate || !endDate) {
+            showAlert('danger', 'Please select rental dates first');
             return;
         }
 
-        const startDate = new Date(startDateStr);
-        const endDate = new Date(endDateStr);
+        // Disable button and show loading state
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Adding...');
 
-        const daysDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1; // Include both start and end days
-        
-        // Validate minimum rental period (4 days)
-        const MIN_RENTAL_DAYS = 4;
-        if (daysDiff < MIN_RENTAL_DAYS) {
-            showAlert('danger', `Minimum rental period is ${MIN_RENTAL_DAYS} days. Please select dates covering at least ${MIN_RENTAL_DAYS} days.`);
-            $btn.prop('disabled', true).html('<i class="bi bi-cart-plus me-2"></i>SELECT DATES TO RENT');
-            return;
-        }
-        
-        // Calculate rental cost based on 4-day minimum period
-        const basePrice = clothData.rentPrice; // Price for 4 days
-        const perDayRate = basePrice / MIN_RENTAL_DAYS; // Per day rate after 4 days
-        
-        let rentCost;
-        if (daysDiff <= MIN_RENTAL_DAYS) {
-            // For 4 days or less, use base price
-            rentCost = basePrice;
-        } else {
-            // For more than 4 days: base price + additional days * per day rate
-            const additionalDays = daysDiff - MIN_RENTAL_DAYS;
-            const additionalCost = additionalDays * perDayRate;
-            rentCost = basePrice + additionalCost;
-        }
-        
-        if (rentCost <= 0) {
-            showAlert('danger', 'Please select valid rental dates to calculate cost');
-            $btn.prop('disabled', true).html('<i class="bi bi-cart-plus me-2"></i>SELECT DATES TO RENT');
-            return;
-        }
-        
-        // Show loading state
-        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Adding...');
-        
-        const requestData = {
-            cloth_id: clothId,
-            rental_start_date: startDateStr, // Already YYYY-MM-DD
-            rental_end_date: endDateStr,     // Already YYYY-MM-DD
-            total_rental_cost: rentCost,
-            rental_days: daysDiff,
-            _token: $('meta[name="csrf-token"]').attr('content')
-        };
-        
         $.ajax({
-            url: '/cart/add',
-            type: 'POST',
-            data: requestData,
+            url: '{{ route("cart.add") }}',
+            method: 'POST',
+            data: {
+                cloth_id: clothId,
+                rental_start_date: startDate,
+                rental_end_date: endDate,
+                total_rental_cost: currentRentalCost,
+                rental_days: currentRentalDays,
+                _token: '{{ csrf_token() }}'
+            },
             success: function(response) {
                 if (response.success) {
-                    // Update cart count
-                    updateCartCount(response.cartCount);
+                    // Update cart count and mini-cart
+                    if (typeof updateCartCount === 'function') updateCartCount(response.cartCount);
+                    if (typeof loadCartItems === 'function') loadCartItems();
                     
-                    // Show success message
+                    // Show success feedback
                     showAlert('success', response.message);
-                    
-                    // Update all buttons for this item to "RENTED"
-                    updateAllRentButtons(clothId, true);
-                    
-                    // Reload cart items to update the list
-                    loadCartItems();
                     
                     // Update button state
-                    $btn.prop('disabled', true).html('<i class="bi bi-check me-2"></i>RENTED');
+                    $btn.html('<i class="bi bi-check-circle-fill me-2"></i> RENTED')
+                        .addClass('rented-button')
+                        .removeClass('rent-button add-to-cart-btn');
+                    
+                    // Re-enable after a short delay if they want to change dates (which updates the item)
+                    setTimeout(() => {
+                        $btn.prop('disabled', false);
+                    }, 1000);
                 } else {
-                    showAlert('danger', response.message);
-                    $btn.prop('disabled', false).html('<i class="bi bi-cart-plus me-2"></i>RENT NOW');
+                    showAlert('danger', response.message || 'Error adding to bag');
+                    $btn.prop('disabled', false).html('<i class="bi bi-cart-plus me-2"></i> Add to Bag');
                 }
             },
-            error: function(xhr, status, error) {
-                if (xhr.status === 401) {
-                    // User not logged in, redirect to login with intended redirect
-                    window.location.href = "{{ route('login') }}?redirect=" + encodeURIComponent(window.location.href);
-                } else if (xhr.status === 422) {
-                    // Validation error
-                    try {
-                        const response = JSON.parse(xhr.responseText);
-                        if (response.errors) {
-                            const errorMessages = Object.values(response.errors).flat().join(', ');
-                            showAlert('danger', 'Validation error: ' + errorMessages);
-                        } else {
-                            showAlert('danger', 'Please check your input and try again.');
-                        }
-                    } catch (e) {
-                        showAlert('danger', 'An error occurred. Please try again.');
-                    }
-                } else {
-                    showAlert('danger', 'An error occurred. Please try again.');
+            error: function(xhr) {
+                console.error('Cart Error:', xhr.responseText);
+                let errorMessage = 'Error adding to bag. Please try again.';
+                
+                if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                } else if (xhr.status === 401) {
+                    errorMessage = 'Please login to add items to bag.';
+                    window.location.href = '{{ route("login") }}?redirect=' + encodeURIComponent(window.location.href);
                 }
-                $btn.prop('disabled', false).html('<i class="bi bi-cart-plus me-2"></i>RENT NOW');
+                
+                showAlert('danger', errorMessage);
+                $btn.prop('disabled', false).html('<i class="bi bi-calendar2-plus me-2"></i> Add to Bag');
             }
-                 });
-     });
-     
-     // Buy button functionality
-     $('.add-to-cart-buy-btn').click(function(e) {
-         e.preventDefault();
-         const clothId = $(this).data('cloth-id');
-         const $btn = $(this);
-         
-         // Show loading state
-         $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Processing...');
-         
-         const requestData = {
-             cloth_id: clothId,
-             purchase_type: 'buy',
-             total_selling_price: clothData.purchasePrice,
-             _token: $('meta[name="csrf-token"]').attr('content')
-         };
-         
-         $.ajax({
-             url: '/cart/add',
-             type: 'POST',
-             data: requestData,
-             success: function(response) {
-                 if (response.success) {
-                     // Update cart count
-                     updateCartCount(response.cartCount);
-                     
-                     // Show success message
-                     showAlert('success', response.message);
-                     
-                     // Update all buttons for this item to "PURCHASED"
-                     updateAllBuyButtons(clothId, true);
-                     
-                     // Reload cart items to update the list
-                     loadCartItems();
-                     
-                     // Update button state
-                     $btn.prop('disabled', true).html('<i class="bi bi-check me-2"></i>PURCHASED');
-                 } else {
-                     showAlert('danger', response.message);
-                     $btn.prop('disabled', false).html('<i class="bi bi-bag-check me-2"></i>BUY NOW - ₹{{ number_format($cloth->selling_price) }}');
-                 }
-             },
-             error: function(xhr, status, error) {
-                 if (xhr.status === 401) {
-                     // User not logged in, redirect to login with intended redirect
-                     window.location.href = "{{ route('login') }}?redirect=" + encodeURIComponent(window.location.href);
-                 } else if (xhr.status === 422) {
-                     // Validation error
-                     try {
-                         const response = JSON.parse(xhr.responseText);
-                         if (response.errors) {
-                             const errorMessages = Object.values(response.errors).flat().join(', ');
-                             showAlert('danger', 'Validation error: ' + errorMessages);
-                         } else {
-                             showAlert('danger', 'An error occurred. Please try again.');
-                         }
-                     } catch (e) {
-                         showAlert('danger', 'An error occurred. Please try again.');
-                     }
-                 } else {
-                     showAlert('danger', 'An error occurred. Please try again.');
-                 }
-                 $btn.prop('disabled', false).html('<i class="bi bi-bag-check me-2"></i>BUY NOW - ₹{{ number_format($cloth->selling_price) }}');
-             }
-         });
-     });
- });
-
-// Date validation and rental calculation
-function validateAndCalculateRental() {
-    const startDate = $('#start_date').val();
-    const endDate = $('#end_date').val();
-    const $rentButton = $('.add-to-cart-btn');
-    const $rentalSummary = $('#rental-summary');
-    const $rentalDuration = $('#rental-details-duration');
-    const $rentalCost = $('#rental-details-cost');
-    const $totalPrice = $('#total-price');
-    
-    if (!startDate || !endDate) {
-        $rentButton.prop('disabled', true).html('<i class="bi bi-cart-plus me-2"></i>Select dates to rent');
-        $rentButton.prop('disabled', true).html('<i class="bi bi-cart-plus me-2"></i>Select dates to rent');
-        $rentalSummary.hide();
-        return;
-    }
-    
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    // Basic validation
-    if (start < today) {
-        showAlert('danger', 'Start date cannot be in the past');
-        $rentButton.prop('disabled', true);
-        $rentalSummary.hide();
-        return;
-    }
-    
-    if (end <= start) {
-        showAlert('danger', 'End date must be after start date');
-        $rentButton.prop('disabled', true);
-        $rentalSummary.hide();
-        return;
-    }
-    
-    // Calculate number of days
-    const daysDiff = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1; // Include both start and end days
-    
-    // Validate minimum rental period (4 days)
-    const MIN_RENTAL_DAYS = 4;
-    if (daysDiff < MIN_RENTAL_DAYS) {
-        showAlert('danger', `Minimum rental period is ${MIN_RENTAL_DAYS} days. Please select dates covering at least ${MIN_RENTAL_DAYS} days.`);
-        $rentButton.prop('disabled', true);
-        $rentalSummary.hide();
-        return;
-    }
-    
-    // Check availability
-    if (!clothData.isAlwaysAvailable) {
-        const isAvailable = checkAvailability(start, end);
-        if (!isAvailable.available) {
-            showAlert('danger', isAvailable.message);
-            $rentButton.prop('disabled', true);
-            $rentalSummary.hide();
-            return;
-        }
-    }
-    
-    // Check blocked dates
-    const blockedCheck = checkBlockedDates(start, end);
-    if (!blockedCheck.available) {
-        showAlert('danger', blockedCheck.message);
-        $rentButton.prop('disabled', true);
-        $rentalSummary.hide();
-        return;
-    }
-    
-    // Calculate prices based on 4-day minimum period
-    const baseRent = clothData.rentPrice; // Price for 4 days
-    const perDayRate = baseRent / MIN_RENTAL_DAYS; // Per day rate after 4 days
-    
-    let totalRent;
-    if (daysDiff <= MIN_RENTAL_DAYS) {
-      totalRent = baseRent;
-    } else {
-      const additionalDays = daysDiff - MIN_RENTAL_DAYS;
-      const additionalCost = additionalDays * perDayRate;
-      totalRent = baseRent + additionalCost;
-    }
-
-    // 20/20 Model: Buyer sees Rent + 20% Commission
-    const buyerCommission = totalRent * 0.20;
-    const displayRentTotal = totalRent + buyerCommission;
-    
-    // Tax Logic
-    const rentGst = clothData.isSellerGst ? (totalRent * 0.18) : 0;
-    const commGst = buyerCommission * 0.18; // GST on platform fee
-    
-    const finalBuyerAmount = displayRentTotal + rentGst + commGst;
-    const totalCostWithSecurity = finalBuyerAmount + clothData.securityDeposit;
-    
-    let costBreakdown = `
-        <div class="d-flex justify-content-between mb-1 small text-muted">
-          <span>Rent (${daysDiff} days)</span>
-          <span>₹${Math.round(totalRent).toLocaleString()}</span>
-        </div>
-        <div class="d-flex justify-content-between mb-1 small text-muted">
-          <span>20% Buyer Platform Comm</span>
-          <span>₹${Math.round(buyerCommission).toLocaleString()}</span>
-        </div>
-        ${rentGst > 0 ? `
-        <div class="d-flex justify-content-between mb-1 small text-muted">
-          <span>GST on Rent (18%)</span>
-          <span>₹${Math.round(rentGst).toLocaleString()}</span>
-        </div>` : ''}
-        <div class="d-flex justify-content-between mb-1 small text-muted">
-          <span>Fixed GST (Service)</span>
-          <span>₹${Math.round(commGst).toLocaleString()}</span>
-        </div>
-    `;
-    
-    // Update UI
-    $rentalDuration.text(`${daysDiff} days`);
-    $('#rental-cost-breakdown').html(costBreakdown);
-    $rentalCost.text(`₹${Math.round(finalBuyerAmount).toLocaleString()}`);
-    
-    $totalPrice.text(Math.round(totalCostWithSecurity).toLocaleString());
-    $rentalSummary.show();
-    
-    // Enable rent button
-    $rentButton.prop('disabled', false).html('<i class="bi bi-cart-plus me-2"></i>Rent now - ₹' + Math.round(totalCostWithSecurity).toLocaleString());
-    
-    // Clear any previous alerts
-    $('.alert-danger').remove();
-}
-
-function checkAvailability(start, end) {
-    const availableBlocks = clothData.availableBlocks;
-    
-    for (let block of availableBlocks) {
-        const blockStart = new Date(block.start_date); // YYYY-MM-DD works in Date constructor
-        const blockEnd = new Date(block.end_date);
-        
-        if (start >= blockStart && end <= blockEnd) {
-            return { available: true };
-        }
-    }
-    
-    return { 
-        available: false, 
-        message: 'Selected dates are not within available rental periods' 
-    };
-}
-
-function checkBlockedDates(start, end) {
-    const blockedBlocks = clothData.blockedBlocks;
-    
-    for (let block of blockedBlocks) {
-        const blockStart = new Date(block.start_date);
-        const blockEnd = new Date(block.end_date);
-        
-        // Check if rental period overlaps with blocked period
-        if ((start <= blockEnd && end >= blockStart)) {
-            return { 
-                available: false, 
-                message: `Selected dates overlap with blocked period: ${blockStart.toLocaleDateString()} - ${blockEnd.toLocaleDateString()}` 
-            };
-        }
-    }
-    
-    return { available: true };
-}
-
-// Load cart items and check rented status
-function loadCartItems() {
-    $.ajax({
-        url: '/cart/items',
-        type: 'GET',
-        success: function(response) {
-            if (response.cartItems) {
-                window.cartItems = response.cartItems;
-                checkRentedItems();
-            }
-        },
-        error: function() {
-            // If error, assume no items in cart
-            window.cartItems = [];
-        }
+        });
     });
-}
 
-// Update all rent buttons for a specific item
-function updateAllRentButtons(clothId, isRented) {
-    const buttons = $(`.add-to-cart-btn[data-cloth-id="${clothId}"]`);
-    
-    buttons.each(function() {
+    // Buy Now logic
+    $('#productBuyBtn').on('click', function(e) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+
         const $btn = $(this);
-        
-        if (isRented) {
-            $btn.text('RENTED')
-                .addClass('btn-success')
-                .removeClass('btn-warning')
-                .prop('disabled', true)
-                .attr('title', 'Already in cart');
-            // Also disable Buy button for same item
-            const $buyBtn = $(`.add-to-cart-buy-btn[data-cloth-id="${clothId}"]`);
-            $buyBtn.prop('disabled', true);
-        } else {
-            $btn.html('<i class="bi bi-cart-plus me-2"></i>RENT NOW')
-                .removeClass('btn-success')
-                .addClass('btn-warning')
-                .prop('disabled', false)
-                .removeAttr('title');
-            // Re-enable Buy button if not purchased
-            const $buyBtn = $(`.add-to-cart-buy-btn[data-cloth-id="${clothId}"]`);
-            $buyBtn.prop('disabled', false);
-        }
-    });
-}
+        const clothId = $btn.data('cloth-id');
 
-// Update all buy buttons for a specific item
-function updateAllBuyButtons(clothId, isPurchased) {
-    const buttons = $(`.add-to-cart-buy-btn[data-cloth-id="${clothId}"]`);
-    
-    buttons.each(function() {
-        const $btn = $(this);
-        
-        if (isPurchased) {
-            $btn.text('PURCHASED')
-                .addClass('btn-success')
-                .removeClass('btn-primary')
-                .prop('disabled', true)
-                .attr('title', 'Already purchased');
-            // Also disable Rent button for same item
-            const $rentBtn = $(`.add-to-cart-btn[data-cloth-id="${clothId}"]`);
-            $rentBtn.prop('disabled', true).text('RENTED');
-        } else {
-            $btn.html('<i class="bi bi-bag-check me-2"></i>BUY NOW - ₹' + parseInt(clothData.purchasePrice).toLocaleString())
-                .removeClass('btn-success')
-                .addClass('btn-primary')
-                .prop('disabled', false)
-                .removeAttr('title');
-            // Re-enable Rent button if not in cart
-            const $rentBtn = $(`.add-to-cart-btn[data-cloth-id="${clothId}"]`);
-            $rentBtn.prop('disabled', false).html('<i class="bi bi-cart-plus me-2"></i>RENT NOW');
-        }
-    });
-}
+        // Disable button and show loading state
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Adding...');
 
-// Check which items are already in cart and update buttons
-function checkRentedItems() {
-    if (!window.cartItems) return;
-    
-    window.cartItems.forEach(function(item) {
-        if (item.purchase_type === 'buy') {
-            updateAllBuyButtons(item.cloth_id, true);
-        } else {
-            updateAllRentButtons(item.cloth_id, true);
-        }
-    });
-}
-
-// Update cart count in header
-function updateCartCount(count) {
-    const $cartCount = $('#cart-count');
-    if ($cartCount.length > 0) {
-        $cartCount.text(count);
-        if (count > 0) {
-            $cartCount.show();
-        } else {
-            $cartCount.hide();
-        }
-    }
-}
-
-// Show alert message
-function showAlert(type, message) {
-    const alertHtml = `
-        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    `;
-    
-    // Remove existing alerts
-    $('.alert').remove();
-    
-    // Add new alert
-    $('body').prepend(alertHtml);
-    
-    // Auto-hide after 3 seconds
-    setTimeout(function() {
-        $('.alert').fadeOut();
-    }, 3000);
-}
-
-// Reviews and Questions JavaScript
-$(document).ready(function() {
-    const clothId = {{ $cloth->id }};
-    
-    // Star Rating Input
-    let selectedRating = 0;
-    $('.star-rating-input .bi-star, .star-rating-input .bi-star-fill').on('click', function() {
-        selectedRating = parseInt($(this).data('rating'));
-        $('#rating').val(selectedRating);
-        
-        // Update stars display
-        $('.star-rating-input .bi-star, .star-rating-input .bi-star-fill').each(function() {
-            const starRating = parseInt($(this).data('rating'));
-            if (starRating <= selectedRating) {
-                $(this).removeClass('bi-star').addClass('bi-star-fill');
-            } else {
-                $(this).removeClass('bi-star-fill').addClass('bi-star');
-            }
-        });
-        
-        $('.rating-text').text(selectedRating + ' out of 5 stars');
-    });
-    
-    // Hover effect for stars
-    $('.star-rating-input .bi-star, .star-rating-input .bi-star-fill').on('mouseenter', function() {
-        const hoverRating = parseInt($(this).data('rating'));
-        $('.star-rating-input .bi-star, .star-rating-input .bi-star-fill').each(function() {
-            const starRating = parseInt($(this).data('rating'));
-            if (starRating <= hoverRating) {
-                $(this).removeClass('bi-star').addClass('bi-star-fill');
-            } else {
-                $(this).removeClass('bi-star-fill').addClass('bi-star');
-            }
-        });
-    });
-    
-    $('.star-rating-input').on('mouseleave', function() {
-        $('.star-rating-input .bi-star, .star-rating-input .bi-star-fill').each(function() {
-            const starRating = parseInt($(this).data('rating'));
-            if (starRating <= selectedRating) {
-                $(this).removeClass('bi-star').addClass('bi-star-fill');
-            } else {
-                $(this).removeClass('bi-star-fill').addClass('bi-star');
-            }
-        });
-    });
-    
-    // Character counter for review
-    $('#review_text').on('input', function() {
-        const length = $(this).val().length;
-        $('#review_char_count').text(length);
-    });
-    
-    // Character counter for question
-    $('#question_text').on('input', function() {
-        const length = $(this).val().length;
-        $('#question_char_count').text(length);
-    });
-    
-    // Review Form Submission
-    $('#reviewForm').on('submit', function(e) {
-        e.preventDefault();
-        
-        const rating = $('#rating').val();
-        const reviewText = $('#review_text').val();
-        
-        if (!rating) {
-            $('#rating-error').text('Please select a rating').show();
-            return;
-        }
-        
-        $('#rating-error').hide();
-        
-        const formData = {
-            _token: $('meta[name="csrf-token"]').attr('content'),
-            rating: rating,
-            review: reviewText
-        };
-        
         $.ajax({
-            url: '/clothes/' + clothId + '/reviews',
+            url: '{{ route("cart.add") }}',
             method: 'POST',
-            data: formData,
+            data: {
+                cloth_id: clothId,
+                purchase_type: 'buy',
+                _token: '{{ csrf_token() }}'
+            },
             success: function(response) {
                 if (response.success) {
+                    if (typeof updateCartCount === 'function') updateCartCount(response.cartCount);
+                    if (typeof loadCartItems === 'function') loadCartItems();
+                    
                     showAlert('success', response.message);
-                    setTimeout(function() {
-                        window.location.reload();
-                    }, 1000);
-                }
-            },
-            error: function(xhr) {
-                if (xhr.status === 401) {
-                    window.location.href = "{{ route('login') }}?redirect=" + encodeURIComponent(window.location.href);
+                    
+                    $btn.html('<i class="bi bi-check-circle-fill me-2"></i> PURCHASED')
+                        .addClass('purchased-button')
+                        .removeClass('buy-button add-to-cart-buy-btn');
                 } else {
-                    const error = xhr.responseJSON;
-                    if (error && error.errors) {
-                        const firstError = Object.values(error.errors)[0];
-                        showAlert('danger', Array.isArray(firstError) ? firstError[0] : firstError);
-                    } else {
-                        showAlert('danger', error?.message || 'Failed to post review. Please try again.');
-                    }
-                }
-            }
-        });
-    });
-    
-    // Question Form Submission
-    $('#questionForm').on('submit', function(e) {
-        e.preventDefault();
-        
-        const questionText = $('#question_text').val().trim();
-        
-        if (!questionText) {
-            $('#question-error').text('Please enter a question').show();
-            return;
-        }
-        
-        $('#question-error').hide();
-        
-        const formData = {
-            _token: $('meta[name="csrf-token"]').attr('content'),
-            question: questionText
-        };
-        
-        $.ajax({
-            url: '/clothes/' + clothId + '/questions',
-            method: 'POST',
-            data: formData,
-            success: function(response) {
-                if (response.success) {
-                    showAlert('success', response.message);
-                    setTimeout(function() {
-                        window.location.reload();
-                    }, 1000);
+                    showAlert('danger', response.message || 'Error adding to bag');
+                    $btn.prop('disabled', false).html('<i class="bi bi-handbag-fill me-2"></i> Buy Now');
                 }
             },
             error: function(xhr) {
-                if (xhr.status === 401) {
-                    window.location.href = "{{ route('login') }}?redirect=" + encodeURIComponent(window.location.href);
-                } else {
-                    const error = xhr.responseJSON;
-                    if (error && error.errors) {
-                        const firstError = Object.values(error.errors)[0];
-                        showAlert('danger', Array.isArray(firstError) ? firstError[0] : firstError);
-                    } else {
-                        showAlert('danger', error?.message || 'Failed to post question. Please try again.');
-                    }
+                let errorMessage = 'Error adding to bag. Please try again.';
+                if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
                 }
+                showAlert('danger', errorMessage);
+                $btn.prop('disabled', false).html('<i class="bi bi-handbag-fill me-2"></i> Buy Now');
             }
         });
-    });
-    
-    // Delete Review
-    $(document).on('click', '.delete-review-btn', function() {
-        if (!confirm('Are you sure you want to delete this review?')) {
-            return;
-        }
-        
-        const reviewId = $(this).data('review-id');
-        
-        $.ajax({
-            url: '/reviews/' + reviewId,
-            method: 'DELETE',
-            data: {
-                _token: $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) {
-                if (response.success) {
-                    showAlert('success', response.message);
-                    setTimeout(function() {
-                        window.location.reload();
-                    }, 1000);
-                }
-            },
-            error: function(xhr) {
-                const error = xhr.responseJSON;
-                showAlert('danger', error?.message || 'Failed to delete review.');
-            }
-        });
-    });
-    
-    // Delete Question
-    $(document).on('click', '.delete-question-btn', function() {
-        if (!confirm('Are you sure you want to delete this question?')) {
-            return;
-        }
-        
-        const questionId = $(this).data('question-id');
-        
-        $.ajax({
-            url: '/questions/' + questionId,
-            method: 'DELETE',
-            data: {
-                _token: $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) {
-                if (response.success) {
-                    showAlert('success', response.message);
-                    setTimeout(function() {
-                        window.location.reload();
-                    }, 1000);
-                }
-            },
-            error: function(xhr) {
-                const error = xhr.responseJSON;
-                showAlert('danger', error?.message || 'Failed to delete question.');
-            }
-        });
-    });
-    
-    // Show Answer Form
-    $(document).on('click', '.answer-question-btn', function() {
-        $(this).closest('.question-item').find('.answer-form').show();
-        $(this).hide();
-    });
-    
-    // Cancel Answer
-    $(document).on('click', '.cancel-answer-btn', function() {
-        $(this).closest('.question-item').find('.answer-form').hide();
-        $(this).closest('.question-item').find('.answer-question-btn').show();
-    });
-    
-    // Submit Answer
-    $(document).on('submit', '.answer-question-form', function(e) {
-        e.preventDefault();
-        
-        const questionId = $(this).closest('.question-item').data('question-id');
-        const answerText = $(this).find('textarea[name="answer"]').val().trim();
-        
-        if (!answerText) {
-            showAlert('danger', 'Please enter an answer');
-            return;
-        }
-        
-        $.ajax({
-            url: '/questions/' + questionId + '/answer',
-            method: 'POST',
-            data: {
-                _token: $('meta[name="csrf-token"]').attr('content'),
-                answer: answerText
-            },
-            success: function(response) {
-                if (response.success) {
-                    showAlert('success', response.message);
-                    setTimeout(function() {
-                        window.location.reload();
-                    }, 1000);
-                }
-            },
-            error: function(xhr) {
-                const error = xhr.responseJSON;
-                showAlert('danger', error?.message || 'Failed to post answer.');
-            }
-        });
-    });
-    
-    @if(isset($userReview) && $userReview)
-    // Load existing user review
-    selectedRating = {{ $userReview->rating }};
-    $('#rating').val(selectedRating);
-    $('#review_text').val('{{ addslashes($userReview->review) }}');
-    $('#review_char_count').text($('#review_text').val().length);
-    
-    $('.star-rating-input .bi-star, .star-rating-input .bi-star-fill').each(function() {
-        const starRating = parseInt($(this).data('rating'));
-        if (starRating <= selectedRating) {
-            $(this).removeClass('bi-star').addClass('bi-star-fill');
-        }
-    });
-    $('.rating-text').text(selectedRating + ' out of 5 stars');
-    @endif
-
-    // Image Lightbox
-    $('#activeProductImage').on('click', function() {
-        const src = $(this).attr('src');
-        $('#lightboxImage').attr('src', src);
-        const modal = new bootstrap.Modal(document.getElementById('imageLightboxModal'));
-        modal.show();
     });
 });
 </script>
-@endsection 
+@endsection

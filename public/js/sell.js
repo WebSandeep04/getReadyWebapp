@@ -3,6 +3,7 @@ const indicators = document.querySelectorAll(".steps .step");
 const nextBtn = document.getElementById("nextBtn");
 const prevBtn = document.getElementById("prevBtn");
 const submitBtn = document.getElementById("submitBtn");
+const progressFill = document.getElementById("progressFill");
 
 let currentStep = 0;
 
@@ -98,25 +99,42 @@ if (purchaseValueInput && rentPriceInput && rentPriceSuggestion && maxRentAmount
       securityDepositInput.value = rentPrice;
     }
   });
+
+  // Initialize on page load
+  checkAndShowRentSuggestion();
+  if (rentPriceInput && securityDepositInput) {
+    securityDepositInput.value = rentPriceInput.value || 0;
+  }
 }
 
 
-// Show/hide buttons based on current step
+// Show/hide buttons based on current step and update stepper UI
 function updateButtons() {
+  // Update progress bar
+  const progress = (currentStep / (steps.length - 1)) * 100;
+  if (progressFill) progressFill.style.width = `${progress}%`;
+
+  // Update step indicators
+  indicators.forEach((indicator, index) => {
+    indicator.classList.remove("active", "completed");
+    if (index === currentStep) {
+      indicator.classList.add("active");
+    } else if (index < currentStep) {
+      indicator.classList.add("completed");
+    }
+  });
+
   if (currentStep === 0) {
-    // First step - hide previous button, show next button
     prevBtn.style.display = "none";
-    nextBtn.style.display = "block";
+    nextBtn.style.display = "flex";
     submitBtn.style.display = "none";
   } else if (currentStep === steps.length - 1) {
-    // Last step - show previous button, hide next button, show submit button
-    prevBtn.style.display = "block";
+    prevBtn.style.display = "flex";
     nextBtn.style.display = "none";
     submitBtn.style.display = "block";
   } else {
-    // Middle steps - show both previous and next buttons, hide submit button
-    prevBtn.style.display = "block";
-    nextBtn.style.display = "block";
+    prevBtn.style.display = "flex";
+    nextBtn.style.display = "flex";
     submitBtn.style.display = "none";
   }
 }
@@ -211,10 +229,24 @@ if (form) {
     // Clear previous highlights
     allInputs.forEach(input => input.classList.remove('is-invalid'));
 
+    let missingFields = [];
     allInputs.forEach(input => {
       if (input.hasAttribute('required') && !input.value.trim()) {
         isValid = false;
         input.classList.add('is-invalid');
+        
+        // Try to get a human-readable name for the field
+        let fieldName = '';
+        const label = input.closest('.form-group')?.querySelector('label');
+        const rowLabel = input.closest('.row')?.parentElement?.querySelector('label');
+        const colLabel = input.parentElement?.querySelector('label');
+        
+        if (label) fieldName = label.innerText.replace('*', '').trim();
+        else if (rowLabel) fieldName = rowLabel.innerText.replace('*', '').trim();
+        else if (colLabel) fieldName = colLabel.innerText.replace('*', '').trim();
+        else fieldName = input.placeholder || input.name;
+        
+        if (fieldName && !missingFields.includes(fieldName)) missingFields.push(fieldName);
       } else if (input.checkValidity && !input.checkValidity()) {
         isValid = false;
         input.classList.add('is-invalid');
@@ -238,11 +270,15 @@ if (form) {
       }
     });
 
-    if (missingRequiredImage && firstInvalidStep === -1) {
-      firstInvalidStep = 3; // Images step is index 3
+    if (missingRequiredImage) {
+      missingFields.push("At least 3 images");
+      if (firstInvalidStep === -1) firstInvalidStep = 3;
     }
 
     if (!isValid) {
+      // Show an alert to the user so they know why it's not submitting
+      alert('Please fill in the following required fields:\n- ' + missingFields.join('\n- '));
+
       if (firstInvalidStep !== -1 && firstInvalidStep !== currentStep) {
         steps[currentStep].classList.remove("active");
         indicators[currentStep].classList.remove("active");
@@ -254,7 +290,7 @@ if (form) {
 
       const firstInvalid = document.querySelector('.is-invalid');
       if (firstInvalid) {
-        setTimeout(() => firstInvalid.focus(), 1000);
+        setTimeout(() => firstInvalid.focus(), 100);
       }
     } else {
       // Form is valid, show summary modal
@@ -269,7 +305,10 @@ function showSummary() {
 
   const getSelectText = (name) => {
     const el = form.querySelector(`[name="${name}"]`);
-    return el ? el.options[el.selectedIndex].text : '';
+    if (el && el.selectedIndex !== -1 && el.options[el.selectedIndex]) {
+      return el.options[el.selectedIndex].text;
+    }
+    return '';
   };
 
   const getValue = (name) => {
@@ -430,41 +469,31 @@ function addAvailabilityBlock(type) {
   const index = type === 'available' ? counter - 1 : counter + 99; // Use different index ranges
 
   const blockHtml = `
-    <div class="availability-block" data-type="${type}" data-index="${index}">
-      <div class="row">
-        <div class="col-md-5">
-          <label class="small">Start Date</label>
-          <input type="date" class="form-control form-control-sm availability-date-input" name="availability_blocks[${index}][start_date]" required>
+    <div class="availability-block p-2 mb-2 border rounded bg-light position-relative" data-type="${type}" data-index="${index}" style="border-style: dashed !important;">
+      <button type="button" class="btn btn-link text-danger p-0 position-absolute" style="top: 2px; right: 5px; z-index: 10; text-decoration: none;" onclick="removeAvailabilityBlock(this)">
+        <i class="fas fa-times-circle"></i>
+      </button>
+      <div class="row g-2">
+        <div class="col-6">
+          <label class="small mb-0" style="font-size: 0.65rem; font-weight: 800; color: #666;">START DATE</label>
+          <input type="date" class="form-control form-control-sm" name="availability_blocks[${index}][start_date]" required style="font-size: 0.75rem; padding: 4px 8px; margin-bottom: 0;">
         </div>
-        <div class="col-md-5">
-          <label class="small">End Date</label>
-          <input type="date" class="form-control form-control-sm availability-date-input" name="availability_blocks[${index}][end_date]" required>
-        </div>
-        <div class="col-md-2">
-          <label class="small">&nbsp;</label>
-          <button type="button" class="btn btn-danger btn-sm btn-block" onclick="removeAvailabilityBlock(this)">
-            <i class="fas fa-trash"></i>
-          </button>
+        <div class="col-6">
+          <label class="small mb-0" style="font-size: 0.65rem; font-weight: 800; color: #666;">END DATE</label>
+          <input type="date" class="form-control form-control-sm" name="availability_blocks[${index}][end_date]" required style="font-size: 0.75rem; padding: 4px 8px; margin-bottom: 0;">
         </div>
       </div>
       ${type === 'blocked' ? `
-        <div class="row mt-2">
+        <div class="row g-2 mt-1">
           <div class="col-12">
-            <label class="small">Reason (optional)</label>
-            <input type="text" class="form-control form-control-sm" name="availability_blocks[${index}][reason]" placeholder="e.g., Personal use, Maintenance">
+            <input type="text" class="form-control form-control-sm" name="availability_blocks[${index}][reason]" placeholder="Reason (optional)" style="font-size: 0.75rem; padding: 4px 8px; margin-bottom: 0;">
           </div>
         </div>
       ` : ''}
       <input type="hidden" name="availability_blocks[${index}][type]" value="${type}">
       ${type === 'available' ? `
-        <div class="row mt-2">
-          <div class="col-12">
-            <small class="text-info">
-              <i class="fas fa-info-circle"></i> 
-              Minimum 4 days rental required.
-            </small>
-            <div class="text-danger small mt-1" id="availability-error-${index}" style="display: none;"></div>
-          </div>
+        <div class="mt-1">
+          <div class="text-danger" id="availability-error-${index}" style="display: none; font-size: 0.65rem; font-weight: 600;"></div>
         </div>
       ` : ''}
     </div>
@@ -610,8 +639,7 @@ unitSelectors.forEach(selector => {
     const factor = isCm ? 2.54 : (1 / 2.54);
 
     measurementLabels.forEach(label => {
-      const text = label.textContent.replace(/\s*\((inch|inches|cm)\)/gi, '');
-      label.textContent = `${text} (${unit})`;
+      // Logic to update label text with unit removed as per user request
     });
 
     measurementInputs.forEach(input => {
@@ -633,10 +661,21 @@ unitSelectors.forEach(selector => {
 // Initialize placeholders and labels
 const currentUnit = document.querySelector('.unit-selector:checked')?.value || 'inch';
 measurementLabels.forEach(label => {
-  const text = label.textContent.replace(/\s*\((inch|inches|cm)\)/gi, '');
-  label.textContent = `${text} (${currentUnit})`;
+  // Initialization logic removed to keep labels clean
 });
 measurementInputs.forEach(input => {
   const placeholder = input.getAttribute('placeholder').replace(/\s*\((inch|inches|cm)\)/gi, '');
   input.setAttribute('placeholder', `${placeholder} (${currentUnit})`);
 });
+
+function handleImagePreview(input, id) {
+  const preview = document.getElementById(`preview-${id}`);
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      preview.style.backgroundImage = `url(${e.target.result})`;
+      preview.style.display = 'block';
+    }
+    reader.readAsDataURL(input.files[0]);
+  }
+}

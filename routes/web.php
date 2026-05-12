@@ -300,6 +300,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/rejections/{id}', [App\Http\Controllers\RejectionController::class, 'show'])->name('rejections.show');
     Route::put('/rejections/{id}', [App\Http\Controllers\RejectionController::class, 'update'])->name('rejections.update');
     Route::get('/rejections/{id}/details', [App\Http\Controllers\RejectionController::class, 'getRejectionDetails'])->name('rejections.details');
+    Route::get('/rejections-list', [App\Http\Controllers\RejectionController::class, 'getRejectedItems'])->name('rejections.list');
 });
 
 // Listed Clothes (Requires Authentication)

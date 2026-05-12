@@ -213,16 +213,31 @@ class CartController extends Controller
             return response()->json(['cartItems' => []]);
         }
 
-        $cartItems = Auth::user()->cartItems()->with('cloth')->get();
+        $cartItems = Auth::user()->cartItems()->with(['cloth.images', 'cloth.size'])->get();
         $items = $cartItems->map(function($item) {
+            $cloth = $item->cloth;
+            $price = ($item->purchase_type === 'buy') ? $item->total_selling_price : $item->total_rental_cost;
+            
             return [
+                'id' => $item->id,
                 'cloth_id' => $item->cloth_id,
+                'title' => $cloth->title,
+                'image' => $cloth->images->count() ? asset('storage/' . $cloth->images->first()->image_path) : asset('images/placeholder.jpg'),
+                'size' => $cloth->size->name ?? $cloth->size,
                 'quantity' => $item->quantity,
-                'purchase_type' => $item->purchase_type ?? 'rent'
+                'purchase_type' => $item->purchase_type ?? 'rent',
+                'price' => $price,
+                'formatted_price' => '₹' . number_format($price)
             ];
         });
 
-        return response()->json(['cartItems' => $items]);
+        $subtotal = $items->sum('price');
+
+        return response()->json([
+            'cartItems' => $items,
+            'subtotal' => $subtotal,
+            'formatted_subtotal' => '₹' . number_format($subtotal)
+        ]);
     }
 
     /**

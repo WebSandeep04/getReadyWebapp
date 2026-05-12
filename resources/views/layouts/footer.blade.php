@@ -1,51 +1,98 @@
-<!-- Footer -->
-<footer class="bg-light py-4">
+<!-- Professional Black Footer -->
+<footer class="main-footer py-5">
   <div class="container">
-    <div class="row">
-      <div class="col-md-4 text-center text-md-start">
-        <div class="logo font-weight-bold text-warning mb-2">{{ frontend_setting('footer_title', 'GET Ready') }}</div>
-        <p class="small text-muted">{{ frontend_setting('footer_description', 'Your trusted partner in fashion rental. Quality, style, and convenience all in one place.') }}</p>
-      </div>
-      <div class="col-md-4 text-center">
-        <h6 class="mb-3">Contact Information</h6>
-        <div class="contact small text-muted">
-          @if(frontend_setting('footer_email'))
-            <p><i class="bi bi-envelope me-2"></i>{{ frontend_setting('footer_email') }}</p>
+    <div class="row footer-top">
+      <!-- Brand & Info -->
+      <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+        <div class="footer-logo mb-4">
+          @if(frontend_setting('site_logo'))
+            <img src="{{ asset(frontend_setting('site_logo')) }}" alt="Logo" class="footer-main-logo">
+          @else
+            <span class="logo-text-gold">GET READY</span>
           @endif
-          @if(frontend_setting('footer_phone'))
-            <p><i class="bi bi-telephone me-2"></i>{{ frontend_setting('footer_phone') }}</p>
+        </div>
+        <p class="footer-desc mb-4">
+          {{ frontend_setting('footer_description', 'Your premier destination for high-end fashion rental. Experience luxury without the commitment.') }}
+        </p>
+        <div class="social-icons-pro d-flex gap-3">
+          @if(frontend_setting('social_facebook'))
+            <a href="{{ frontend_setting('social_facebook') }}" target="_blank"><i class="bi bi-facebook"></i></a>
           @endif
-          @if(frontend_setting('footer_address'))
-            <p><i class="bi bi-geo-alt me-2"></i>{{ frontend_setting('footer_address') }}</p>
+          @if(frontend_setting('social_instagram'))
+            <a href="{{ frontend_setting('social_instagram') }}" target="_blank"><i class="bi bi-instagram"></i></a>
+          @endif
+          @if(frontend_setting('social_twitter'))
+            <a href="{{ frontend_setting('social_twitter') }}" target="_blank"><i class="bi bi-twitter-x"></i></a>
           @endif
         </div>
       </div>
-      <div class="col-md-4 text-center text-md-end">
-        <h6 class="mb-3">Follow Us</h6>
-        <div class="social-links">
-          @if(frontend_setting('social_facebook'))
-            <a href="{{ frontend_setting('social_facebook') }}" class="text-muted mx-2" target="_blank">
-              <i class="bi bi-facebook fs-5"></i>
-            </a>
-          @endif
-          @if(frontend_setting('social_instagram'))
-            <a href="{{ frontend_setting('social_instagram') }}" class="text-muted mx-2" target="_blank">
-              <i class="bi bi-instagram fs-5"></i>
-            </a>
-          @endif
-          @if(frontend_setting('social_twitter'))
-            <a href="{{ frontend_setting('social_twitter') }}" class="text-muted mx-2" target="_blank">
-              <i class="bi bi-twitter fs-5"></i>
-            </a>
-          @endif
+
+      <!-- Shop Links -->
+      <div class="col-lg-2 col-md-6 mb-4 mb-lg-0">
+        <h6 class="footer-heading mb-4">SHOP</h6>
+        <ul class="footer-links list-unstyled">
+          <li><a href="{{ url('/clothes?genders[]=Men') }}">Men</a></li>
+          <li><a href="{{ url('/clothes?genders[]=Women') }}">Women</a></li>
+          <li><a href="{{ url('/clothes?genders[]=Boy') }}">Boy</a></li>
+          <li><a href="{{ url('/clothes?genders[]=Girl') }}">Girl</a></li>
+        </ul>
+      </div>
+
+      <!-- Useful Links -->
+      <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+        <h6 class="footer-heading mb-4">USEFUL LINKS</h6>
+        <ul class="footer-links list-unstyled">
+          <li><a href="#">Contact Us</a></li>
+          <li><a href="#">FAQ</a></li>
+          <li><a href="#">T&C</a></li>
+          <li><a href="#">Terms Of Use</a></li>
+          <li><a href="#">Track Orders</a></li>
+          <li><a href="#">Shipping</a></li>
+          <li><a href="#">Cancellation & Returns</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+        </ul>
+      </div>
+
+      <!-- Experience App -->
+      <div class="col-lg-4 col-md-6">
+        <h6 class="footer-heading mb-4">EXPERIENCE APP ON MOBILE</h6>
+        <div class="footer-app-badges d-flex flex-wrap gap-2 mb-4">
+          <a href="#"><img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play" height="40"></a>
+        </div>
+        <div class="footer-promise">
+          <div class="d-flex align-items-center mb-3">
+            <i class="bi bi-shield-check text-gold fs-4 mr-3"></i>
+            <div>
+              <h6 class="mb-0 text-white small">100% ORIGINAL</h6>
+              <p class="mb-0 text-muted extra-small">guarantee for all products</p>
+            </div>
+          </div>
+          <div class="d-flex align-items-center">
+            <i class="bi bi-arrow-repeat text-gold fs-4 mr-3"></i>
+            <div>
+              <h6 class="mb-0 text-white small">RETURN WITHIN 14 DAYS</h6>
+              <p class="mb-0 text-muted extra-small">of receiving your order</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-    <hr class="my-3">
-    <div class="row">
-      <div class="col-12 text-center">
-        <p class="small text-muted mb-0">{{ frontend_setting('footer_copyright', '© 2024 GetReady. All rights reserved.') }}</p>
+
+    <hr class="footer-divider">
+
+    <!-- Unified Bottom Footer -->
+    <div class="footer-bottom-pro d-flex flex-wrap justify-content-between align-items-center">
+      <p class="copyright mb-0 text-white">
+        © 2026 GetReady. All rights reserved.
+      </p>
+      <div class="footer-contact-info d-flex gap-4">
+        @if(frontend_setting('footer_email'))
+          <span class="text-white"><i class="bi bi-envelope mr-2"></i>{{ frontend_setting('footer_email') }}</span>
+        @endif
+        @if(frontend_setting('footer_phone'))
+          <span class="text-white"><i class="bi bi-telephone mr-2"></i>{{ frontend_setting('footer_phone') }}</span>
+        @endif
       </div>
     </div>
   </div>
-</footer> 
+</footer>

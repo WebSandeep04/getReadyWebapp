@@ -182,7 +182,15 @@ indicators.forEach((indicator, index) => {
 // Form submission validation
 const form = document.getElementById("form");
 const imageInputs = document.querySelectorAll('.cloth-image-input');
-const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+let imagePreviewContainer = document.getElementById('imagePreviewContainer');
+
+// Create the missing image preview container container if not present in HTML
+if (!imagePreviewContainer) {
+  imagePreviewContainer = document.createElement('div');
+  imagePreviewContainer.id = 'imagePreviewContainer';
+  imagePreviewContainer.style.display = 'none';
+  document.body.appendChild(imagePreviewContainer);
+}
 
 // Image preview logic for multiple separate inputs
 if (imageInputs.length > 0) {
@@ -414,7 +422,7 @@ function showSummary() {
   html += '<div class="summary-item">';
   html += '<span class="summary-label">Selected Images</span>';
   html += '<div class="d-flex flex-wrap mt-2">';
-  const previewImgs = imagePreviewContainer.querySelectorAll('img');
+  const previewImgs = imagePreviewContainer ? imagePreviewContainer.querySelectorAll('img') : [];
   if (previewImgs.length > 0) {
     previewImgs.forEach(img => {
       html += `<img src="${img.src}" class="summary-image-preview">`;

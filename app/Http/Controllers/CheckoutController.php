@@ -1,0 +1,360 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Order;
+use App\Models\Payment;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
+
+class CheckoutController extends Controller
+{
+    public function createOrder(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Authentication required'], 401);
+        }
+
+        $cartItems = $user->cartItems()->with(['cloth.images', 'cloth.size', 'cloth.condition'])->get();
+
+        if ($cartItems->isEmpty()) {
+            return response()->json(['success' => false, 'message' => 'Your cart is empty'], 422);
+        }
+        
+        // Validate Address from Request
+        $deliveryAddress = $request->input('delivery_address');
+        if (empty($deliveryAddress)) {
+             return response()->json(['success' => false, 'message' => 'Delivery address is required.'], 422);
+        }
+
+        // Calculate Totals using PriceCalculatorService
+        $priceService = new \App\Services\PriceCalculatorService();
+        
+        $rentalSubtotal = 0;
+        $buySubtotal = 0;
+        $securityDeposit = 0;
+        $rentalStartDates = [];
+        $rentalEndDates = [];
+        
+        $detailedItems = [];
+
+        foreach ($cartItems as $item) {
+            if ($item->purchase_type === 'buy') {
+                $pricing = $priceService->calculatePurchase($item->cloth);
+                $buySubtotal += $pricing['total_buyer_pay'] * $item->quantity;
+                $detailedItems[] = [
+                    'item' => $item,
+                    'is_buy' => true,
+                    'pricing' => $pricing,
+                    'price' => $pricing['total_buyer_pay']
+                ];
+            } else {
+                $days = $item->rental_days ?? 4;
+                $pricing = $priceService->calculate($item->cloth, $days);
+                
+                $rentalSubtotal += $pricing['total_buyer_pay'] * $item->quantity;
+                $securityDeposit += (float) ($item->cloth->security_deposit ?? 0) * $item->quantity;
+
+                if ($item->rental_start_date) $rentalStartDates[] = $item->rental_start_date;
+                if ($item->rental_end_date) $rentalEndDates[] = $item->rental_end_date;
+                
+                $detailedItems[] = [
+                    'item' => $item,
+                    'is_buy' => false,
+                    'pricing' => $pricing
+                ];
+            }
+        }
+
+        $grandTotal = $rentalSubtotal + $buySubtotal + $securityDeposit;
+
+        if ($grandTotal <= 0) {
+            return response()->json(['success' => false, 'message' => 'Unable to calculate order total'], 422);
+        }
+
+        // --- FINAL AVAILABILITY CHECK BEFORE CHECKOUT ---
+        $availabilityService = new \App\Services\AvailabilityService();
+        foreach ($cartItems as $item) {
+            if ($item->purchase_type !== 'buy' && $item->rental_start_date && $item->rental_end_date) {
+                // If it's a rental, check if the dates are still available
+                $isAvailable = $availabilityService->isAvailable($item->cloth, $item->rental_start_date, $item->rental_end_date);
+                if (!$isAvailable) {
+                    return response()->json([
+                        'success' => false, 
+                        'message' => 'Sorry, the item "' . $item->cloth->title . '" is no longer available for the selected dates. Please remove it from your cart or change the dates.'
+                    ], 422);
+                }
+            } else if ($item->purchase_type === 'buy') {
+                // If it's a purchase, check if it's still available for purchase
+                if ($item->cloth->sku <= 0) {
+                     return response()->json([
+                        'success' => false, 
+                        'message' => 'Sorry, the item "' . $item->cloth->title . '" has been sold out.'
+                    ], 422);
+                }
+            }
+        }
+
+        $rentalTo = !empty($rentalEndDates) ? max($rentalEndDates) : now()->addDays(3);
+
+        // Create Order Record
+        $order = Order::create([
+            'buyer_id' => $user->id,
+            'total_amount' => $grandTotal,
+            'security_amount' => $securityDeposit,
+            'has_rental_items' => $rentalSubtotal > 0,
+            'has_purchase_items' => $buySubtotal > 0,
+            'status' => 'Pending',
+            'delivery_address' => $deliveryAddress,
+            'rental_from' => !empty($rentalStartDates) ? min($rentalStartDates) : now(),
+            'rental_to' => $rentalTo,
+            'return_date' => \Carbon\Carbon::parse($rentalTo)->addDay(),
+        ]);
+
+        // Create Order Items
+        foreach ($detailedItems as $dItem) {
+            $item = $dItem['item'];
+            $pricing = $dItem['pricing'];
+            
+            // For both Rent and Buy, we now populate the detailed breakdown
+            // Note: For Buy, base_rent maps to base_price (selling price)
+            \App\Models\OrderItem::create([
+                'order_id' => $order->id,
+                'cloth_id' => $item->cloth_id,
+                'purchase_type' => $dItem['is_buy'] ? 'buy' : 'rent',
+                'price' => $pricing['total_buyer_pay'],
+                'base_rent' => $pricing['base_price'] ?? $pricing['base_rent'],
+                'buyer_commission' => $pricing['buyer_comm'],
+                'seller_commission' => $pricing['seller_comm'],
+                'rent_gst' => $pricing['item_tax_fee'] ?? $pricing['rent_gst'], // 'rent_gst' column stores Item Tax
+                'buyer_commission_gst' => $pricing['buyer_comm_gst'],
+                'seller_commission_gst' => $pricing['seller_comm_gst'],
+                'tcs_amount' => $pricing['tcs'],
+                'is_seller_gst' => $pricing['is_seller_gst'],
+            ]);
+        }
+
+        // --- HANDLE COD vs ONLINE ---
+        $paymentMethod = $request->input('payment_method', 'online');
+
+        if ($paymentMethod === 'cod') {
+            // Process COD Order Immediately
+            
+            // 1. Create Pending Payment Record
+            Payment::create([
+                'order_id' => $order->id,
+                'payment_method' => 'cod',
+                'payment_status' => 'Pending', // pending until delivered
+                'amount' => $grandTotal,
+                'transaction_id' => 'COD-' . Str::upper(Str::random(8)),
+            ]);
+
+            // 2. Update Order Status
+            $order->update(['status' => 'Confirmed']);
+
+            // 3. Process Post-Order (Shipment, Inventory, Notifications)
+            $this->processPostOrderTasks($order, $user, $cartItems, 'COD');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Order placed successfully via COD.',
+                'redirect' => route('orders.index'),
+            ]);
+        }
+
+        // ONLINE (Razorpay)
+        return response()->json([
+            'success' => true,
+            'order' => [
+                'id' => $order->id,
+                'amount' => round($grandTotal, 2),
+                'amount_paise' => (int) round($grandTotal * 100),
+                'currency' => 'INR',
+                'receipt' => 'GR-' . Str::upper(Str::random(6)),
+            ],
+            'customer' => [
+                'name' => $user->name,
+                'email' => $user->email,
+                'contact' => $user->phone ?? '',
+            ],
+            'razorpay' => [
+                'key' => config('services.razorpay.key_id', 'rzp_test_dummy'),
+            ],
+        ]);
+    }
+
+    public function verifyPayment(Request $request)
+    {
+        $request->validate([
+            'order_id' => 'required|exists:orders,id',
+            'razorpay_payment_id' => 'required|string',
+        ]);
+
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Authentication required'], 401);
+        }
+
+        $order = Order::where('id', $request->order_id)
+            ->where('buyer_id', $user->id)
+            ->firstOrFail();
+
+        Payment::create([
+            'order_id' => $order->id,
+            'payment_method' => 'razorpay',
+            'payment_status' => 'Paid',
+            'amount' => $order->total_amount,
+            'transaction_id' => $request->razorpay_payment_id,
+            'paid_at' => now(),
+        ]);
+
+        $order->update(['status' => 'Confirmed']);
+
+        // Process Post-Order (Shipment, Inventory, Notifications)
+        $this->processPostOrderTasks($order, $user, $user->cartItems, 'Prepaid');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Payment verified successfully.',
+            'redirect' => route('orders.index', ['payment' => 'success']),
+        ]);
+    }
+
+    /**
+     * Shared logic for processing confirmed orders (inventory, shipment, notifs)
+     */
+    private function processPostOrderTasks($order, $user, $cartItems, $paymentType)
+    {
+        // 1. Update Availability (Blocking)
+        foreach ($cartItems as $item) {
+            if ($item->purchase_type !== 'buy' && $item->rental_start_date && $item->rental_end_date) {
+                $this->blockDates($item->cloth, $item->rental_start_date, $item->rental_end_date, $order->id);
+            }
+        }
+
+        // 2. Create Shipment
+        $this->createShipment($order, $user, $paymentType);
+
+        // 3. Send Notification to Buyer
+        \App\Models\Notification::create([
+            'user_id' => $user->id,
+            'title' => 'Order Placed Successfully',
+            'message' => "Your order #{$order->id} has been confirmed. Thank you for shopping with us!",
+            'type' => 'success',
+            'icon' => 'bi-bag-check',
+            'data' => ['order_id' => $order->id],
+            'read' => false
+        ]);
+
+        // 4. Send Notifications to Sellers & Update Stock
+        foreach ($cartItems as $item) {
+            $cloth = $item->cloth;
+            if ($cloth) {
+                if ($cloth->user_id) {
+                    $transactionType = $item->purchase_type === 'buy' ? 'sold' : 'rented';
+                    $messageType = $item->purchase_type === 'buy' ? 'Sale' : 'Rental';
+                    
+                    \App\Models\Notification::create([
+                        'user_id' => $cloth->user_id,
+                        'title' => "New {$messageType}!",
+                        'message' => "Good news! Your item '{$cloth->title}' has been {$transactionType}.",
+                        'type' => 'success',
+                        'icon' => 'bi-cash-coin',
+                        'data' => ['cloth_id' => $cloth->id, 'order_id' => $order->id],
+                        'read' => false
+                    ]);
+                }
+
+                // Decrement SKU ONLY if it is a purchase
+                if ($item->purchase_type === 'buy' && $cloth->sku > 0) {
+                    $newSku = max(0, $cloth->sku - $item->quantity);
+                    $cloth->sku = $newSku;
+                    if ($newSku == 0) $cloth->is_available = false;
+                    $cloth->save();
+                }
+            }
+        }
+
+        // 5. Clear Cart
+        $user->cartItems()->delete();
+
+        // 6. Generate Invoices
+        try {
+            $invoiceService = new \App\Services\InvoiceService();
+            $invoiceService->generateOrderInvoices($order);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Invoice Generation Failed for Order #{$order->id}: " . $e->getMessage());
+        }
+    }
+
+    private function createShipment($order, $user, $paymentType)
+    {
+        try {
+            \Illuminate\Support\Facades\Log::info("Checkout: Creating {$paymentType} shipment for Order #{$order->id}");
+            
+            $courier = new \App\Services\XpressbeesService();
+            
+            $addressParts = explode(',', $order->delivery_address);
+            $city = trim($addressParts[count($addressParts)-2] ?? 'Mumbai');
+            $pincode = trim($addressParts[count($addressParts)-1] ?? '400001');
+
+            $orderLoad = [
+                'order_number' => $order->id,
+                'payment_method' => $paymentType, // 'Prepaid' or 'COD'
+                'collectable_amount' => ($paymentType === 'COD') ? $order->total_amount : 0,
+                'consignee_name' => $user->name,
+                'consignee_phone' => $user->phone ?? '9999999999',
+                'consignee_address' => $order->delivery_address,
+                'consignee_pincode' => $pincode,
+                'consignee_city' => $city,
+                'consignee_state' => 'Maharashtra',
+                'products' => [],
+                'total_amount' => $order->total_amount,
+                'weight' => 0.5,
+                'length' => 10,
+                'breadth' => 10,
+                'height' => 10
+            ];
+
+            foreach ($order->items as $item) {
+                 $orderLoad['products'][] = [
+                     'name' => $item->cloth->title ?? 'Item',
+                     'qty' => 1,
+                        'price' => $item->price
+                    ];
+                }
+
+                $response = $courier->createOrder($orderLoad);
+
+                if ($response && isset($response['awb_number'])) {
+                    \App\Models\Shipment::create([
+                        'order_id' => $order->id,
+                        'type' => 'forward',
+                        'courier_name' => 'Xpressbees',
+                        'waybill_number' => $response['awb_number'],
+                        'reference_id' => $response['order_id'] ?? null,
+                        'tracking_url' => $response['label_url'] ?? null,
+                        'label_url' => $response['label_url'] ?? null,
+                        'status' => 'Booked',
+                    ]);
+                    
+                    $order->update(['status' => 'Order Confirmed & Shipment Created']);
+                    \Illuminate\Support\Facades\Log::info("Checkout: Shipment created. AWB: {$response['awb_number']}");
+                } else {
+                    \Illuminate\Support\Facades\Log::error("Checkout: Failed to create shipment. Response: " . json_encode($response));
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Checkout: Shipment Exception: " . $e->getMessage());
+        }
+    }
+
+    private function blockDates($cloth, $start, $end, $orderId)
+    {
+        $availabilityService = new \App\Services\AvailabilityService();
+        $availabilityService->blockRentalDates($cloth, $start, $end, $orderId);
+    }
+}
+

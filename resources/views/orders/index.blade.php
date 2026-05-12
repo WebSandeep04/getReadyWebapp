@@ -1,0 +1,766 @@
+@extends('layouts.app')
+
+@section('title', 'My Orders Dashboard')
+
+@section('styles')
+<link rel="stylesheet" href="{{ asset('css/listed-clothes.css') }}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+    /* Specific styles for Orders Dashboard */
+    .tracking-pill {
+        background: #f1f5f9;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 0.5rem;
+    }
+    .tracking-info { font-size: 0.75rem; font-weight: 600; color: #475569; }
+    .tracking-label { font-size: 0.65rem; text-transform: uppercase; color: #94a3b8; display: block; }
+    .btn-track { font-size: 0.7rem; font-weight: 800; color: #3b82f6; text-decoration: none; }
+
+    /* Premium Extension Modal Styles */
+    #extensionModal .modal-content {
+        overflow: hidden;
+        border-radius: 28px;
+    }
+    #extensionModal .modal-header {
+        background: linear-gradient(135deg, #f8faff 0%, #ffffff 100%);
+        padding: 1.5rem 2rem;
+    }
+    #extensionModal .current-status-card {
+        background: #f0f7ff;
+        border: 1px solid #e0eeff;
+        padding: 1.25rem;
+        border-radius: 20px;
+        height: 100%;
+    }
+    #extensionModal .date-selection-box {
+        background: #ffffff;
+        border: 2px solid #f1f5f9;
+        border-radius: 18px;
+        padding: 1.15rem 1rem;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    #extensionModal .date-selection-box:focus-within {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    }
+    #extensionModal .quote-receipt {
+        background: #fafafa;
+        border: 1px dashed #e2e8f0;
+        border-radius: 20px;
+        padding: 1.5rem;
+    }
+    #extensionModal .btn-premium-action {
+        padding: 12px 30px;
+        font-weight: 700;
+        border-radius: 100px;
+        transition: all 0.3s ease;
+    }
+    #extensionModal .btn-premium-pay {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+        border: none;
+        box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
+    }
+    #extensionModal .btn-premium-pay:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 30px rgba(37, 99, 235, 0.3);
+    }
+    #extensionModal .btn-premium-pay:disabled {
+        background: #e2e8f0;
+        color: #94a3b8;
+        box-shadow: none;
+    }
+</style>
+@endsection
+
+@section('content')
+<div class="container py-5">
+    <!-- Management Header -->
+    <div class="management-header">
+        <div class="management-title">
+            <h2>My Orders Dashboard</h2>
+            <p>Manage your rentals, track shipments, and view order history</p>
+        </div>
+        <div class="management-actions">
+            <a href="{{ route('home') }}" class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="bi bi-house-door me-2"></i> BACK TO HOME
+            </a>
+        </div>
+    </div>
+
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show rounded-4 border-0 shadow-sm p-4 mb-4" role="alert">
+            <div class="d-flex align-items-center gap-3">
+                <i class="bi bi-check-circle-fill fs-4 text-success"></i>
+                <div class="fw-medium">{{ session('success') }}</div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if(!$orders->isEmpty())
+        @php
+            $totalSpent = 0;
+            $activeRentals = 0;
+            foreach($orders as $order) {
+                $totalSpent += $order->total_amount + ($order->has_rental_items ? $order->security_amount : 0);
+                if($order->has_rental_items && !in_array($order->status, ['Returned', 'Cancelled'])) {
+                    $activeRentals++;
+                }
+            }
+        @endphp
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon icon-earnings">
+                    <i class="bi bi-credit-card"></i>
+                </div>
+                <div class="stat-info">
+                    <p>Total Investment</p>
+                    <h3>₹{{ number_format($totalSpent, 0) }}</h3>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon icon-orders">
+                    <i class="bi bi-calendar-event"></i>
+                </div>
+                <div class="stat-info">
+                    <p>Active Rentals</p>
+                    <h3>{{ $activeRentals }}</h3>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon icon-transit">
+                    <i class="bi bi-box-seam"></i>
+                </div>
+                <div class="stat-info">
+                    <p>Total Orders</p>
+                    <h3>{{ $orders->total() }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders List -->
+        <div class="orders-container">
+            @foreach($orders as $order)
+                @php
+                    $latestPayment = $order->payments->sortByDesc('paid_at')->first();
+                    $canRate = in_array($order->status, ['Delivered', 'Returned']);
+                    $hasRated = \App\Models\Rating::where('order_id', $order->id)->where('rater_id', auth()->id())->exists();
+                    $firstItem = $order->items->first();
+                @endphp
+
+                <div class="sale-card">
+                    <!-- Product Image & Type -->
+                    <div class="sale-image-group">
+                        @if($firstItem && $firstItem->cloth && $firstItem->cloth->images->count() > 0)
+                            <img src="{{ asset('storage/' . $firstItem->cloth->images->first()->image_path) }}" class="sale-image" alt="Product">
+                        @else
+                            <div class="sale-image bg-light d-flex align-items-center justify-content-center text-muted">
+                                <i class="bi bi-image"></i>
+                            </div>
+                        @endif
+                        <div class="item-count-badge">
+                            @if($order->has_rental_items && $order->has_purchase_items) <i class="bi bi-collection"></i>
+                            @elseif($order->has_rental_items) <i class="bi bi-calendar-event"></i>
+                            @else <i class="bi bi-bag"></i> @endif
+                        </div>
+
+                        <!-- Mobile-only Dates & ORD ID below image -->
+                        <div class="d-md-none mt-2 d-flex flex-column    ">
+                            <div class="extra-small fw-800 text-dark mb-1">
+                                ORD #{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
+                            </div>
+                            @if($order->has_rental_items)
+                                <div class="extra-small fw-800 text-primary">
+                                    <i class="bi bi-calendar-range me-1"></i><br>{{ \Carbon\Carbon::parse($order->rental_from)->format('d M') }} - {{ \Carbon\Carbon::parse($order->rental_to)->format('d M') }}
+                                </div>
+                                <div class="extra-small fw-800 text-danger">
+                                    <i class="bi bi-arrow-return-left me-1"></i><br>Return: {{ ($order->return_date ?: \Carbon\Carbon::parse($order->rental_to)->addDay())->format('d M') }}
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- Order Info -->
+                    <div class="sale-info">
+                        <div class="order-meta">
+                            <span class="order-id d-none d-md-block">ORD #{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}</span>
+                            <span class="status-badge {{ strtolower($order->status) == 'delivered' ? 'badge-approved' : (strtolower($order->status) == 'cancelled' ? 'badge-rejected' : 'badge-pending') }}">
+                                {{ $order->status }}
+                            </span>
+                            <span class="text-muted extra-small ms-auto">
+                                <i class="bi bi-clock me-1"></i> {{ $order->created_at->format('M d, Y') }}
+                            </span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-7">
+                                <div class="sale-items-list mb-3">
+                                    <h5 class="sale-item-name mb-1">
+                                        {{ $firstItem->cloth->title ?? 'Deleted Item' }}
+                                        @if($order->items->count() > 1)
+                                            <span class="text-muted small">& {{ $order->items->count() - 1 }} more items</span>
+                                        @endif
+                                    </h5>
+                                    
+                                    @if($order->has_rental_items)
+                                        <div class="d-none d-md-flex align-items-center gap-3 mt-2 text-primary fw-bold small">
+                                            <span><i class="bi bi-calendar-range me-1"></i> {{ \Carbon\Carbon::parse($order->rental_from)->format('d M') }} - {{ \Carbon\Carbon::parse($order->rental_to)->format('d M, Y') }}</span>
+                                            <span class="text-muted fw-normal">|</span>
+                                            <span class="text-danger"><i class="bi bi-arrow-return-left me-1"></i> Return: {{ ($order->return_date ?: \Carbon\Carbon::parse($order->rental_to)->addDay())->format('d M') }}</span>
+                                        </div>
+                                    @endif
+                                </div>
+
+                                <!-- Tracking Info -->
+                                @if($order->shipments->isNotEmpty())
+                                    <div class="row g-2">
+                                        @foreach($order->shipments as $shipment)
+                                            <div class="col-sm-6">
+                                                <div class="tracking-pill">
+                                                    <div>
+                                                        <span class="tracking-label">{{ $shipment->type === 'reverse' ? 'Return Shipment' : 'Outgoing Shipment' }}</span>
+                                                        <span class="tracking-info">AWB: {{ $shipment->waybill_number }}</span>
+                                                    </div>
+                                                    @if($shipment->tracking_url)
+                                                        <a href="{{ $shipment->tracking_url }}" target="_blank" class="btn-track">TRACK</a>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <div class="text-muted extra-small fw-bold mt-2">
+                                        <i class="bi bi-hourglass-split me-1"></i> PREPARING FOR SHIPMENT...
+                                    </div>
+                                @endif
+                            </div>
+
+                            <div class="col-lg-5 text-lg-end mt-3 mt-lg-0">
+                                <div class="sale-amount-section mb-4 d-none d-md-block">
+                                    <span class="label">Total Paid</span>
+                                    <span class="value">₹{{ number_format($order->total_amount + ($order->has_rental_items ? $order->security_amount : 0)) }}</span>
+                                    <div class="extra-small fw-bold mt-1 {{ $latestPayment ? 'text-success' : 'text-warning' }}">
+                                        <i class="bi {{ $latestPayment ? 'bi-check-circle-fill' : 'bi-hourglass-split' }}"></i>
+                                        {{ $latestPayment ? strtoupper($latestPayment->payment_method) : 'PENDING PAYMENT' }}
+                                    </div>
+                                </div>
+
+                                <!-- Mobile Footer Row: Price Left, Extend Right -->
+                                <div class="d-md-none mt-3 d-flex justify-content-between align-items-center pt-3 border-top">
+                                    <div>
+                                        <span class="text-muted extra-small fw-800 d-block mb-1">TOTAL PAID</span>
+                                        <span class="fs-5 fw-800 text-dark">₹{{ number_format($order->total_amount + ($order->has_rental_items ? $order->security_amount : 0)) }}</span>
+                                        @if($latestPayment)
+                                            <div class="extra-small text-success fw-800">
+                                                <i class="bi bi-check-circle-fill"></i> RAZORPAY
+                                            </div>
+                                        @endif
+                                    </div>
+                                    <div>
+                                        @if($order->has_rental_items && !in_array($order->status, ['Cancelled', 'Returned', 'Return Requested']))
+                                            <button type="button" class="btn btn-premium px-3 py-2 rounded-pill fw-900 shadow-sm" style="font-size: 0.72rem;" data-toggle="modal" data-target="#extensionModal"
+                                                data-order-id="{{ $order->id }}" 
+                                                data-current-to="{{ ($order->return_date ?? \Carbon\Carbon::parse($order->rental_to)->addDay())->format('d M Y') }}"
+                                                data-rental-to="{{ \Carbon\Carbon::parse($order->rental_to)->format('Y-m-d') }}">
+                                                <i class="bi bi-calendar-plus me-1"></i> EXTEND
+                                            </button>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <div class="sale-actions justify-content-lg-end d-none d-md-flex">
+                                    @php
+                                        $allInvoices = $order->invoices->where('issued_to_id', auth()->id());
+                                        $mainInvoices = $allInvoices->whereNull('order_extension_id');
+                                        $extInvoices = $allInvoices->whereNotNull('order_extension_id');
+                                        
+                                        $showMainInvoices = $mainInvoices->isNotEmpty();
+                                        if ($order->status === 'Delivered') {
+                                            $showMainInvoices = $showMainInvoices && ($order->delivered_at && $order->delivered_at->addMinutes(2)->isPast());
+                                        } elseif (in_array($order->status, ['Pending', 'Confirmed', 'Shipped', 'Order Confirmed & Shipment Created'])) {
+                                            $showMainInvoices = false;
+                                        }
+                                        $visibleInvoices = collect();
+                                        if ($showMainInvoices) $visibleInvoices = $visibleInvoices->concat($mainInvoices);
+                                        if ($extInvoices->isNotEmpty()) $visibleInvoices = $visibleInvoices->concat($extInvoices);
+                                    @endphp
+
+                                    @if($visibleInvoices->isNotEmpty())
+                                        <div class="dropdown">
+                                            <button class="btn btn-light btn-sale-action dropdown-toggle" type="button" data-toggle="dropdown">
+                                                <i class="bi bi-file-earmark-pdf"></i> Invoices
+                                            </button>
+                                            <div class="dropdown-menu shadow-sm border-0 rounded-4 p-2 mt-2">
+                                                @foreach($visibleInvoices as $inv)
+                                                    <a class="dropdown-item rounded-3" href="{{ route('invoices.download', $inv->id) }}">
+                                                        <i class="bi bi-download me-2 text-primary"></i>
+                                                        @if($inv->type == 'rent_sale') Tax Invoice
+                                                        @elseif($inv->type == 'platform_fee_buyer') Service Fee
+                                                        @else Invoice #{{ $inv->invoice_number }} @endif
+                                                    </a>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                    @if($order->has_rental_items && !in_array($order->status, ['Cancelled', 'Returned', 'Return Requested']))
+                                         <button type="button" class="btn btn-premium btn-sale-action" data-toggle="modal" data-target="#extensionModal"
+                                            data-order-id="{{ $order->id }}" 
+                                            data-current-to="{{ ($order->return_date ?? \Carbon\Carbon::parse($order->rental_to)->addDay())->format('d M Y') }}"
+                                            data-rental-to="{{ \Carbon\Carbon::parse($order->rental_to)->format('Y-m-d') }}">
+                                            <i class="bi bi-calendar-plus"></i> EXTEND
+                                         </button>
+                                    @endif
+
+                                    @if($canRate || $order->status === 'Delivered')
+                                        @if($hasRated)
+                                            <button class="btn btn-outline-success btn-sale-action" disabled>
+                                                <i class="bi bi-check-circle"></i> RATED
+                                            </button>
+                                        @elseif($canRate)
+                                            <button type="button" class="btn btn-premium btn-sale-action" data-toggle="modal" data-target="#rateModal" data-order-id="{{ $order->id }}">
+                                                <i class="bi bi-star"></i> RATE
+                                            </button>
+                                        @endif
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
+        @if($orders->hasPages())
+            <div class="mt-4 d-flex justify-content-center">
+                {{ $orders->links() }}
+            </div>
+        @endif
+    @else
+        <div class="text-center py-5 bg-white rounded-5 shadow-sm mt-4">
+            <div class="mb-4">
+                <i class="bi bi-bag-plus text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
+            </div>
+            <h3 class="fw-bold text-dark">Your bag is empty</h3>
+            <p class="text-muted mb-4">Discover curated fashion and start your rental journey today!</p>
+            <a href="{{ route('home') }}" class="btn btn-premium btn-lg px-5 py-3">
+                Start Shopping
+            </a>
+        </div>
+    @endif
+</div>
+
+
+<!-- All existing modals preserved below -->
+<!-- Early Return Date Selection Modal -->
+<div class="modal fade" id="earlyReturnModal" tabindex="-1" aria-labelledby="earlyReturnModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <form id="earlyReturnForm" action="" method="POST">
+                @csrf
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="earlyReturnModalLabel"><i class="bi bi-clock-history me-2 text-primary"></i>Schedule Early Return</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body py-4">
+                    <p class="text-muted small mb-4">Select the date you will return the item. Please note that no refunds are issued for early returns as per policy.</p>
+                    
+                    <div class="form-group mb-0">
+                        <label for="new_return_date" class="form-label fw-bold small text-uppercase letter-spacing-1">Return Date</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0"><i class="bi bi-calendar-check text-primary"></i></span>
+                            <input type="text" id="new_return_date" name="new_return_date" class="form-control bg-light border-0 fw-bold" placeholder="Choose a date" readonly required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Confirm Return</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Rate Modal -->
+<div class="modal fade" id="rateModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <form id="rateForm" action="{{ route('ratings.store') }}" method="POST">
+                @csrf
+                <input type="hidden" name="order_id" id="rating_order_id">
+                <input type="hidden" name="rating" id="rating_value" required>
+                
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">Rate Your Experience</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <p class="text-muted small mb-4">How was your order experience? Your feedback helps us improve.</p>
+                    <div class="rating-stars mb-4 fs-1">
+                        <i class="bi bi-star cursor-pointer px-1 text-warning" data-value="1"></i>
+                        <i class="bi bi-star cursor-pointer px-1 text-warning" data-value="2"></i>
+                        <i class="bi bi-star cursor-pointer px-1 text-warning" data-value="3"></i>
+                        <i class="bi bi-star cursor-pointer px-1 text-warning" data-value="4"></i>
+                        <i class="bi bi-star cursor-pointer px-1 text-warning" data-value="5"></i>
+                    </div>
+                    <div class="form-group mb-0 text-left">
+                        <label class="small fw-bold text-uppercase letter-spacing-1">Tell us more (Optional)</label>
+                        <textarea name="comment" class="form-control bg-light border-0 rounded-3" rows="3" placeholder="Share your thoughts about the items or service..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-dismiss="modal">Later</button>
+                    <button type="submit" class="btn btn-warning rounded-pill px-4 fw-bold shadow-sm">Submit Review</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Return Modal -->
+<div class="modal fade" id="returnModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <form action="" method="POST">
+                @csrf
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-danger">Report an Issue</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body py-4">
+                    <p class="text-muted small mb-4">If you received damaged items or have concerns, please report it within 2 minutes of delivery for priority assistance.</p>
+                    <div class="form-group mb-3">
+                        <label class="small fw-bold text-uppercase letter-spacing-1">Issue Category</label>
+                        <select name="reason" class="form-control bg-light border-0 rounded-3" required>
+                            <option value="">Select a reason</option>
+                            <option value="Damaged Item">Damaged Item</option>
+                            <option value="Wrong Size/Color">Wrong Size/Color</option>
+                            <option value="Poor Condition">Poor Condition</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-0">
+                        <label class="small fw-bold text-uppercase letter-spacing-1">Detailed Description</label>
+                        <textarea name="details" class="form-control bg-light border-0 rounded-3" rows="4" placeholder="Please describe the issue in detail..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm">Report Issue</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Extension Modal Redesign -->
+<div class="modal fade" id="extensionModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0">
+            <div class="modal-header border-0 align-items-center">
+                <div>
+                    <h4 class="modal-title fw-bold text-dark mb-1">Extend Rental</h4>
+                    <p class="text-muted small mb-0">Keep your favorite outfits a bit longer</p>
+                </div>
+                <button type="button" class="btn-close ms-auto" data-dismiss="modal" aria-label="Close" style="background: none; border: none; font-size: 1.5rem; color: #94a3b8;">&times;</button>
+            </div>
+            
+            <div class="modal-body px-4 py-4">
+                <div class="row g-3 mb-4">
+                    <!-- Current Status Card -->
+                    <div class="col-md-6">
+                        <div class="current-status-card d-flex align-items-center gap-3">
+                            <div class="status-icon" style="min-width: 44px; height: 44px; background: #fff; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #3b82f6; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                                <i class="bi bi-calendar-check"></i>
+                            </div>
+                            <div>
+                                <span class="d-block text-muted extra-small text-uppercase fw-bold letter-spacing-1 mb-1">Current Return</span>
+                                <span class="fw-bold text-dark" id="current_return_date" style="font-size: 0.9rem;">--</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Date Selection -->
+                    <div class="col-md-6">
+                        <div class="date-selection-box d-flex align-items-center">
+                            <div class="me-3 text-primary d-flex align-items-center justify-content-center" style="min-width: 24px;">
+                                <i class="bi bi-calendar-plus fs-5"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <span class="d-block text-muted extra-small text-uppercase fw-bold letter-spacing-1 mb-1">New Return Date</span>
+                                <input type="text" id="extension_date" class="form-control border-0 p-0 fw-bold bg-transparent" placeholder="Choose a date" readonly style="box-shadow: none; font-size: 0.9rem;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Summary (Receipt Style) -->
+                <div id="quote_container" class="d-none">
+                    <div class="quote-receipt">
+                        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-secondary-subtle border-dashed">
+                            <h6 class="fw-bold small text-uppercase mb-0">Extension Quote</h6>
+                            <span class="badge bg-primary-subtle text-primary rounded-pill px-3" id="days_badge">-- Days</span>
+                        </div>
+                        
+                        <div id="quote_items" class="mb-3"></div>
+                        
+                        <div class="d-flex justify-content-between align-items-center pt-3 border-top border-secondary-subtle" style="border-top-style: dashed !important;">
+                            <div>
+                                <span class="d-block text-muted extra-small text-uppercase fw-bold">Total Additional Amount</span>
+                                <span class="fs-4 fw-bold text-dark">₹<span id="total_extension_amount">0.00</span></span>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-success-subtle text-success rounded-pill px-2 py-1 extra-small">TAX INCLUDED</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Availability Alert -->
+                <div id="availability_alert" class="alert alert-danger d-none rounded-4 border-0 p-3 mt-3">
+                    <div class="d-flex gap-3 align-items-center">
+                        <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                        <span class="small fw-medium">The selected dates are currently unavailable for some items in your order.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer border-0 px-4 pb-4 pt-0 gap-3">
+                <button type="button" class="btn btn-light btn-premium-action px-4" data-dismiss="modal">Cancel</button>
+                <button type="button" id="proceed_extension" class="btn btn-premium-pay btn-premium-action flex-grow-1" disabled>
+                    Proceed to Pay <i class="bi bi-arrow-right ms-2"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
+@section('scripts')
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let activeOrderId = null;
+        let activeButton = null;
+        let earlyReturnDatePicker = null;
+
+        // Bootstrap 4 compatibility fix for data attributes
+        $('.early-return-trigger').on('click', function() {
+            const btn = $(this);
+            const orderId = btn.data('order-id');
+            const maxDate = btn.data('max-date');
+            
+            $('#earlyReturnForm').attr('action', `/orders/${orderId}/early-return`);
+            
+            if (earlyReturnDatePicker) {
+                earlyReturnDatePicker.destroy();
+            }
+
+            earlyReturnDatePicker = flatpickr("#new_return_date", {
+                minDate: "today",
+                maxDate: maxDate,
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "d M Y",
+                disableMobile: "true"
+            });
+        });
+
+        $('#rateModal').on('show.bs.modal', function (event) {
+            const button = $(event.relatedTarget);
+            activeOrderId = button.data('order-id');
+            $(this).find('#rating_order_id').val(activeOrderId);
+            $(this).find('form')[0].reset();
+            resetStars();
+        });
+
+        // AJAX Rating
+        $('#rateForm').on('submit', function(e) {
+            e.preventDefault();
+            const form = $(this);
+            const btn = form.find('button[type="submit"]');
+            btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Submitting...');
+
+            $.ajax({
+                url: form.attr('action'),
+                method: 'POST',
+                data: form.serialize(),
+                success: function(res) {
+                    if (res.success) {
+                        $('#rateModal').modal('hide');
+                        location.reload();
+                    }
+                },
+                error: function(xhr) {
+                    alert('Error submitting review. Please try again.');
+                },
+                complete: function() {
+                    btn.prop('disabled', false).text('Submit Review');
+                }
+            });
+        });
+
+        // Stars Logic
+        const stars = document.querySelectorAll('.rating-stars i');
+        const ratingInput = document.getElementById('rating_value');
+
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                const value = this.getAttribute('data-value');
+                ratingInput.value = value;
+                updateStars(value);
+            });
+            star.addEventListener('mouseover', function() {
+                updateStars(this.getAttribute('data-value'));
+            });
+            star.addEventListener('mouseout', function() {
+                updateStars(ratingInput.value || 0);
+            });
+        });
+
+        function updateStars(v) {
+            stars.forEach(s => {
+                if (s.getAttribute('data-value') <= v) {
+                    s.classList.replace('bi-star', 'bi-star-fill');
+                } else {
+                    s.classList.replace('bi-star-fill', 'bi-star');
+                }
+            });
+        }
+        function resetStars() {
+            stars.forEach(s => s.classList.replace('bi-star-fill', 'bi-star'));
+            ratingInput.value = '';
+        }
+
+        // Return Modal
+        $('#returnModal').on('show.bs.modal', function (event) {
+            const button = $(event.relatedTarget);
+            const orderId = button.data('order-id');
+            $(this).find('form').attr('action', `/orders/${orderId}/return-request`);
+        });
+
+        // Extension logic (AJAX)
+        let selectedOrderId = null;
+        let selectedDays = null;
+        let extensionDatePicker = null;
+        let currentRentalToDate = null;
+
+        $('#extensionModal').on('show.bs.modal', function (event) {
+            const button = $(event.relatedTarget);
+            selectedOrderId = button.data('order-id');
+            const currentReturnDate = button.data('current-to');
+            const currentRentalTo = button.data('rental-to');
+            
+            $(this).find('#current_return_date').text(currentReturnDate);
+            currentRentalToDate = new Date(currentRentalTo);
+            currentRentalToDate.setHours(0,0,0,0);
+            
+            const minDate = new Date(currentRentalToDate);
+            minDate.setDate(minDate.getDate() + 1);
+
+            if (extensionDatePicker) extensionDatePicker.destroy();
+
+            extensionDatePicker = flatpickr("#extension_date", {
+                minDate: minDate,
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "d M Y",
+                disableMobile: "true",
+                onChange: function(dates, dateStr) {
+                    if (dates.length > 0) {
+                        const newDate = dates[0];
+                        newDate.setHours(0,0,0,0);
+                        const diff = Math.abs(newDate - currentRentalToDate);
+                        selectedDays = Math.round(diff / (1000 * 60 * 60 * 24));
+                        fetchQuote(selectedOrderId, selectedDays);
+                    }
+                }
+            });
+
+            $('#quote_container, #availability_alert').addClass('d-none');
+            $('#proceed_extension').prop('disabled', true);
+        });
+
+        function fetchQuote(id, d) {
+            $.get(`/orders/${id}/extension-quote`, { days: d }, function(res) {
+                if(res.success) {
+                    $('#quote_container').removeClass('d-none');
+                    $('#total_extension_amount').text(res.quote.total_additional_amount.toLocaleString('en-IN', { minimumFractionDigits: 2 }));
+                    $('#days_badge').text(d + (d === 1 ? ' Day' : ' Days'));
+                    
+                    let html = '';
+                    res.quote.items.forEach(i => {
+                        html += `<div class="d-flex justify-content-between small mb-2">
+                            <span class="text-muted fw-medium">${i.cloth_title}</span>
+                            <span class="fw-bold text-dark">₹${i.pricing.total_buyer_pay}</span>
+                        </div>`;
+                    });
+                    $('#quote_items').html(html);
+
+                    if(res.is_available) {
+                        $('#availability_alert').addClass('d-none');
+                        $('#proceed_extension').prop('disabled', false);
+                    } else {
+                        $('#availability_alert').removeClass('d-none');
+                        $('#proceed_extension').prop('disabled', true);
+                    }
+                }
+            });
+        }
+
+        $('#proceed_extension').on('click', function() {
+            const btn = $(this);
+            btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Processing...');
+
+            $.post(`/orders/${selectedOrderId}/extend`, { 
+                _token: $('meta[name="csrf-token"]').attr('content'),
+                days: selectedDays 
+            }, function(res) {
+                if(res.success) {
+                    if(!res.key || res.key.includes('dummy')) {
+                        if(confirm("Test mode: Simulate successful payment?")) {
+                            verifyExt(res.extension_id, 'mock_' + Date.now());
+                        }
+                        return;
+                    }
+
+                    const opt = {
+                        "key": res.key,
+                        "amount": res.razorpay_order.amount,
+                        "currency": "INR",
+                        "name": "GetReady Rental",
+                        "description": "Rental Extension",
+                        "handler": function (p) { verifyExt(res.extension_id, p.razorpay_payment_id); },
+                        "prefill": { "name": "{{ auth()->user()->name }}", "email": "{{ auth()->user()->email }}" },
+                        "theme": { "color": "#0dcaf0" }
+                    };
+                    new Razorpay(opt).open();
+                }
+            }).always(() => btn.prop('disabled', false).html('Proceed to Pay <i class="bi bi-arrow-right ms-1"></i>'));
+        });
+
+        function verifyExt(id, pid) {
+            $.post('/orders/extension/verify', {
+                _token: $('meta[name="csrf-token"]').attr('content'),
+                extension_id: id,
+                razorpay_payment_id: pid
+            }, function(res) {
+                if(res.success) location.reload();
+            });
+        }
+    });
+</script>
+@endsection

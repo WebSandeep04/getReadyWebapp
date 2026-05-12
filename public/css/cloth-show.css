@@ -1,0 +1,184 @@
+/* Flatpickr Premium Modern Theme - Airbnb Style */
+.flatpickr-calendar {
+    background: #fff !important;
+    box-shadow: 0 12px 28px 0 rgba(0, 0, 0, 0.06), 0 2px 4px 0 rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid #ebebeb !important;
+    border-radius: 16px !important;
+    padding: 10px !important;
+    width: 320px !important;
+    /* Standard width to prevent cutting */
+    box-sizing: border-box !important;
+}
+
+.flatpickr-innerContainer {
+    width: 100% !important;
+}
+
+.flatpickr-rContainer {
+    width: 100% !important;
+}
+
+.flatpickr-days {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: space-between !important;
+}
+
+.dayContainer {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+}
+
+.flatpickr-months {
+    padding: 0 10px 10px 10px !important;
+}
+
+.flatpickr-month {
+    color: #222222 !important;
+    height: 40px !important;
+}
+
+.flatpickr-current-month {
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    color: #222222 !important;
+}
+
+.flatpickr-weekday {
+    color: #717171 !important;
+    font-weight: 600 !important;
+    font-size: 0.8rem !important;
+    text-transform: uppercase;
+}
+
+.flatpickr-day {
+    border-radius: 50% !important;
+    height: 38px !important;
+    width: 38px !important;
+    line-height: 38px !important;
+    margin: 2px !important;
+    color: #222222 !important;
+    font-weight: 500 !important;
+    border: none !important;
+    max-width: none !important;
+}
+
+/* Available Days - Soft Green Background */
+.flatpickr-day:not(.flatpickr-disabled):not(.disabled) {
+    background-color: #f0fdf4 !important;
+    /* Soft Green */
+    color: #166534 !important;
+    /* Deep Green Text */
+    border: 1px solid #dcfce7 !important;
+}
+
+.flatpickr-day:not(.flatpickr-disabled):not(.disabled):hover {
+    background-color: #22c55e !important;
+    color: #fff !important;
+    transform: scale(1.05);
+}
+
+/* Selected & Range Styles */
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange {
+    background: #FFA500 !important;
+    color: #fff !important;
+    border: none !important;
+    box-shadow: 0 4px 10px rgba(255, 165, 0, 0.3) !important;
+}
+
+.flatpickr-day.inRange {
+    background: #fff8eb !important;
+    box-shadow: -5px 0 0 #fff8eb, 5px 0 0 #fff8eb !important;
+}
+
+/* Disabled Days - Faded */
+.flatpickr-day.flatpickr-disabled,
+.flatpickr-day.disabled {
+    color: #d5d5d5 !important;
+    cursor: not-allowed;
+    background: none !important;
+    text-decoration: line-through !important;
+    opacity: 0.4;
+}
+
+/* Navigation Arrows */
+.flatpickr-prev-month,
+.flatpickr-next-month {
+    padding: 10px !important;
+    color: #222222 !important;
+}
+
+.flatpickr-prev-month:hover,
+.flatpickr-next-month:hover {
+    background: #f7f7f7 !important;
+    border-radius: 50% !important;
+}
+
+/* Input Fields Styling */
+.date-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.date-input-wrapper i {
+    position: absolute;
+    left: 14px;
+    color: #FFA500;
+    font-size: 1.1rem;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.date-input-wrapper input {
+    padding-left: 42px !important;
+    height: 42px !important;
+    border-radius: 12px !important;
+    border: 1px solid #dddddd !important;
+    font-weight: 500 !important;
+    color: #222222 !important;
+    background-color: #fff !important;
+    transition: all 0.2s ease;
+}
+
+.date-input-wrapper input:focus {
+    border-color: #FFA500 !important;
+    box-shadow: 0 0 0 2px rgba(255, 165, 0, 0.1) !important;
+    outline: none !important;
+}
+
+/* Star Rating Styles */
+.star-rating-input {
+    display: flex;
+    align-items: center;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.star-rating-input .bi-star,
+.star-rating-input .bi-star-fill {
+    color: #ffc107;
+}
+
+.star-rating-display {
+    display: inline-flex;
+    font-size: 1rem;
+}
+
+/* Review and Question Items */
+.review-item,
+.question-item {
+    transition: background-color 0.2s;
+}
+
+.review-item:hover,
+.question-item:hover {
+    background-color: #f8f9fa;
+}
+
+.answer-box {
+    border-left: 3px solid #28a745;
+}

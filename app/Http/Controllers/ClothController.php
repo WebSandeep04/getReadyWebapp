@@ -1,0 +1,444 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\Cloth;
+use App\Models\Category;
+use App\Models\FabricType;
+use App\Models\Color;
+use App\Models\Size;
+use App\Models\Brand;
+use App\Models\BodyTypeFit;
+use App\Models\BottomType;
+use App\Models\GarmentCondition;
+use App\Models\ClothImage;
+use App\Models\AvailabilityBlock;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
+
+class ClothController extends Controller
+{
+    public function show($id)
+    {
+        $cloth = Cloth::with([
+            'images', 
+            'user', 
+            'category', 
+            'brand', 
+            'fabric', 
+            'color', 
+            'size', 
+            'bottomType', 
+            'fitType', 
+            'condition',
+            'availabilityBlocks', 
+            'reviews.user', 
+            'reviews.replies.user', 
+            'questions.user',
+            'questions.answerer',
+            'questions.replies.user'
+        ])->findOrFail($id);
+        
+        // Save category ID for related items and filtering
+        $categoryId = $cloth->category_id;
+        
+        // Get user's existing review if logged in
+        $userReview = null;
+        if (Auth::check()) {
+            $userReview = $cloth->reviews()->where('user_id', Auth::id())->first();
+        }
+        
+        // Check if user can review (must have purchased/rented the item)
+        $canReview = false;
+        if (Auth::check()) {
+            $canReview = \App\Models\Order::where('buyer_id', Auth::id())
+                ->whereHas('items', function($query) use ($id) {
+                    $query->where('cloth_id', $id);
+                })->exists();
+        }
+        
+        // Get related clothes (same category)
+        $relatedClothes = Cloth::where('category_id', $categoryId)
+            ->where('id', '!=', $id)
+            ->where('is_approved', 1)
+            ->with(['images', 'category', 'brand', 'size', 'condition'])
+            ->inRandomOrder()
+            ->take(6)
+            ->get();
+        
+        $showFilters = false;
+        return view('clothes.show', compact('cloth','showFilters', 'userReview', 'canReview', 'relatedClothes', 'categoryId'));
+    }
+
+    public function index()
+    {
+        $clothes = Cloth::where('user_id', Auth::id())->with(['images', 'category', 'size', 'brand', 'condition'])->get();
+        $sizes = Size::all();
+        $showFilters = false;
+        
+        return view('clothes.index', compact('clothes', 'sizes', 'showFilters'));
+    }
+
+    public function edit($id)
+    {
+        $cloth = Cloth::where('user_id', Auth::id())->with(['images', 'availabilityBlocks'])->findOrFail($id);
+        $sizes = Size::orderBy('name', 'asc')->get();
+        
+        // Get data for dropdowns
+        $categories = Category::orderBy('name', 'asc')->get();
+        $brands = Brand::orderBy('name', 'asc')->get();
+        $fabricTypes = FabricType::orderBy('name', 'asc')->get();
+        $colors = Color::orderBy('name', 'asc')->get();
+        $fitTypes = BodyTypeFit::orderBy('name', 'asc')->get();
+
+        $garmentConditions = GarmentCondition::orderBy('name', 'asc')->get();
+        $showFilters = true;   
+        
+        return view('clothes.edit', compact('cloth', 'sizes', 'brands', 'categories', 'fabricTypes', 'colors', 'fitTypes', 'garmentConditions', 'showFilters'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $cloth = Cloth::where('user_id', Auth::id())->findOrFail($id);
+        
+        // Handle image uploads
+        if ($request->hasFile('images')) {
+            $request->validate([
+                'images.*' => 'image|mimes:jpeg,png,jpg,gif'
+            ]);
+            
+            foreach ($request->file('images') as $image) {
+                $imagePath = $image->store('clothes', 'public');
+                $cloth->images()->create([
+                    'image_path' => $imagePath
+                ]);
+            }
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Images uploaded successfully'
+                ]);
+            }
+        }
+        
+        // Handle cloth details update
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'category' => 'required|string|max:255',
+            'gender' => 'required|in:Boy,Girl,Men,Women',
+            'brand' => 'required|exists:brands,id',
+            'fabric' => 'nullable|exists:fabric_types,id',
+            'color' => 'nullable|exists:colors,id',
+            'chest_bust' => 'nullable|string|max:50',
+            'waist' => 'nullable|string|max:50',
+            'length' => 'nullable|string|max:50',
+            'shoulder' => 'nullable|string|max:50',
+            'sleeve_length' => 'nullable|string|max:50',
+            'measurement_unit' => 'nullable|string|in:inch,cm',
+            'size' => 'required|exists:sizes,id',
+            'fit_type' => 'nullable|exists:body_type_fits,id',
+            'condition' => 'required|exists:garment_conditions,id',
+            'defects' => 'nullable|string',
+            'is_cleaned' => 'boolean',
+            'rent_price' => [
+                'required',
+                'numeric',
+                'min:0',
+                function ($attribute, $value, $fail) use ($request) {
+                    $mrp = $request->input('mrp');
+                    if ($mrp && $value > ($mrp * 0.2)) {
+                        $maxRent = $mrp * 0.2;
+                        $fail("Rent price should not exceed 20% of MRP. Maximum allowed rent: ₹" . number_format($maxRent, 2));
+                    }
+                },
+            ],
+            'is_purchased' => 'boolean',
+            'selling_price' => [
+                'required_if:is_purchased,1',
+                'nullable',
+                'numeric',
+                'min:0',
+                function ($attribute, $value, $fail) use ($request) {
+                    $mrp = $request->input('mrp');
+                    if ($mrp && $value > $mrp) {
+                        $fail("Selling price should not exceed MRP (Original Price).");
+                    }
+                },
+            ],
+            'security_deposit' => 'required|numeric|min:0',
+            'mrp' => 'nullable|numeric|min:0',
+            'sku' => 'required|integer|min:1',
+        ]);
+
+        // Prepare update data
+        $updateData = $request->only([
+            'title', 'description', 'category', 'gender', 'brand', 'fabric', 'color', 
+            'chest_bust', 'waist', 'length', 'shoulder', 
+            'sleeve_length', 'measurement_unit', 'size', 'fit_type', 'condition', 'defects', 
+            'rent_price', 'is_purchased', 'selling_price', 'security_deposit', 'mrp', 'sku'
+        ]);
+
+        // Map request fields to database column names with _id suffix if they don't match
+        if (isset($updateData['category'])) { $updateData['category_id'] = $updateData['category']; unset($updateData['category']); }
+        if (isset($updateData['brand'])) { $updateData['brand_id'] = $updateData['brand']; unset($updateData['brand']); }
+        if (isset($updateData['fabric'])) { $updateData['fabric_id'] = $updateData['fabric']; unset($updateData['fabric']); }
+        if (isset($updateData['color'])) { $updateData['color_id'] = $updateData['color']; unset($updateData['color']); }
+        if (isset($updateData['size'])) { $updateData['size_id'] = $updateData['size']; unset($updateData['size']); }
+        if (isset($updateData['fit_type'])) { $updateData['fit_type_id'] = $updateData['fit_type']; unset($updateData['fit_type']); }
+        if (isset($updateData['bottom_type'])) { $updateData['bottom_type_id'] = $updateData['bottom_type']; unset($updateData['bottom_type']); }
+        if (isset($updateData['condition'])) { $updateData['condition_id'] = $updateData['condition']; unset($updateData['condition']); }
+        
+        // Handle checkboxes
+        $updateData['is_cleaned'] = $request->has('is_cleaned') ? 1 : 0;
+        $updateData['is_purchased'] = $request->has('is_purchased') ? 1 : 0;
+        
+        // Reset approval status on update
+        $updateData['is_approved'] = null;
+        $updateData['resubmission_count'] = ($cloth->resubmission_count ?? 0) + 1;
+        
+        $cloth->update($updateData);
+
+        // Handle availability blocks
+        if ($request->has('availability_blocks')) {
+            // Validate availability blocks
+            $request->validate([
+                'availability_blocks.*.start_date' => 'required|date',
+                'availability_blocks.*.end_date' => 'required|date|after_or_equal:availability_blocks.*.start_date',
+                'availability_blocks.*.type' => 'required|in:available,blocked',
+                'availability_blocks.*.reason' => 'nullable|string|max:255',
+            ]);
+            
+            // Delete existing availability blocks
+            $cloth->availabilityBlocks()->delete();
+            
+            // Create new availability blocks
+            foreach ($request->availability_blocks as $block) {
+                if (!empty($block['start_date']) && !empty($block['end_date'])) {
+                    $cloth->availabilityBlocks()->create([
+                        'start_date' => $block['start_date'],
+                        'end_date' => $block['end_date'],
+                        'type' => $block['type'] ?? 'blocked',
+                        'reason' => $block['reason'] ?? null,
+                    ]);
+                }
+            }
+        }
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Cloth updated successfully',
+                'cloth' => $cloth->fresh()
+            ]);
+        }
+
+        return redirect()->route('listed.clothes')->with('success', 'Cloth updated successfully');
+    }
+
+    public function destroy($id)
+    {
+        $cloth = Cloth::where('user_id', Auth::id())->findOrFail($id);
+        $cloth->delete();
+
+        return redirect()->route('listed.clothes')->with('success', 'Cloth deleted successfully');
+    }
+
+    public function create()
+    {
+        $categories = Category::orderBy('name', 'asc')->get();
+        $fabric_types = FabricType::orderBy('name', 'asc')->get();
+        $colors = Color::orderBy('name', 'asc')->get();
+        $sizes = Size::orderBy('name', 'asc')->get();
+        $body_type_fits = BodyTypeFit::orderBy('name', 'asc')->get();
+        $garment_conditions = GarmentCondition::orderBy('name', 'asc')->get();
+        $brands = Brand::orderBy('name', 'asc')->get();
+        $showFilters = false;
+        return view('sell', compact('categories', 'fabric_types', 'colors', 'sizes', 'body_type_fits', 'garment_conditions', 'brands', 'showFilters'));
+    }
+
+    public function store(Request $request)
+    {
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'category' => 'required|exists:category,id',
+            'gender' => 'required|in:Boy,Girl,Men,Women',
+            'brand' => 'required|exists:brands,id',
+            'fabric' => 'required|exists:fabric_types,id',
+            'color' => 'required|exists:colors,id',
+            'size' => 'required|exists:sizes,id',
+            'body_type_fit' => 'nullable|exists:body_type_fits,id',
+            'condition' => 'required|exists:garment_conditions,id',
+            'defects' => 'nullable|string',
+            'is_purchased' => 'boolean',
+            'selling_price' => [
+                'required_if:is_purchased,1',
+                'nullable',
+                'numeric',
+                'min:0',
+                function ($attribute, $value, $fail) use ($request) {
+                    $mrp = $request->input('mrp');
+                    if ($mrp && $value > $mrp) {
+                        $fail("Selling price should not exceed MRP (Original Price).");
+                    }
+                },
+            ],
+            'sku' => 'required|integer|min:1',
+            'mrp' => 'nullable|numeric|min:0',
+            'rent_price' => [
+                'required',
+                'numeric',
+                'min:0',
+                function ($attribute, $value, $fail) use ($request) {
+                    $mrp = $request->input('mrp');
+                    if ($mrp && $value > ($mrp * 0.2)) {
+                        $maxRent = $mrp * 0.2;
+                        $fail("Rent price should not exceed 20% of MRP. Maximum allowed rent: ₹" . number_format($maxRent, 2));
+                    }
+                },
+            ],
+            'security_deposit' => 'required|numeric|min:0',
+            'measurement_unit' => 'nullable|string|in:inch,cm',
+            'images' => 'required|array|min:3|max:4',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif',
+            'availability_blocks' => 'nullable|array',
+            'availability_blocks.*.start_date' => 'required_with:availability_blocks|date',
+            'availability_blocks.*.end_date' => 'required_with:availability_blocks|date|after_or_equal:availability_blocks.*.start_date',
+            'availability_blocks.*.type' => 'required_with:availability_blocks|in:available,blocked',
+            'availability_blocks.*.reason' => 'nullable|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $availableBlocks = [];
+        $blockedBlocks = [];
+        
+        // Handle availability blocks validation
+        if ($request->has('availability_blocks')) {
+            // Separate available and blocked blocks
+            foreach ($request->availability_blocks as $block) {
+                if (!empty($block['start_date']) && !empty($block['end_date'])) {
+                    if (($block['type'] ?? 'blocked') === 'available') {
+                        $availableBlocks[] = $block;
+                    } else {
+                        $blockedBlocks[] = $block;
+                    }
+                }
+            }
+            
+            // Validate available blocks first
+            foreach ($availableBlocks as $block) {
+                $startDate = \Carbon\Carbon::parse($block['start_date']);
+                $endDate = \Carbon\Carbon::parse($block['end_date']);
+                
+                // Validate minimum 4 days rental
+                $daysDiff = $startDate->diffInDays($endDate) + 1;
+                if ($daysDiff < 4) {
+                    return redirect()->back()
+                        ->withErrors(['availability_blocks' => "Minimum 4 days rental required. Selected period: {$daysDiff} day(s)."])
+                        ->withInput();
+                }
+            }
+        }
+
+        return \DB::transaction(function() use ($request, $availableBlocks, $blockedBlocks) {
+            // Create the cloth record
+            $cloth = Cloth::create([
+                'user_id' => Auth::id(),
+                'title' => $request->input('title'),
+                'description' => $request->input('description'),
+                'category_id' => $request->input('category'),
+                'gender' => $request->input('gender'),
+                'brand_id' => $request->input('brand'),
+                'fabric_id' => $request->input('fabric'),
+                'color_id' => $request->input('color'),
+                'size_id' => $request->input('size'),
+                'fit_type_id' => $request->input('body_type_fit'),
+                'condition_id' => $request->input('condition'),
+                'defects' => $request->input('defects'),
+                'selling_price' => $request->input('selling_price'),
+                'mrp' => $request->input('mrp'),
+                'sku' => $request->input('sku', 1),
+                'rent_price' => $request->input('rent_price'),
+                'is_purchased' => $request->has('is_purchased') ? 1 : 0,
+                'security_deposit' => $request->input('security_deposit'),
+                'is_available' => true,
+                'is_approved' => null, // Explicitly set to pending
+                'chest_bust' => $request->input('chest_bust'),
+                'waist' => $request->input('waist'),
+                'length' => $request->input('length'),
+                'shoulder' => $request->input('shoulder'),
+                'sleeve_length' => $request->input('sleeve_length'),
+                'measurement_unit' => $request->input('measurement_unit', 'inch'),
+            ]);
+
+            // Create available blocks
+            foreach ($availableBlocks as $block) {
+                $cloth->availabilityBlocks()->create([
+                    'start_date' => $block['start_date'],
+                    'end_date' => $block['end_date'],
+                    'type' => 'available',
+                    'reason' => $block['reason'] ?? null,
+                ]);
+            }
+            
+            // Create blocked blocks
+            foreach ($blockedBlocks as $block) {
+                $reason = $block['reason'] ?? '';
+                if (strpos($reason, 'Auto-blocked') === false) {
+                    $cloth->availabilityBlocks()->create([
+                        'start_date' => $block['start_date'],
+                        'end_date' => $block['end_date'],
+                        'type' => 'blocked',
+                        'reason' => $block['reason'] ?? null,
+                    ]);
+                }
+            }
+
+            // Handle image uploads
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $image) {
+                    $path = $image->store('clothes', 'public');
+                    $cloth->images()->create(['image_path' => $path]);
+                }
+            }
+
+            // Send notification to user
+            \App\Models\Notification::create([
+                'user_id' => Auth::id(),
+                'title' => 'Item Listed Successfully Pending Approval',
+                'message' => "Your item '{$cloth->title}' has been listed successfully and is pending approval.",
+                'type' => 'success',
+                'icon' => 'bi-check2-circle',
+                'data' => ['cloth_id' => $cloth->id],
+                'read' => false
+            ]);
+
+            return redirect()->route('listed.clothes')->with('success', 'Your item has been listed successfully!');
+        });
+    }
+
+    public function destroyImage($imageId)
+    {
+        $image = ClothImage::whereHas('cloth', function($query) {
+            $query->where('user_id', Auth::id());
+        })->findOrFail($imageId);
+        
+        // Delete the file from storage
+        if (Storage::disk('public')->exists($image->image_path)) {
+            Storage::disk('public')->delete($image->image_path);
+        }
+        
+        $image->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Image deleted successfully'
+        ]);
+    }
+} 

@@ -59,19 +59,19 @@
         <div class="footer-app-badges d-flex flex-wrap gap-2 mb-4">
           <a href="#"><img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play" height="40"></a>
         </div>
-        <div class="footer-promise">
-          <div class="d-flex align-items-center mb-3">
-            <i class="bi bi-shield-check text-gold fs-4 mr-3"></i>
+        <div class="footer-promise mt-4">
+          <div class="d-flex align-items-center mb-4">
+            <i class="bi bi-shield-check text-gold fs-2 mr-3"></i>
             <div>
-              <h6 class="mb-0 text-white small">100% ORIGINAL</h6>
-              <p class="mb-0 text-muted extra-small">guarantee for all products</p>
+              <h6 class="mb-0 text-white font-weight-bold">100% ORIGINAL</h6>
+              <p class="mb-0 text-muted small">guarantee for all products</p>
             </div>
           </div>
-          <div class="d-flex align-items-center">
-            <i class="bi bi-arrow-repeat text-gold fs-4 mr-3"></i>
+          <div class="d-flex align-items-center mb-2">
+            <i class="bi bi-arrow-repeat text-gold fs-2 mr-3"></i>
             <div>
-              <h6 class="mb-0 text-white small">RETURN WITHIN 14 DAYS</h6>
-              <p class="mb-0 text-muted extra-small">of receiving your order</p>
+              <h6 class="mb-0 text-white font-weight-bold">RETURN WITHIN 14 DAYS</h6>
+              <p class="mb-0 text-muted small">of receiving your order</p>
             </div>
           </div>
         </div>
@@ -85,9 +85,9 @@
       <p class="copyright mb-0 text-white">
         © 2026 GetReady. All rights reserved.
       </p>
-      <div class="footer-contact-info d-flex gap-4">
+      <div class="footer-contact-info d-flex align-items-center">
         @if(frontend_setting('footer_email'))
-          <span class="text-white"><i class="bi bi-envelope mr-2"></i>{{ frontend_setting('footer_email') }}</span>
+          <span class="text-white mr-4"><i class="bi bi-envelope mr-2"></i>{{ frontend_setting('footer_email') }}</span>
         @endif
         @if(frontend_setting('footer_phone'))
           <span class="text-white"><i class="bi bi-telephone mr-2"></i>{{ frontend_setting('footer_phone') }}</span>

@@ -1,15 +1,15 @@
 $(document).ready(function() {
     let notificationsLoaded = false;
     
-    // Load notifications when dropdown is opened
-    $('#notification-toggle').on('click', function() {
+    // Load notifications when dropdown is opened (Desktop & Mobile)
+    $('#notification-toggle, #notification-toggle-mobile').on('click', function() {
         if (!notificationsLoaded) {
             loadNotifications();
         }
     });
     
-    // Mark all notifications as read
-    $('#mark-all-read').on('click', function(e) {
+    // Mark all notifications as read (Desktop & Mobile)
+    $('#mark-all-read, #mark-all-read-mobile').on('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
         
@@ -48,12 +48,12 @@ $(document).ready(function() {
         });
     }
     
-    // Display notifications in dropdown
+    // Display notifications in dropdowns
     function displayNotifications(notifications) {
-        const $list = $('#notifications-list');
+        const $lists = $('#notifications-list, #notifications-list-mobile');
         
         if (notifications.length === 0) {
-            $list.html(`
+            $lists.html(`
                 <div class="text-center py-3">
                     <i class="bi bi-bell text-muted" style="font-size: 2rem;"></i>
                     <div class="mt-2 text-muted">No notifications</div>
@@ -93,7 +93,7 @@ $(document).ready(function() {
             `;
         });
         
-        $list.html(html);
+        $lists.html(html);
         
         // Add click handlers for individual notifications
         $('.notification-item').on('click', function(e) {
@@ -108,14 +108,7 @@ $(document).ready(function() {
             // If this is a rejection notification, navigate to rejection management page
             if (clothId && rejectReason && clothId !== 'undefined' && rejectReason !== 'undefined') {
                 try {
-                    // Show loading state
-                    const $notificationItem = $(this);
-                    $notificationItem.find('.notification-title').html('<i class="bi bi-hourglass-split me-1 small"></i>Redirecting...');
-                    
-                    // Navigate to the rejection management page
-                    setTimeout(function() {
-                        window.location.href = `/rejections/${clothId}`;
-                    }, 400);
+                    window.location.href = `/rejections/${clothId}`;
                 } catch (error) {
                     console.error('Error navigating to rejection page:', error);
                 }
@@ -135,7 +128,7 @@ $(document).ready(function() {
             success: function(response) {
                 if (response.success) {
                     updateNotificationBadge(response.unreadCount);
-                    // Update the notification item to show as read
+                    // Update the notification item to show as read in both dropdowns
                     $(`.notification-item[data-notification-id="${notificationId}"]`)
                         .removeClass('unread')
                         .addClass('read')
@@ -149,13 +142,18 @@ $(document).ready(function() {
         });
     }
     
-    // Update notification badge count
+    // Update notification badge count (Both Desktop & Mobile)
     function updateNotificationBadge(count) {
-        const $badge = $('#notification-badge');
+        // Target specific notification badges only
+        const $notifBadges = $('.action-badge, .action-badge-mobile').filter(function() {
+            // Filter out bag and rejection badges by checking their context or sibling icons
+            return $(this).closest('a').find('.bi-bell').length > 0;
+        });
+        
         if (count > 0) {
-            $badge.text(count).show();
+            $notifBadges.text(count).show();
         } else {
-            $badge.hide();
+            $notifBadges.hide();
         }
     }
     
@@ -203,15 +201,13 @@ $(document).ready(function() {
     
     // Auto-refresh notifications every 30 seconds
     setInterval(function() {
-        if (notificationsLoaded) {
-            $.ajax({
-                url: '/notifications/unread-count',
-                type: 'GET',
-                success: function(response) {
-                    updateNotificationBadge(response.unreadCount);
-                }
-            });
-        }
+        $.ajax({
+            url: '/notifications/unread-count',
+            type: 'GET',
+            success: function(response) {
+                updateNotificationBadge(response.unreadCount);
+            }
+        });
     }, 30000);
 });
 
@@ -234,4 +230,4 @@ style.textContent = `
         font-size: 0.6rem;
     }
 `;
-document.head.appendChild(style); 
+document.head.appendChild(style);

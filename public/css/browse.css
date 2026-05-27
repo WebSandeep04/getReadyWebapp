@@ -708,13 +708,19 @@
         box-shadow: none !important;
         outline: none !important;
         height: 34px !important;
+        gap: 8px;
     }
+
 
     .filter-pill.active,
     .filter-pill-dropdown.show .filter-pill {
         background: #282c3f !important;
         color: #fff !important;
         border-color: #282c3f !important;
+    }
+    
+    .filter-pill i.bi-caret-down-fill {
+        font-size: 10px !important;
     }
 
     .filter-pill:focus {

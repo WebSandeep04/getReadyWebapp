@@ -307,9 +307,10 @@ textarea:focus {
 
 /* Decorative Footer */
 .decorative {
-    margin-top: 30px;
-    opacity: 0.4;
+    margin: 50px auto 20px;
+    opacity: 0.2;
     text-align: center;
+    padding-bottom: 100px; /* Extra space for bottom nav */
 }
 
 .decorative img {
@@ -318,28 +319,157 @@ textarea:focus {
     display: inline-block;
 }
 
-/* Mobile Responsiveness */
+/* Mobile Responsiveness - Optimized & Compressed */
 @media (max-width: 768px) {
-    .sell-card {
-        padding: 20px; /* Reduced from 25px */
-        border-radius: 16px; /* Restored some radius for premium feel */
+    .sell-container {
+        padding-top: 1.5rem !important;
+        padding-bottom: 120px !important; /* Increased for bottom nav and decorative space */
     }
-    
+
+    .sell-card {
+        padding: 15px; /* Further reduced from 20px */
+        border-radius: 12px;
+    }
+
+    .sell-header h2 {
+        font-size: 1.5rem;
+        margin-bottom: 4px;
+    }
+
+    .sell-header p {
+        font-size: 0.75rem;
+        margin-bottom: 10px;
+    }
+
+    .steps-wrapper {
+        margin-bottom: 15px;
+    }
+
+    .step-num {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+
     .step-label {
-        font-size: 0.6rem;
+        font-size: 0.55rem;
+        letter-spacing: 0;
+    }
+
+    .steps-progress {
+        top: 16px;
+    }
+
+    label {
+        font-size: 0.65rem; /* Smaller labels */
+        margin-bottom: 4px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+        padding: 8px 10px; /* More compact inputs */
+        font-size: 13px;
+        margin-bottom: 8px;
     }
 
     .form-group {
-        margin-bottom: 8px !important;
+        margin-bottom: 6px !important;
     }
 
-    .row.g-2 {
+    .row {
         margin-left: -5px;
         margin-right: -5px;
     }
 
-    .row.g-2 > [class*="col-"] {
+    .col-6, .col-md-6 {
         padding-left: 5px;
         padding-right: 5px;
     }
+
+    .availability-section h4 {
+        font-size: 1rem;
+    }
+
+    .availability-section p {
+        font-size: 0.7rem;
+    }
+
+    .next-btn {
+        width: 48px;
+        height: 48px;
+        font-size: 1.2rem;
+    }
 }
+
+.availability-section {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 15px !important;
+    margin-top: 10px;
+}
+
+.btn-xs {
+    padding: 2px 8px;
+    font-size: 0.7rem;
+    border-radius: 4px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.availability-block {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    padding: 15px;
+    margin-bottom: 12px;
+    position: relative; /* Essential for positioning the close button */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+
+.btn-remove-block {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 26px;
+    height: 26px;
+    background: #ff4d4d;
+    color: #fff !important;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 11px;
+    z-index: 10;
+    box-shadow: 0 4px 10px rgba(255, 77, 77, 0.3);
+    transition: all 0.3s ease;
+    padding: 0;
+    line-height: 1;
+}
+
+.btn-remove-block:hover {
+    background: #ff3333;
+    transform: scale(1.1) rotate(90deg);
+    box-shadow: 0 6px 15px rgba(255, 77, 77, 0.4);
+}
+
+.btn-remove-block i {
+    font-size: 12px;
+    font-weight: 900;
+}
+
+/* Radio button custom alignment */
+.unit-toggle .custom-control-label::before,
+.unit-toggle .custom-control-label::after {
+    top: 0.1rem; /* Better vertical alignment */
+}
+
+@media (max-width: 768px) {
+    .unit-toggle {
+        gap: 20px !important;
+    }
+}
+

@@ -146,35 +146,27 @@ function addAvailabilityBlock(type) {
     const index = type === 'available' ? counter : counter + 100;
 
     const blockHtml = `
-        <div class="availability-block mb-4 p-3 border rounded-4 bg-light shadow-sm" data-type="${type}">
-            <div class="row align-items-end">
-                <div class="col-md-5 mb-2 mb-md-0">
-                    <label class="small fw-bold text-muted mb-2 d-block">START DATE</label>
-                    <input type="date" class="form-control" name="availability_blocks[${index}][start_date]" required>
+        <div class="availability-block shadow-sm" data-type="${type}">
+            <button type="button" class="btn-remove-block" onclick="removeAvailabilityBlock(this)">
+                <i class="bi bi-x-lg"></i>
+            </button>
+            <div class="row g-2">
+                <div class="col-6">
+                    <label class="extra-small fw-600 text-muted mb-1 d-block">Start Date</label>
+                    <input type="date" class="form-control form-control-sm" name="availability_blocks[${index}][start_date]" required>
                 </div>
-                <div class="col-md-5 mb-2 mb-md-0">
-                    <label class="small fw-bold text-muted mb-2 d-block">END DATE</label>
-                    <input type="date" class="form-control" name="availability_blocks[${index}][end_date]" required>
-                </div>
-                <div class="col-md-2">
-                    <button type="button" class="btn btn-danger w-100 rounded-3 py-2" onclick="removeAvailabilityBlock(this)">
-                        <i class="bi bi-trash3"></i>
-                    </button>
+                <div class="col-6">
+                    <label class="extra-small fw-600 text-muted mb-1 d-block">End Date</label>
+                    <input type="date" class="form-control form-control-sm" name="availability_blocks[${index}][end_date]" required>
                 </div>
             </div>
             ${type === 'blocked' ? `
-            <div class="row mt-3">
-                <div class="col-12">
-                    <label class="small fw-bold text-muted mb-2 d-block">REASON (OPTIONAL)</label>
-                    <input type="text" class="form-control" name="availability_blocks[${index}][reason]" placeholder="e.g. Personal use, Maintenance">
-                </div>
+            <div class="mt-2">
+                <label class="extra-small fw-600 text-muted mb-1 d-block">Reason (optional)</label>
+                <input type="text" class="form-control form-control-sm" name="availability_blocks[${index}][reason]" placeholder="e.g. Personal use">
             </div>
             ` : `
-            <div class="row mt-2">
-                <div class="col-12">
-                    <div class="text-danger small availability-error" style="display: none;"></div>
-                </div>
-            </div>
+            <div class="availability-error mt-2" style="display: none;"></div>
             `}
             <input type="hidden" name="availability_blocks[${index}][type]" value="${type}">
         </div>

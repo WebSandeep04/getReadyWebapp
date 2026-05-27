@@ -294,12 +294,25 @@ function checkRentedItems() {
 // Update cart count in header
 function updateCartCount(count) {
     const $cartCount = $('#cart-count');
+    const $cartCountMobile = $('#cart-count-mobile');
+    
+    // Update Desktop
     if ($cartCount.length > 0) {
         $cartCount.text(count);
         if (count > 0) {
             $cartCount.show();
         } else {
             $cartCount.hide();
+        }
+    }
+
+    // Update Mobile
+    if ($cartCountMobile.length > 0) {
+        $cartCountMobile.text(count);
+        if (count > 0) {
+            $cartCountMobile.show();
+        } else {
+            $cartCountMobile.hide();
         }
     }
 }

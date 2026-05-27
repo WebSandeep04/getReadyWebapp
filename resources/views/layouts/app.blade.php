@@ -7,6 +7,11 @@
     <title>@yield('title', frontend_setting('site_title', 'Get Ready'))</title>
     <meta name="description" content="{{ frontend_setting('site_description', 'Your premier destination for fashion rental. Rent designer pieces for special occasions.') }}">
     <meta name="keywords" content="{{ frontend_setting('site_keywords', 'fashion rental, designer clothes, dress rental, formal wear') }}">
+    
+    <!-- Favicon -->
+    @if(frontend_setting('site_logo'))
+        <link rel="icon" type="image/png" href="{{ asset(frontend_setting('site_logo')) }}">
+    @endif
 
     <!-- jQuery (Load first) -->
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>

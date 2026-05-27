@@ -7,7 +7,7 @@
 @endsection
 
 @section('content')
-<div class="container py-5">
+<div class="container py-lg-5 pt-0 pb-5">
     <!-- Management Header -->
     <div class="management-header">
         <div class="management-title">
@@ -170,8 +170,8 @@
 
                                 @if($canRate)
                                     @if($hasRated)
-                                        <button class="btn btn-outline-success btn-sale-action" disabled>
-                                            <i class="bi bi-check-circle"></i> RATED
+                                        <button class="btn btn-premium-success btn-sale-action opacity-75" disabled>
+                                            <i class="bi bi-check-circle-fill"></i> RATED
                                         </button>
                                     @else
                                         <button type="button" class="btn btn-premium btn-sale-action px-3" data-toggle="modal" data-target="#rateModal" data-order-id="{{ $order->id }}" data-buyer-name="{{ $order->buyer->name }}">
@@ -205,43 +205,41 @@
 
 <!-- Rating Modal -->
 <div class="modal fade" id="rateModal" tabindex="-1" aria-labelledby="rateModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <form action="{{ route('ratings.store') }}" method="POST" id="rateForm">
                 @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title" id="rateModalLabel">Rate Buyer</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                <input type="hidden" name="order_id" id="rating_order_id">
+                <input type="hidden" name="rating" id="rating_value" required>
+                
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" style="font-size: 1.1rem;">Rate Buyer</h5>
+                    <button type="button" class="btn-close ms-auto" data-dismiss="modal" aria-label="Close" style="background: none; border: none; font-size: 1.2rem; color: #94a3b8;">&times;</button>
                 </div>
-                <div class="modal-body">
-                    <input type="hidden" name="order_id" id="rating_order_id">
+                <div class="modal-body py-3 px-3">
+                    <div class="p-2 bg-light rounded-3 mb-3 text-center border">
+                        <span class="text-muted small d-block mb-0">Rating Buyer: <strong class="text-dark" id="rating_buyer_name">--</strong></span>
+                    </div>
                     
-                    <div class="alert alert-light text-center border">
-                        Rating buyer: <strong id="rating_buyer_name"></strong>
-                    </div>
-
-                    <div class="mb-3 text-center">
-                        <label class="form-label d-block">How was your experience?</label>
-                        <div class="rating-stars" style="font-size: 2rem; color: #ffc107; cursor: pointer;">
-                            <i class="bi bi-star" data-value="1"></i>
-                            <i class="bi bi-star" data-value="2"></i>
-                            <i class="bi bi-star" data-value="3"></i>
-                            <i class="bi bi-star" data-value="4"></i>
-                            <i class="bi bi-star" data-value="5"></i>
+                    <div class="text-center mb-3">
+                        <p class="text-muted fw-semibold small mb-2">How was your experience?</p>
+                        <div class="rating-stars mb-0 d-flex justify-content-center" style="font-size: 2rem; gap: 10px !important;">
+                            <i class="bi bi-star cursor-pointer text-warning" data-value="1"></i>
+                            <i class="bi bi-star cursor-pointer text-warning" data-value="2"></i>
+                            <i class="bi bi-star cursor-pointer text-warning" data-value="3"></i>
+                            <i class="bi bi-star cursor-pointer text-warning" data-value="4"></i>
+                            <i class="bi bi-star cursor-pointer text-warning" data-value="5"></i>
                         </div>
-                        <input type="hidden" name="rating" id="rating_value" required>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="review" class="form-label">Review (Optional)</label>
-                        <textarea class="form-control" id="review" name="review" rows="3" placeholder="Share your experience dealing with this buyer..."></textarea>
+                    <div class="form-group mb-0">
+                        <label class="extra-small fw-bold text-uppercase letter-spacing-1 text-muted mb-2 d-block">Review (Optional)</label>
+                        <textarea name="review" class="form-control border rounded-4 p-3" rows="4" placeholder="Share your experience dealing with this buyer..." style="font-size: 0.85rem;"></textarea>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Submit Rating</button>
+                <div class="modal-footer border-0 px-3 pb-3 pt-0 d-flex justify-content-center gap-2">
+                    <button type="button" class="btn btn-secondary rounded-pill px-3" data-dismiss="modal" style="height: 38px; font-weight: 600; font-size: 0.85rem;">Close</button>
+                    <button type="submit" class="btn btn-premium rounded-pill px-3" style="height: 38px; font-weight: 700; min-width: 120px; font-size: 0.85rem;">Submit Rating</button>
                 </div>
             </form>
         </div>
@@ -291,7 +289,7 @@
                     if (response.success) {
                         $('#rateModal').modal('hide');
                         if (activeButton) {
-                            const ratedBadge = $('<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Rated</span>');
+                            const ratedBadge = $('<button class="btn btn-premium-success btn-sale-action opacity-75" disabled><i class="bi bi-check-circle-fill"></i> RATED</button>');
                             activeButton.parent().html(ratedBadge);
                         }
                         // Use a simple alert or toast if preferred, but updating UI is key

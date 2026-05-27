@@ -149,6 +149,9 @@ class ProductController extends Controller
                 $q->where('title', 'like', "%{$search}%")
                   ->orWhereHas('brand', function($bq) use ($search) {
                       $bq->where('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('category', function($cq) use ($search) {
+                      $cq->where('name', 'like', "%{$search}%");
                   });
             });
         }
@@ -248,5 +251,57 @@ class ProductController extends Controller
         }
         
         return view('clothes.browse', compact('clothes', 'categories', 'sizes', 'brands', 'fabrics', 'colors', 'fits', 'bottoms', 'conditions', 'genders', 'showFilters'));
+    }
+
+    public function ajaxSearch(Request $request)
+    {
+        $search = $request->query('query');
+        if (strlen($search) < 2) {
+            return response()->json(['categories' => [], 'products' => []]);
+        }
+
+        // Fetch matching categories
+        $matchingCategories = Category::where('name', 'like', "%{$search}%")
+            ->limit(3)
+            ->get()
+            ->map(function($cat) {
+                return [
+                    'name' => $cat->name,
+                    'url' => route('clothes.index', ['categories[]' => $cat->id])
+                ];
+            });
+
+        // Fetch matching products
+        $clothes = Cloth::with(['images', 'brand', 'category'])
+            ->where('is_approved', 1)
+            ->where('is_available', true)
+            ->where(function($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhereHas('brand', function($bq) use ($search) {
+                      $bq->where('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('category', function($cq) use ($search) {
+                      $cq->where('name', 'like', "%{$search}%");
+                  });
+            })
+            ->limit(10)
+            ->get();
+
+        $products = $clothes->map(function($cloth) {
+            return [
+                'id' => $cloth->id,
+                'title' => $cloth->title,
+                'brand' => $cloth->brand ? $cloth->brand->name : '',
+                'category' => $cloth->category ? $cloth->category->name : '',
+                'price' => number_format($cloth->rent_price, 0),
+                'image' => $cloth->images->first() ? asset('storage/' . $cloth->images->first()->image_path) : asset('images/placeholder.png'),
+                'url' => route('clothes.show', $cloth->id)
+            ];
+        });
+
+        return response()->json([
+            'categories' => $matchingCategories,
+            'products' => $products
+        ]);
     }
 }

@@ -6,6 +6,7 @@
 <link rel="stylesheet" href="{{ asset('css/product.css') }}" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link rel="stylesheet" href="{{ asset('css/cloth-show.css') }}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 <style>
     .related-items {
         padding: 4rem 0;
@@ -15,6 +16,106 @@
         font-weight: 800;
         letter-spacing: -0.02em;
         margin-bottom: 2rem;
+    }
+    
+    /* Swiper Custom Styles */
+    .product-gallery {
+        display: flex;
+        flex-direction: row-reverse;
+        gap: 15px;
+        height: 720px;
+    }
+    
+    .product-gallery__main {
+        flex: 1;
+        width: 0; /* Important for Swiper inside flex */
+        height: 100%;
+        position: relative;
+    }
+    
+    .mainSwiper {
+        height: 100%;
+        border-radius: 14px;
+        overflow: hidden;
+    }
+    
+    .mainSwiper .swiper-slide img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .product-gallery__thumbs {
+        width: 100px;
+        height: 100%;
+    }
+    
+    .thumbSwiper {
+        height: 100%;
+    }
+    
+    .thumbSwiper .swiper-slide {
+        width: 100%;
+        height: 80px !important; /* Slightly smaller to fit better */
+        opacity: 0.6;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .thumbSwiper .swiper-slide-thumb-active {
+        opacity: 1;
+    }
+    
+    .thumbSwiper .swiper-slide img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 12px;
+        border: 2px solid transparent;
+    }
+    
+    .thumbSwiper .swiper-slide-thumb-active img {
+        border-color: #FFA500;
+    }
+
+    .swiper-button-next, .swiper-button-prev {
+        color: #fff;
+        background: rgba(0,0,0,0.2);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        backdrop-filter: blur(4px);
+    }
+    
+    .swiper-button-next:after, .swiper-button-prev:after {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    @media (max-width: 992px) {
+        .product-gallery {
+            flex-direction: column;
+            height: auto;
+        }
+        .product-gallery__main {
+            width: 100%;
+            height: 420px; /* Reduced from 500px */
+        }
+        .product-gallery__thumbs {
+            width: 100%;
+            height: 87px;
+            margin-top: -12px;
+        }
+        .thumbSwiper .swiper-slide {
+            width: 70px !important; /* Smaller thumbnails on mobile */
+            height: 70px !important;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .product-gallery__main {
+            height: 380px; /* Reduced from 420px */
+        }
     }
 </style>
 @endsection
@@ -64,24 +165,40 @@
 <section class="product-hero container">
   <div class="row g-4 align-items-start">
     <div class="col-lg-7">
-      <div class="product-gallery card shadow-sm">
+      <div class="product-gallery">
         <div class="product-gallery__main">
-          @if($cloth->images->count())
-            <img src="{{ asset('storage/' . $cloth->images->first()->image_path) }}" alt="{{ $cloth->title }}" class="img-fluid rounded-4 w-100" id="activeProductImage" style="cursor: pointer;">
-          @else
-            <img src="{{ asset('images/lehenga.jpg') }}" alt="{{ $cloth->title }}" class="img-fluid rounded-4 w-100">
-          @endif
-          <div class="floating-badge shadow-sm" style="background: rgba(255,255,255,0.95); color: #1e293b; border: 1px solid rgba(0,0,0,0.05); font-weight: 600; backdrop-filter: blur(5px);">
+          <div class="swiper mainSwiper">
+            <div class="swiper-wrapper">
+              @if($cloth->images->count())
+                @foreach($cloth->images as $image)
+                  <div class="swiper-slide">
+                    <img src="{{ asset('storage/' . $image->image_path) }}" alt="{{ $cloth->title }}">
+                  </div>
+                @endforeach
+              @else
+                <div class="swiper-slide">
+                  <img src="{{ asset('images/lehenga.jpg') }}" alt="{{ $cloth->title }}">
+                </div>
+              @endif
+            </div>
+          </div>
+          
+          <div class="floating-badge shadow-sm" style="background: rgba(255,255,255,0.95); color: #1e293b; border: 1px solid rgba(0,0,0,0.05); font-weight: 600; backdrop-filter: blur(5px); z-index: 10;">
             <i class="bi bi-patch-check-fill text-primary" style="font-size: 1.1rem;"></i> QC Passed
           </div>
         </div>
+
         @if($cloth->images->count() > 1)
           <div class="product-gallery__thumbs">
-            @foreach($cloth->images as $image)
-              <button class="thumb" data-image="{{ asset('storage/' . $image->image_path) }}">
-                <img src="{{ asset('storage/' . $image->image_path) }}" alt="thumb">
-              </button>
-            @endforeach
+            <div class="swiper thumbSwiper">
+              <div class="swiper-wrapper">
+                @foreach($cloth->images as $image)
+                  <div class="swiper-slide">
+                    <img src="{{ asset('storage/' . $image->image_path) }}" alt="thumb">
+                  </div>
+                @endforeach
+              </div>
+            </div>
           </div>
         @endif
       </div>
@@ -196,7 +313,7 @@
                     </div>
                     <div class="trust-badge">
                       @if($cloth->user && $cloth->user->average_rating > 0)
-                        <span class="badge bg-white text-warning border border-warning px-3 py-1 rounded-pill shadow-sm" style="font-size: 1.5rem;">
+                        <span class="badge bg-white text-warning border border-warning px-2 py-1 rounded-pill shadow-sm" style="font-size: 0.85rem; font-weight: 700;">
                           <i class="bi bi-star-fill me-1"></i> {{ $cloth->user->average_rating }} Rating
                         </span>
                       @else
@@ -352,14 +469,30 @@
 
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
 $(document).ready(function() {
-    // Thumbnail switching
-    $('.thumb').on('click', function() {
-        const newImg = $(this).data('image');
-        $('#activeProductImage').attr('src', newImg);
-        $('.thumb').removeClass('thumb-active');
-        $(this).addClass('thumb-active');
+    // Initialize Swiper
+    var swiperThumbs = new Swiper(".thumbSwiper", {
+        spaceBetween: 10,
+        slidesPerView: "auto",
+        freeMode: true,
+        watchSlidesProgress: true,
+        direction: window.innerWidth > 992 ? "vertical" : "horizontal",
+    });
+    
+    var swiperMain = new Swiper(".mainSwiper", {
+        spaceBetween: 10,
+        thumbs: {
+            swiper: swiperThumbs,
+        },
+        grabCursor: true,
+        loop: true,
+    });
+
+    // Update swiper direction on resize
+    window.addEventListener('resize', function() {
+        swiperThumbs.changeDirection(window.innerWidth > 992 ? "vertical" : "horizontal");
     });
 
     // Flatpickr initialization

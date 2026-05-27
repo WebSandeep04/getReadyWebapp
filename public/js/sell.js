@@ -469,33 +469,28 @@ function addAvailabilityBlock(type) {
   const index = type === 'available' ? counter - 1 : counter + 99; // Use different index ranges
 
   const blockHtml = `
-    <div class="availability-block p-2 mb-2 border rounded bg-light position-relative" data-type="${type}" data-index="${index}" style="border-style: dashed !important;">
-      <button type="button" class="btn btn-link text-danger p-0 position-absolute" style="top: 2px; right: 5px; z-index: 10; text-decoration: none;" onclick="removeAvailabilityBlock(this)">
-        <i class="fas fa-times-circle"></i>
+    <div class="availability-block" data-type="${type}" data-index="${index}">
+      <button type="button" class="btn-remove-block" onclick="removeAvailabilityBlock(this)">
+        <i class="bi bi-x-lg"></i>
       </button>
       <div class="row g-2">
         <div class="col-6">
-          <label class="small mb-0" style="font-size: 0.65rem; font-weight: 800; color: #666;">START DATE</label>
-          <input type="date" class="form-control form-control-sm" name="availability_blocks[${index}][start_date]" required style="font-size: 0.75rem; padding: 4px 8px; margin-bottom: 0;">
+          <label>Start Date</label>
+          <input type="date" class="form-control form-control-sm" name="availability_blocks[${index}][start_date]" required>
         </div>
         <div class="col-6">
-          <label class="small mb-0" style="font-size: 0.65rem; font-weight: 800; color: #666;">END DATE</label>
-          <input type="date" class="form-control form-control-sm" name="availability_blocks[${index}][end_date]" required style="font-size: 0.75rem; padding: 4px 8px; margin-bottom: 0;">
+          <label>End Date</label>
+          <input type="date" class="form-control form-control-sm" name="availability_blocks[${index}][end_date]" required>
         </div>
       </div>
       ${type === 'blocked' ? `
-        <div class="row g-2 mt-1">
-          <div class="col-12">
-            <input type="text" class="form-control form-control-sm" name="availability_blocks[${index}][reason]" placeholder="Reason (optional)" style="font-size: 0.75rem; padding: 4px 8px; margin-bottom: 0;">
-          </div>
+        <div class="mt-2">
+          <label>Reason (optional)</label>
+          <input type="text" class="form-control form-control-sm" name="availability_blocks[${index}][reason]" placeholder="e.g. Personal use">
         </div>
       ` : ''}
       <input type="hidden" name="availability_blocks[${index}][type]" value="${type}">
-      ${type === 'available' ? `
-        <div class="mt-1">
-          <div class="text-danger" id="availability-error-${index}" style="display: none; font-size: 0.65rem; font-weight: 600;"></div>
-        </div>
-      ` : ''}
+      <div class="availability-error" id="availability-error-${index}" style="display: none;"></div>
     </div>
   `;
 
@@ -567,6 +562,7 @@ function createDeliveryPickupBlocks(startDate, endDate, availableIndex) {
 }
 
 function removeAvailabilityBlock(button) {
+  if (!confirm('Are you sure you want to remove this date block?')) return;
   const block = button.closest('.availability-block');
   const blockType = block.getAttribute('data-type');
   const availableIndex = block.getAttribute('data-delivery-for') || block.getAttribute('data-pickup-for');

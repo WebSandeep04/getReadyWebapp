@@ -4,11 +4,11 @@
 
 @section('content')
 <div class="container py-5" style="margin-bottom: 80px;">
-    <div class="row mb-5">
+    <div class="row mb-2">
         <div class="col-12">
             <div class="d-flex align-items-center gap-3 mb-2">
-                <div class="bg-primary-subtle p-3 rounded-4">
-                    <i class="bi bi-bag-heart text-primary fs-3"></i>
+                <div class="bg-warning-subtle p-3 rounded-4 cart-header-icon" style="background-color: #fff7ed !important;">
+                    <i class="bi bi-bag-heart text-warning" style="color: #f78c1c !important;"></i>
                 </div>
                 <div>
                     <h1 class="h2 fw-bold mb-0 text-dark">Your Shopping Bag</h1>
@@ -43,29 +43,29 @@
                                         <div class="position-relative">
                                             @if($cartItem->cloth->images->count() > 0)
                                                 <img src="{{ asset('storage/' . $cartItem->cloth->images->first()->image_path) }}" 
-                                                     alt="{{ $cartItem->cloth->title }}" class="img-fluid rounded-4 shadow-sm w-100" style="height: 180px; object-fit: cover; border-radius: 10px;">
+                                                     alt="{{ $cartItem->cloth->title }}" class="img-fluid rounded-4 shadow-sm w-100 cart-item-img" style="height: 180px; object-fit: cover; border-radius: 10px;">
                                             @else
-                                                <img src="{{ asset('images/1.jpg') }}" alt="{{ $cartItem->cloth->title }}" class="img-fluid rounded-4 shadow-sm w-100" style="height: 180px; object-fit: cover; border-radius: 10px;">
+                                                <img src="{{ asset('images/1.jpg') }}" alt="{{ $cartItem->cloth->title }}" class="img-fluid rounded-4 shadow-sm w-100 cart-item-img" style="height: 180px; object-fit: cover; border-radius: 10px;">
                                             @endif
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="d-flex flex-column gap-2">
                                             <div class="mb-1">
-                                                <span class="badge {{ $cartItem->purchase_type === 'buy' ? 'bg-success' : 'bg-primary' }} rounded-pill px-3 py-2 shadow-sm mb-2" style="font-size: 0.65rem; color:#fff; letter-spacing: 0.5px;">
+                                                <span class="badge {{ $cartItem->purchase_type === 'buy' ? 'bg-success' : 'bg-warning' }} rounded-pill px-3 py-2 shadow-sm mb-2 d-inline-block" style="font-size: 0.65rem; color:#fff; letter-spacing: 0.5px; {{ $cartItem->purchase_type !== 'buy' ? 'background-color: #f78c1c !important;' : '' }}">
                                                     {{ $cartItem->purchase_type === 'buy' ? 'PURCHASE' : 'RENTAL' }}
                                                 </span>
                                                 <h4 class="fw-bold text-dark mb-0" style="font-size: 1.4rem;">{{ $cartItem->cloth->title }}</h4>
                                             </div>
                                             <div class="d-flex flex-wrap gap-2 mb-2 text-muted small">
-                                                <span class="bg-light px-2 py-1 rounded-2 border shadow-sm">Size: <span class="text-dark fw-bold">{{ $cartItem->cloth->sizeRef->name ?? 'Unknown' }}</span></span>
-                                                <span class="bg-light px-2 py-1 rounded-2 border shadow-sm">Condition: <span class="text-dark fw-bold">{{ $cartItem->cloth->conditionRef->name ?? 'Unknown' }}</span></span>
+                                                <span class="bg-light px-2 py-1 rounded-2 border shadow-sm">Size: <span class="text-dark fw-semibold">{{ $cartItem->cloth->sizeRef->name ?? 'Unknown' }}</span></span>
+                                                <span class="bg-light px-2 py-1 rounded-2 border shadow-sm">Condition: <span class="text-dark fw-semibold">{{ $cartItem->cloth->conditionRef->name ?? 'Unknown' }}</span></span>
                                             </div>
 
                                             @if($cartItem->purchase_type === 'buy')
                                                 <div class="p-3 rounded-4 bg-success-subtle border border-success-subtle d-flex justify-content-between align-items-center">
                                                     <div>
-                                                        <span class="text-success small fw-bold d-block">PURCHASE PRICE</span>
+                                                        <span class="text-success small fw-semibold d-block">PURCHASE PRICE</span>
                                                         <p class="text-success mb-0 x-small opacity-75">Ownership after delivery</p>
                                                     </div>
                                                     <span class="text-success h5 fw-bold mb-0">₹{{ number_format($cartItem->total_selling_price) }}</span>
@@ -73,11 +73,11 @@
                                             @else
                                                 <div class="p-3 rounded-4 bg-light border border-light-subtle shadow-sm">
                                                     <div class="d-flex justify-content-between align-items-center mb-1">
-                                                        <span class="text-muted small fw-bold">RENTAL COST</span>
-                                                        <span class="text-primary fw-bold">₹{{ number_format($cartItem->total_rental_cost) }}</span>
+                                                        <span class="text-muted small fw-semibold">RENTAL COST</span>
+                                                        <span class="fw-bold" style="color: #f78c1c;">₹{{ number_format($cartItem->total_rental_cost) }}</span>
                                                     </div>
                                                     <div class="d-flex align-items-center gap-2 text-muted x-small fw-semibold">
-                                                        <i class="bi bi-calendar3 text-primary"></i> 
+                                                        <i class="bi bi-calendar3" style="color: #f78c1c;"></i> 
                                                         <span> {{ \Carbon\Carbon::parse($cartItem->rental_start_date)->format('d M') }} - {{ \Carbon\Carbon::parse($cartItem->rental_end_date)->format('d M, Y') }} ({{ $cartItem->rental_days }} Days)</span>
                                                     </div>
                                                 </div>
@@ -85,36 +85,40 @@
                                         </div>
                                     </div>
                                     <div class="col-md-3">
-                                        <div class="d-flex flex-column align-items-start justify-content-between h-100 py-1">
-                                            <div class="text-start w-100">
-                                                <label class="small fw-bold text-muted text-uppercase mb-2 d-block">Quantity</label>
-                                                <div class="input-group input-group-sm shadow-sm" style="max-width: 130px; height: 38px;">
-                                                    <button class="btn btn-outline-secondary qty-btn px-3 border-end-0" type="button" data-action="minus" style="border-radius: 12px 0 0 12px; background: #fff;">-</button>
-                                                    <input type="number" 
-                                                           class="form-control quantity-input text-center fw-bold bg-white border-start-0 border-end-0 fs-6" 
-                                                           value="{{ $cartItem->quantity }}" 
-                                                           min="1" 
-                                                           max="{{ $cartItem->cloth->sku }}"
-                                                           data-cart-item-id="{{ $cartItem->id }}"
-                                                           readonly
-                                                           style="width: 45px; pointer-events: none;">
-                                                    <button class="btn btn-outline-secondary qty-btn px-3 border-start-0" type="button" data-action="plus" style="border-radius: 0 12px 12px 0; background: #fff;">+</button>
+                                        <div class="d-flex flex-column h-100 py-1">
+                                            <div class="d-flex justify-content-between align-items-end w-100 mb-3">
+                                                <div class="text-start">
+                                                    <label class="small fw-semibold text-muted text-uppercase mb-2 d-block">Quantity</label>
+                                                    <div class="input-group input-group-sm shadow-sm" style="max-width: 130px; height: 38px;">
+                                                        <button class="btn btn-outline-secondary qty-btn px-3 border-end-0" type="button" data-action="minus" style="border-radius: 12px 0 0 12px; background: #fff;">-</button>
+                                                        <input type="number" 
+                                                               class="form-control quantity-input text-center fw-bold bg-white border-start-0 border-end-0 fs-6" 
+                                                               value="{{ $cartItem->quantity }}" 
+                                                               min="1" 
+                                                               max="{{ $cartItem->cloth->sku }}"
+                                                               data-cart-item-id="{{ $cartItem->id }}"
+                                                               readonly
+                                                               style="width: 45px; pointer-events: none;">
+                                                        <button class="btn btn-outline-secondary qty-btn px-3 border-start-0" type="button" data-action="plus" style="border-radius: 0 12px 12px 0; background: #fff;">+</button>
+                                                    </div>
+                                                </div>
+                                                <div class="text-end">
+                                                    <p class="text-muted x-small mb-1 text-uppercase fw-semibold">Subtotal</p>
+                                                    <h3 class="fw-bold text-dark mb-0" style="letter-spacing: -0.5px;">
+                                                        @if($cartItem->purchase_type === 'buy')
+                                                            ₹{{ number_format($cartItem->total_selling_price) }}
+                                                        @else
+                                                            ₹{{ number_format($cartItem->total_rental_cost ?? ($cartItem->cloth->display_rent_price * $cartItem->quantity)) }}
+                                                        @endif
+                                                    </h3>
                                                 </div>
                                             </div>
-                                            <div class="text-start py-2 w-100">
-                                                <p class="text-muted x-small mb-1 text-uppercase fw-bold">Subtotal</p>
-                                                <h3 class="fw-bold text-dark mb-0" style="letter-spacing: -0.5px;">
-                                                    @if($cartItem->purchase_type === 'buy')
-                                                        ₹{{ number_format($cartItem->total_selling_price) }}
-                                                    @else
-                                                        ₹{{ number_format($cartItem->total_rental_cost ?? ($cartItem->cloth->display_rent_price * $cartItem->quantity)) }}
-                                                    @endif
-                                                </h3>
+                                            <div class="d-flex justify-content-end w-100">
+                                                <button class="btn btn-link text-danger btn-sm p-0 text-decoration-none remove-from-cart-btn fw-bold d-flex align-items-center gap-1" 
+                                                        data-cart-item-id="{{ $cartItem->id }}">
+                                                    <i class="bi bi-trash3"></i> <span>Remove</span>
+                                                </button>
                                             </div>
-                                            <button class="btn btn-link text-danger btn-sm p-0 text-decoration-none remove-from-cart-btn fw-bold d-flex align-items-center gap-1 mt-1" 
-                                                    data-cart-item-id="{{ $cartItem->id }}">
-                                                <i class="bi bi-trash3"></i> <span>Remove</span>
-                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -127,7 +131,7 @@
                     <!-- Cart Summary -->
                     <div class="card border-0 shadow rounded-4 overflow-hidden sticky-top" style="top: 100px; z-index: 10;">
                         <div class="card-header bg-dark text-white p-4 border-0">
-                            <h5 class="mb-0 fw-bold d-flex align-items-center gap-2">
+                            <h5 class="mb-0 fw-semibold d-flex align-items-center gap-2">
                                 <i class="bi bi-receipt"></i> Order Summary
                             </h5>
                         </div>
@@ -216,7 +220,7 @@
                                 </div>
                             </div>
                             
-                            <button class="btn btn-primary w-100 py-3 rounded-4 fw-bold shadow-sm mb-3"
+                            <button class="btn btn-sell w-100 py-3 rounded-4 fw-bold shadow-sm mb-3"
                                     id="checkoutBtn"
                                     data-create-url="{{ route('checkout.create') }}"
                                     data-verify-url="{{ route('checkout.verify') }}">
@@ -232,13 +236,13 @@
                 </div>
             </div>
         @else
-            <div class="text-center py-5">
-                <div class="mb-4 d-inline-block p-4 rounded-circle bg-light">
-                    <i class="bi bi-cart-x text-muted" style="font-size: 5rem;"></i>
+            <div class="text-center py-4 py-md-5">
+                <div class="mb-3 d-inline-block p-3 p-md-4 rounded-circle bg-light">
+                    <i class="bi bi-cart-x text-muted" style="font-size: 3.5rem;"></i>
                 </div>
-                <h2 class="fw-bold text-dark">Your Bag is Empty</h2>
-                <p class="text-muted mx-auto mb-5" style="max-width: 400px;">Looks like you haven't added anything to your bag yet. Explore our premium collection and start your fashion journey!</p>
-                <a href="/" class="btn btn-primary btn-lg px-5 rounded-pill shadow">
+                <h2 class="fw-bold text-dark h3 h2-md">Your Bag is Empty</h2>
+                <p class="text-muted mx-auto mb-4" style="max-width: 400px; font-size: 0.9rem;">Looks like you haven't added anything to your bag yet. Explore our premium collection and start your fashion journey!</p>
+                <a href="/" class="btn btn-sell px-5 rounded-pill shadow">
                     Start Browsing
                 </a>
             </div>
@@ -246,10 +250,53 @@
     </div>
 </div>
 
+<!-- Address Change Modal -->
+<div class="modal fade rounded-4" id="addressModal" tabindex="-1" aria-labelledby="addressModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 p-4 pb-2">
+                <h5 class="modal-title fw-bold" id="addressModalLabel">
+                    <i class="bi bi-geo-alt-fill text-primary me-2"></i> Update Delivery Address
+                </h5>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-muted small mb-3">Please provide the complete address where you want your items delivered.</p>
+                <div class="form-group mb-0">
+                    <textarea id="modalAddressInput" class="form-control rounded-3 border-light-subtle bg-light" rows="4" placeholder="Enter your full address (House No, Street, Landmark, City, Pincode)"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer border-0 p-4 pt-2">
+                <button type="button" class="btn btn-danger rounded-pill px-4 fw-bold" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-sell rounded-pill px-4 fw-bold shadow-sm" onclick="saveCustomAddress()">
+                    Update Address
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
 :root {
-    --primary-color: #2563eb;
-    --primary-light: #eef2ff;
+    --primary-color: #FFA500;
+    --primary-light: #fff8f0;
+    --sell-gradient: linear-gradient(135deg, #FFA500 0%, #FF7F50 100%);
+}
+
+.btn-sell {
+    background: var(--sell-gradient);
+    border: none;
+    color: white;
+}
+
+.btn-sell:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 165, 0, 0.4);
+    color: white;
+}
+
+.btn-sell:disabled {
+    opacity: 0.7;
+    background: #ccc;
 }
 
 .payment-options .btn-check {
@@ -330,8 +377,43 @@
         top: 0 !important;
     }
 }
-</style>
-#495057;
+
+    .container.py-5 {
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
+    }
+    .cart-header-icon {
+        padding: 0.6rem !important;
+        border-radius: 12px !important;
+    }
+    .cart-header-icon i {
+        font-size: 1.25rem !important;
+    }
+    h1.h2 {
+        font-size: 1.5rem !important;
+        line-height: 1.2 !important;
+    }
+    .cart-container p.text-muted {
+        font-size: 0.75rem !important;
+    }
+    .cart-item-img {
+        height: 280px !important;
+        margin-bottom: 0.75rem;
+        width: 100% !important;
+        object-fit: cover !important;
+    }
+    .cart-item .card-body {
+        padding: 1rem !important;
+    }
+    .cart-item h4 {
+        font-size: 1.2rem !important;
+        margin-top: 0.5rem !important;
+        line-height: 1.3;
+    }
+}
+
+.cart-header-icon i {
+    font-size: 1.75rem; /* Default/Desktop size */
 }
 </style>
 @endsection

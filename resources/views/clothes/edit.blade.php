@@ -114,6 +114,31 @@
         }
     }
 
+    @media (max-width: 991px) {
+        .btn-premium-save {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            width: calc(100% - 40px);
+            margin-top: 0;
+            z-index: 1050;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.85rem;
+            border-radius: 50px;
+            box-shadow: 0 12px 30px rgba(247, 140, 28, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .sticky-sidebar {
+            position: static;
+        }
+
+        .edit-container {
+            padding-bottom: 100px;
+        }
+    }
+
     .edit-image-item {
         position: relative;
         aspect-ratio: 1;
@@ -178,7 +203,8 @@
         border-radius: 14px;
         padding: 1rem;
         font-weight: 800;
-        width: 100%;
+        width: 90%;
+        margin-bottom: 41px;
         margin-top: 1.5rem;
         letter-spacing: 1px;
         box-shadow: 0 10px 20px rgba(247, 140, 28, 0.3);
@@ -513,15 +539,15 @@
                                 @foreach($cloth->availabilityBlocks->where('type', 'available') as $index => $block)
                                     <div class="availability-block mb-3 p-3 border-0 shadow-sm rounded-4 position-relative" data-type="available">
                                         <button type="button" class="btn-remove-block" onclick="removeAvailabilityBlock(this)">
-                                            <i class="bi bi-x"></i>
+                                            <i class="bi bi-x-lg"></i>
                                         </button>
                                         <div class="row g-2">
                                             <div class="col-6">
-                                                <label class="extra-small fw-800 text-muted mb-1 d-block">START</label>
+                                                <label class="extra-small fw-600 text-muted mb-1 d-block">Start Date</label>
                                                 <input type="date" class="form-control form-control-sm" name="availability_blocks[{{ $index }}][start_date]" value="{{ $block->start_date->format('Y-m-d') }}" required>
                                             </div>
                                             <div class="col-6">
-                                                <label class="extra-small fw-800 text-muted mb-1 d-block">END</label>
+                                                <label class="extra-small fw-600 text-muted mb-1 d-block">End Date</label>
                                                 <input type="date" class="form-control form-control-sm" name="availability_blocks[{{ $index }}][end_date]" value="{{ $block->end_date->format('Y-m-d') }}" required>
                                             </div>
                                         </div>
@@ -547,19 +573,19 @@
                                 @foreach($cloth->availabilityBlocks->where('type', 'blocked') as $index => $block)
                                     <div class="availability-block mb-3 p-3 border-0 shadow-sm rounded-4 position-relative" data-type="blocked">
                                         <button type="button" class="btn-remove-block" onclick="removeAvailabilityBlock(this)">
-                                            <i class="bi bi-x"></i>
+                                            <i class="bi bi-x-lg"></i>
                                         </button>
                                         <div class="row g-2">
                                             <div class="col-6">
-                                                <label class="extra-small fw-800 text-muted mb-1 d-block">START</label>
+                                                <label class="extra-small fw-600 text-muted mb-1 d-block">Start Date</label>
                                                 <input type="date" class="form-control form-control-sm" name="availability_blocks[{{ $index + 100 }}][start_date]" value="{{ $block->start_date->format('Y-m-d') }}" required>
                                             </div>
                                             <div class="col-6">
-                                                <label class="extra-small fw-800 text-muted mb-1 d-block">END</label>
+                                                <label class="extra-small fw-600 text-muted mb-1 d-block">End Date</label>
                                                 <input type="date" class="form-control form-control-sm" name="availability_blocks[{{ $index + 100 }}][end_date]" value="{{ $block->end_date->format('Y-m-d') }}" required>
                                             </div>
                                             <div class="col-12 mt-2">
-                                                <label class="extra-small fw-800 text-muted mb-1 d-block">REASON</label>
+                                                <label class="extra-small fw-600 text-muted mb-1 d-block">Reason</label>
                                                 <input type="text" class="form-control form-control-sm" name="availability_blocks[{{ $index + 100 }}][reason]" value="{{ $block->reason }}" placeholder="Personal use, etc.">
                                             </div>
                                         </div>

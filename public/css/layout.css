@@ -484,6 +484,17 @@ body {
     font-size: 0.9rem;
 }
 
+/* ─────────────── Global Form Adjustments ─────────────── */
+textarea {
+    min-height: 120px !important;
+    resize: vertical !important;
+    overflow-y: auto !important;
+}
+
+textarea.form-control {
+    min-height: 120px !important;
+}
+
 .content .display-6,
 .content h2,
 .content h3,
@@ -642,4 +653,5 @@ body {
 * {
     scrollbar-width: thin;
     scrollbar-color: #999 transparent;
-}
+}t e x t a r e a . f o r m - c o n t r o l   {   m i n - h e i g h t :   1 2 0 p x   ! i m p o r t a n t ;   r e s i z e :   v e r t i c a l   ! i m p o r t a n t ;   }  
+ 

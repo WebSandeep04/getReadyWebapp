@@ -63,12 +63,12 @@
                     </div>
                 </div>
 
-                <div class="mt-3 pt-3 border-top">
-                    <button type="submit" class="btn btn-premium w-100 shadow-sm" id="update-btn">
+                <div class="sidebar-footer border-top">
+                    <button type="submit" class="btn btn-premium flex-fill shadow-sm" id="update-btn">
                         SAVE CHANGES
                     </button>
-                    <button type="button" class="btn btn-link text-muted mt-1 w-100 fw-bold small" onclick="resetForm()">
-                        <i class="bi bi-arrow-counterclockwise"></i> RESET
+                    <button type="button" class="btn btn-link text-muted fw-bold small" onclick="resetForm()">
+                        <i class="bi bi-arrow-counterclockwise"></i>
                     </button>
                 </div>
             </div>

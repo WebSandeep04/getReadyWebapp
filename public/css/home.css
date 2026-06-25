@@ -119,11 +119,17 @@ body {
 }
 
 /* Get the App Section */
+.get-app-section {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+}
+
 .get-app-card {
     background: linear-gradient(135deg, #FFA500 0%, #FF7F50 100%);
     border-radius: 0;
     position: relative;
     overflow: hidden;
+    margin-bottom: 0 !important;
 }
 
 .mockup-bg-circle {

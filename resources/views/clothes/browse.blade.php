@@ -311,7 +311,7 @@
                         <!-- Category -->
                         <div class="dropdown filter-pill-dropdown">
                             <button class="filter-pill {{ request('categories') ? 'active' : '' }}" type="button" data-toggle="dropdown" data-boundary="viewport">
-                                Category <i class="bi bi-chevron-down ms-1"></i>
+                                Category <i class="bi bi-caret-down-fill ms-2"></i>
                             </button>
                             <div class="dropdown-menu shadow-lg border-0">
                                 @foreach($categories as $category)
@@ -330,7 +330,7 @@
                         <!-- User Type -->
                         <div class="dropdown filter-pill-dropdown">
                             <button class="filter-pill {{ request('genders') ? 'active' : '' }}" type="button" data-toggle="dropdown" data-boundary="viewport">
-                                User <i class="bi bi-chevron-down ms-1"></i>
+                                User <i class="bi bi-caret-down-fill ms-2"></i>
                             </button>
                             <div class="dropdown-menu shadow-lg border-0">
                                 @foreach($genders as $gender)
@@ -349,7 +349,7 @@
                         <!-- Size -->
                         <div class="dropdown filter-pill-dropdown">
                             <button class="filter-pill {{ request('sizes') ? 'active' : '' }}" type="button" data-toggle="dropdown" data-boundary="viewport">
-                                Size <i class="bi bi-chevron-down ms-1"></i>
+                                Size <i class="bi bi-caret-down-fill ms-2"></i>
                             </button>
                             <div class="dropdown-menu shadow-lg border-0 p-3" style="min-width: 250px;">
                                 <div class="filter-grid-3">
@@ -370,7 +370,7 @@
                         <!-- Brand -->
                         <div class="dropdown filter-pill-dropdown">
                             <button class="filter-pill {{ request('brands') ? 'active' : '' }}" type="button" data-toggle="dropdown" data-boundary="viewport">
-                                Brand <i class="bi bi-chevron-down ms-1"></i>
+                                Brand <i class="bi bi-caret-down-fill ms-2"></i>
                             </button>
                             <div class="dropdown-menu shadow-lg border-0 scrollable-dropdown">
                                 @foreach($brands as $brand)
@@ -389,7 +389,7 @@
                         <!-- Fabric -->
                         <div class="dropdown filter-pill-dropdown">
                             <button class="filter-pill {{ request('fabrics') ? 'active' : '' }}" type="button" data-toggle="dropdown" data-boundary="viewport">
-                                Fabric <i class="bi bi-chevron-down ms-1"></i>
+                                Fabric <i class="bi bi-caret-down-fill ms-2"></i>
                             </button>
                             <div class="dropdown-menu shadow-lg border-0 scrollable-dropdown">
                                 @foreach($fabrics as $fabric)
@@ -408,7 +408,7 @@
                         <!-- Color -->
                         <div class="dropdown filter-pill-dropdown">
                             <button class="filter-pill {{ request('colors') ? 'active' : '' }}" type="button" data-toggle="dropdown" data-boundary="viewport">
-                                Color <i class="bi bi-chevron-down ms-1"></i>
+                                Color <i class="bi bi-caret-down-fill ms-2"></i>
                             </button>
                             <div class="dropdown-menu shadow-lg border-0 scrollable-dropdown">
                                 @foreach($colors as $color)
@@ -424,10 +424,10 @@
                             </div>
                         </div>
 
-                        <!-- Price -->
+                        <!-- Price (Rent) -->
                         <div class="dropdown filter-pill-dropdown">
                             <button class="filter-pill {{ request('price_min') || request('price_max') ? 'active' : '' }}" type="button" data-toggle="dropdown" data-boundary="viewport">
-                                Price <i class="bi bi-chevron-down ms-1"></i>
+                                Price <i class="bi bi-caret-down-fill ms-2"></i>
                             </button>
                             <div class="dropdown-menu shadow-lg border-0 p-4" style="min-width: 280px;">
                                 <h6 class="mb-3 fw-bold">Rent Range</h6>
@@ -450,6 +450,220 @@
                                             </div>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- MRP Range -->
+                        <div class="dropdown filter-pill-dropdown">
+                            <button class="filter-pill {{ request('mrp_min') || request('mrp_max') ? 'active' : '' }}" type="button" data-toggle="dropdown" data-boundary="viewport">
+                                MRP <i class="bi bi-caret-down-fill ms-2"></i>
+                            </button>
+                            <div class="dropdown-menu shadow-lg border-0 p-4" style="min-width: 280px;">
+                                <h6 class="mb-3 fw-bold">MRP Range</h6>
+                                <div class="range-slider-container">
+                                    <div class="range-slider">
+                                        <div class="range-track"></div>
+                                        <input type="range" class="range-min" min="0" max="50000" step="100" name="mrp_min" value="{{ request('mrp_min', 0) }}">
+                                        <input type="range" class="range-max" min="0" max="50000" step="100" name="mrp_max" value="{{ request('mrp_max', 50000) }}">
+                                    </div>
+                                    <div class="range-values mt-2 d-flex justify-content-between align-items-center">
+                                        <div class="manual-range-inputs">
+                                            <div class="input-wrapper">
+                                                <span class="currency-symbol">₹</span>
+                                                <input type="number" class="manual-min" value="{{ request('mrp_min', 0) }}" placeholder="Min">
+                                            </div>
+                                            <div class="divider">-</div>
+                                            <div class="input-wrapper">
+                                                <span class="currency-symbol">₹</span>
+                                                <input type="number" class="manual-max" value="{{ request('mrp_max', 50000) }}" placeholder="Max">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Priority -->
+                        <div class="dropdown filter-pill-dropdown">
+                            <button class="filter-pill {{ request('rdm_priority') ? 'active' : '' }}" type="button" data-toggle="dropdown" data-boundary="viewport">
+                                Priority <i class="bi bi-caret-down-fill ms-2"></i>
+                            </button>
+                            <div class="dropdown-menu shadow-lg border-0 p-3">
+                                <label class="filter-checkbox mb-0 d-flex align-items-center">
+                                    <input type="checkbox" name="rdm_priority" value="1" {{ request('rdm_priority') ? 'checked' : '' }}>
+                                    <span class="checkmark"></span>
+                                    <span class="filter-label ms-2">Best Value (RDM)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Features -->
+                        <div class="dropdown filter-pill-dropdown">
+                            <button class="filter-pill {{ request('is_cleaned') ? 'active' : '' }}" type="button" data-toggle="dropdown" data-boundary="viewport">
+                                Features <i class="bi bi-caret-down-fill ms-2"></i>
+                            </button>
+                            <div class="dropdown-menu shadow-lg border-0 p-3">
+                                <label class="filter-checkbox mb-0 d-flex align-items-center">
+                                    <input type="checkbox" name="is_cleaned" value="1" {{ request('is_cleaned') ? 'checked' : '' }}>
+                                    <span class="checkmark"></span>
+                                    <span class="filter-label ms-2">Dry Cleaned Only</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Condition -->
+                        <div class="dropdown filter-pill-dropdown">
+                            <button class="filter-pill {{ request('conditions') ? 'active' : '' }}" type="button" data-toggle="dropdown" data-boundary="viewport">
+                                Condition <i class="bi bi-caret-down-fill ms-2"></i>
+                            </button>
+                            <div class="dropdown-menu shadow-lg border-0 p-3">
+                                @foreach($conditions as $condition)
+                                    <div class="dropdown-item p-1">
+                                        <label class="filter-checkbox mb-0 d-flex align-items-center">
+                                            <input type="checkbox" name="conditions[]" value="{{ $condition->id }}" 
+                                                   {{ in_array($condition->id, (array)request('conditions', [])) ? 'checked' : '' }}>
+                                            <span class="checkmark"></span>
+                                            <span class="filter-label ms-2">{{ $condition->name }}</span>
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <!-- Rating -->
+                        <div class="dropdown filter-pill-dropdown">
+                            <button class="filter-pill {{ request('seller_rating') || request('product_rating') ? 'active' : '' }}" type="button" data-toggle="dropdown" data-boundary="viewport">
+                                Rating <i class="bi bi-caret-down-fill ms-2"></i>
+                            </button>
+                            <div class="dropdown-menu shadow-lg border-0 p-3" style="min-width: 200px;">
+                                <h6 class="mb-2 small fw-bold">Seller Rating</h6>
+                                <div class="star-rating-filter mb-3" data-input="seller_rating_mobile">
+                                    <input type="hidden" name="seller_rating" value="{{ request('seller_rating') }}">
+                                    @php $currentSellerRating = request('seller_rating', 0); @endphp
+                                    @for($i=1; $i<=5; $i++)
+                                        <i class="bi bi-star{{ $i <= $currentSellerRating ? '-fill text-warning' : '' }} star-filter-icon" data-rating="{{ $i }}" style="cursor:pointer; font-size:1.1rem; color: #ccc;"></i>
+                                    @endfor
+                                </div>
+                                <h6 class="mb-2 small fw-bold">Product Rating</h6>
+                                <div class="star-rating-filter" data-input="product_rating_mobile">
+                                    <input type="hidden" name="product_rating" value="{{ request('product_rating') }}">
+                                    @php $currentProductRating = request('product_rating', 0); @endphp
+                                    @for($i=1; $i<=5; $i++)
+                                        <i class="bi bi-star{{ $i <= $currentProductRating ? '-fill text-warning' : '' }} star-filter-icon" data-rating="{{ $i }}" style="cursor:pointer; font-size:1.1rem; color: #ccc;"></i>
+                                    @endfor
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fit Type -->
+                        <div class="dropdown filter-pill-dropdown">
+                            <button class="filter-pill {{ request('fits') ? 'active' : '' }}" type="button" data-toggle="dropdown" data-boundary="viewport">
+                                Fit <i class="bi bi-caret-down-fill ms-2"></i>
+                            </button>
+                            <div class="dropdown-menu shadow-lg border-0 p-3">
+                                @foreach($fits as $fit)
+                                    <div class="dropdown-item p-1">
+                                        <label class="filter-checkbox mb-0 d-flex align-items-center">
+                                            <input type="checkbox" name="fits[]" value="{{ $fit->id }}" 
+                                                   {{ in_array($fit->id, (array)request('fits', [])) ? 'checked' : '' }}>
+                                            <span class="checkmark"></span>
+                                            <span class="filter-label ms-2">{{ $fit->name }}</span>
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <!-- Bottom Type -->
+                        <div class="dropdown filter-pill-dropdown">
+                            <button class="filter-pill {{ request('bottoms') ? 'active' : '' }}" type="button" data-toggle="dropdown" data-boundary="viewport">
+                                Bottom <i class="bi bi-caret-down-fill ms-2"></i>
+                            </button>
+                            <div class="dropdown-menu shadow-lg border-0 p-3">
+                                @foreach($bottoms as $bottom)
+                                    <div class="dropdown-item p-1">
+                                        <label class="filter-checkbox mb-0 d-flex align-items-center">
+                                            <input type="checkbox" name="bottoms[]" value="{{ $bottom->id }}" 
+                                                   {{ in_array($bottom->id, (array)request('bottoms', [])) ? 'checked' : '' }}>
+                                            <span class="checkmark"></span>
+                                            <span class="filter-label ms-2">{{ $bottom->name }}</span>
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="dropdown filter-pill-dropdown">
+                            <button class="filter-pill {{ request('status') && request('status') !== 'any' ? 'active' : '' }}" type="button" data-toggle="dropdown" data-boundary="viewport">
+                                Status <i class="bi bi-caret-down-fill ms-2"></i>
+                            </button>
+                            <div class="dropdown-menu shadow-lg border-0 p-3">
+                                <div class="dropdown-item p-1">
+                                    <label class="filter-radio mb-0 d-flex align-items-center">
+                                        <input type="radio" name="status" value="any" {{ request('status', 'any') === 'any' ? 'checked' : '' }}>
+                                        <span class="radio-mark"></span>
+                                        <span class="filter-label ms-2">Any</span>
+                                    </label>
+                                </div>
+                                <div class="dropdown-item p-1">
+                                    <label class="filter-radio mb-0 d-flex align-items-center">
+                                        <input type="radio" name="status" value="available" {{ request('status') === 'available' ? 'checked' : '' }}>
+                                        <span class="radio-mark"></span>
+                                        <span class="filter-label ms-2">Available</span>
+                                    </label>
+                                </div>
+                                <div class="dropdown-item p-1">
+                                    <label class="filter-radio mb-0 d-flex align-items-center">
+                                        <input type="radio" name="status" value="sold" {{ request('status') === 'sold' ? 'checked' : '' }}>
+                                        <span class="radio-mark"></span>
+                                        <span class="filter-label ms-2">Sold</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sort -->
+                        <div class="dropdown filter-pill-dropdown">
+                            <button class="filter-pill active" type="button" data-toggle="dropdown" data-boundary="viewport">
+                                Sort <i class="bi bi-caret-down-fill ms-2"></i>
+                            </button>
+                            <div class="dropdown-menu shadow-lg border-0 p-3">
+                                <div class="dropdown-item p-1">
+                                    <label class="filter-radio mb-0 d-flex align-items-center">
+                                        <input type="radio" name="sort_by_mobile" value="default" {{ request('sort_by', 'default') === 'default' ? 'checked' : '' }} onchange="$('#sortBy').val(this.value).trigger('change')">
+                                        <span class="radio-mark"></span>
+                                        <span class="filter-label ms-2">Default</span>
+                                    </label>
+                                </div>
+                                <div class="dropdown-item p-1">
+                                    <label class="filter-radio mb-0 d-flex align-items-center">
+                                        <input type="radio" name="sort_by_mobile" value="rdm_low" {{ request('sort_by') === 'rdm_low' ? 'checked' : '' }} onchange="$('#sortBy').val(this.value).trigger('change')">
+                                        <span class="radio-mark"></span>
+                                        <span class="filter-label ms-2">Best Value (RDM)</span>
+                                    </label>
+                                </div>
+                                <div class="dropdown-item p-1">
+                                    <label class="filter-radio mb-0 d-flex align-items-center">
+                                        <input type="radio" name="sort_by_mobile" value="price_low" {{ request('sort_by') === 'price_low' ? 'checked' : '' }} onchange="$('#sortBy').val(this.value).trigger('change')">
+                                        <span class="radio-mark"></span>
+                                        <span class="filter-label ms-2">Price: Low to High</span>
+                                    </label>
+                                </div>
+                                <div class="dropdown-item p-1">
+                                    <label class="filter-radio mb-0 d-flex align-items-center">
+                                        <input type="radio" name="sort_by_mobile" value="price_high" {{ request('sort_by') === 'price_high' ? 'checked' : '' }} onchange="$('#sortBy').val(this.value).trigger('change')">
+                                        <span class="radio-mark"></span>
+                                        <span class="filter-label ms-2">Price: High to Low</span>
+                                    </label>
+                                </div>
+                                <div class="dropdown-item p-1">
+                                    <label class="filter-radio mb-0 d-flex align-items-center">
+                                        <input type="radio" name="sort_by_mobile" value="newest" {{ request('sort_by') === 'newest' ? 'checked' : '' }} onchange="$('#sortBy').val(this.value).trigger('change')">
+                                        <span class="radio-mark"></span>
+                                        <span class="filter-label ms-2">Newest First</span>
+                                    </label>
                                 </div>
                             </div>
                         </div>

@@ -80,7 +80,7 @@
 @endsection
 
 @section('content')
-<div class="container py-5">
+<div class="container py-lg-5 pt-0 pb-5">
     <!-- Management Header -->
     <div class="management-header">
         <div class="management-title">
@@ -265,7 +265,7 @@
                                             </div>
                                         @endif
                                     </div>
-                                    <div>
+                                    <div class="d-flex flex-column align-items-end gap-2">
                                         @if($order->has_rental_items && !in_array($order->status, ['Cancelled', 'Returned', 'Return Requested']))
                                             <button type="button" class="btn btn-premium px-3 py-2 rounded-pill fw-900 shadow-sm" style="font-size: 0.72rem;" data-toggle="modal" data-target="#extensionModal"
                                                 data-order-id="{{ $order->id }}" 
@@ -273,6 +273,18 @@
                                                 data-rental-to="{{ \Carbon\Carbon::parse($order->rental_to)->format('Y-m-d') }}">
                                                 <i class="bi bi-calendar-plus me-1"></i> EXTEND
                                             </button>
+                                        @endif
+
+                                        @if($canRate || $order->status === 'Delivered')
+                                            @if($hasRated)
+                                                <button class="btn btn-outline-success btn-sale-action px-3" style="font-size: 0.72rem; height: 34px;" disabled>
+                                                    <i class="bi bi-check-circle-fill me-1"></i> RATED
+                                                </button>
+                                            @elseif($canRate)
+                                                <button type="button" class="btn btn-premium btn-sale-action px-3" style="font-size: 0.72rem; height: 34px;" data-toggle="modal" data-target="#rateModal" data-order-id="{{ $order->id }}">
+                                                    <i class="bi bi-star me-1"></i> RATE ORDER
+                                                </button>
+                                            @endif
                                         @endif
                                     </div>
                                 </div>
@@ -323,12 +335,12 @@
 
                                     @if($canRate || $order->status === 'Delivered')
                                         @if($hasRated)
-                                            <button class="btn btn-outline-success btn-sale-action" disabled>
-                                                <i class="bi bi-check-circle"></i> RATED
+                                            <button class="btn btn-premium-success btn-sale-action opacity-75" disabled>
+                                                <i class="bi bi-check-circle-fill"></i> RATED
                                             </button>
                                         @elseif($canRate)
                                             <button type="button" class="btn btn-premium btn-sale-action" data-toggle="modal" data-target="#rateModal" data-order-id="{{ $order->id }}">
-                                                <i class="bi bi-star"></i> RATE
+                                                <i class="bi bi-star"></i> RATE ORDER
                                             </button>
                                         @endif
                                     @endif
@@ -403,26 +415,33 @@
                 <input type="hidden" name="rating" id="rating_value" required>
                 
                 <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title fw-bold">Rate Your Experience</h5>
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h5 class="modal-title fw-bold" style="font-size: 1.1rem;">Rate Your Experience</h5>
+                    <button type="button" class="btn-close ms-auto" data-dismiss="modal" aria-label="Close" style="background: none; border: none; font-size: 1.2rem; color: #94a3b8;">&times;</button>
                 </div>
-                <div class="modal-body text-center py-4">
-                    <p class="text-muted small mb-4">How was your order experience? Your feedback helps us improve.</p>
-                    <div class="rating-stars mb-4 fs-1">
-                        <i class="bi bi-star cursor-pointer px-1 text-warning" data-value="1"></i>
-                        <i class="bi bi-star cursor-pointer px-1 text-warning" data-value="2"></i>
-                        <i class="bi bi-star cursor-pointer px-1 text-warning" data-value="3"></i>
-                        <i class="bi bi-star cursor-pointer px-1 text-warning" data-value="4"></i>
-                        <i class="bi bi-star cursor-pointer px-1 text-warning" data-value="5"></i>
+                <div class="modal-body py-3 px-3">
+                    <div class="p-2 bg-light rounded-3 mb-3 text-center border">
+                        <span class="text-muted small d-block mb-0">Rating Order: <strong class="text-dark">ORD #<span id="display_order_id">--</span></strong></span>
                     </div>
-                    <div class="form-group mb-0 text-left">
-                        <label class="small fw-bold text-uppercase letter-spacing-1">Tell us more (Optional)</label>
-                        <textarea name="comment" class="form-control bg-light border-0 rounded-3" rows="3" placeholder="Share your thoughts about the items or service..."></textarea>
+                    
+                    <div class="text-center mb-3">
+                        <p class="text-muted fw-semibold small mb-2">How was your experience?</p>
+                        <div class="rating-stars mb-0 d-flex justify-content-center" style="font-size: 2rem; gap: 10px !important;">
+                            <i class="bi bi-star cursor-pointer text-warning" data-value="1"></i>
+                            <i class="bi bi-star cursor-pointer text-warning" data-value="2"></i>
+                            <i class="bi bi-star cursor-pointer text-warning" data-value="3"></i>
+                            <i class="bi bi-star cursor-pointer text-warning" data-value="4"></i>
+                            <i class="bi bi-star cursor-pointer text-warning" data-value="5"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-0">
+                        <label class="extra-small fw-bold text-uppercase letter-spacing-1 text-muted mb-2 d-block">Review (Optional)</label>
+                        <textarea name="comment" class="form-control border rounded-4 p-3" rows="4" placeholder="Share your thoughts about the items or service..." style="font-size: 0.85rem;"></textarea>
                     </div>
                 </div>
-                <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-light rounded-pill px-4" data-dismiss="modal">Later</button>
-                    <button type="submit" class="btn btn-warning rounded-pill px-4 fw-bold shadow-sm">Submit Review</button>
+                <div class="modal-footer border-0 px-3 pb-3 pt-0 d-flex justify-content-center gap-2">
+                    <button type="button" class="btn btn-secondary rounded-pill px-3" data-dismiss="modal" style="height: 38px; font-weight: 600; font-size: 0.85rem;">Close</button>
+                    <button type="submit" class="btn btn-premium rounded-pill px-3" style="height: 38px; font-weight: 700; min-width: 120px; font-size: 0.85rem;">Submit Review</button>
                 </div>
             </form>
         </div>
@@ -583,6 +602,7 @@
             const button = $(event.relatedTarget);
             activeOrderId = button.data('order-id');
             $(this).find('#rating_order_id').val(activeOrderId);
+            $(this).find('#display_order_id').text(String(activeOrderId).padStart(5, '0'));
             $(this).find('form')[0].reset();
             resetStars();
         });

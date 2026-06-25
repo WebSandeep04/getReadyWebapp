@@ -9,37 +9,11 @@
     margin-bottom: 30px;
   }
   
-  .availability-block {
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
-    padding: 15px;
-    background: #f8f9fa;
-    transition: all 0.3s ease;
-    margin-bottom: 15px;
-  }
-  
-  .availability-block:hover {
-    border-color: #007bff;
-    background: #f0f8ff;
-  }
-  
-  .availability-block .form-control-sm {
-    font-size: 0.875rem;
-  }
-  
-  .availability-block .btn-sm {
-    font-size: 0.75rem;
-    padding: 0.25rem 0.5rem;
-  }
-  
   .alert-sm {
     padding: 0.5rem 0.75rem;
     font-size: 0.875rem;
     margin-bottom: 1rem;
   }
-  
-  
-
   
   .custom-control {
     margin-bottom: 15px;
@@ -95,14 +69,14 @@
     @csrf
     
     <div class="step-content active">
-      <div class="form-group mb-3">
+      <div class="form-group mb-2">
         <label class="d-block text-left font-weight-bold mb-1">Title <span class="text-danger">*</span></label>
         <input type="text" name="title" placeholder="Title" value="{{ old('title') }}" required>
         @error('title')<div class="text-danger small">{{ $message }}</div>@enderror
       </div>
-
+ 
       <div class="row">
-        <div class="col-6">
+        <div class="col-6 mb-2">
           <label class="d-block text-left font-weight-bold mb-1">Category <span class="text-danger">*</span></label>
           <select name="category" required>
             <option value="">Select Category</option>
@@ -114,8 +88,8 @@
           </select>
           @error('category')<div class="text-danger small">{{ $message }}</div>@enderror
         </div>
-
-        <div class="col-6">
+ 
+        <div class="col-6 mb-2">
           <label class="d-block text-left font-weight-bold mb-1">User Type <span class="text-danger">*</span></label>
           <select name="gender" required>
             <option value="">Select User Type</option>
@@ -126,8 +100,8 @@
           </select>
           @error('gender')<div class="text-danger small">{{ $message }}</div>@enderror
         </div>
-
-        <div class="col-md-12">
+ 
+        <div class="col-12 mb-2">
           <label class="d-block text-left font-weight-bold mb-1">Brand <span class="text-danger">*</span></label>
           <select name="brand" required>
             <option value="">Select Brand</option>
@@ -197,14 +171,14 @@
       <div class="measurements mt-3">
         <label><strong>Exact Measurements (for better fit understanding) (optional)</strong></label>
         
-        <div class="unit-toggle mb-3 d-flex gap-3">
-          <div class="custom-control custom-radio custom-control-inline">
+        <div class="unit-toggle mb-3 d-flex align-items-center" style="gap: 30px;">
+          <div class="custom-control custom-radio">
             <input type="radio" id="unit_inch" name="measurement_unit" class="custom-control-input unit-selector" value="inch" {{ old('measurement_unit', 'inch') == 'inch' ? 'checked' : '' }}>
-            <label class="custom-control-label" for="unit_inch" style="text-transform: none;">Inch</label>
+            <label class="custom-control-label" for="unit_inch" style="text-transform: none; font-size: 0.85rem;">Inch</label>
           </div>
-          <div class="custom-control custom-radio custom-control-inline">
+          <div class="custom-control custom-radio">
             <input type="radio" id="unit_cm" name="measurement_unit" class="custom-control-input unit-selector" value="cm" {{ old('measurement_unit') == 'cm' ? 'checked' : '' }}>
-            <label class="custom-control-label" for="unit_cm" style="text-transform: none;">CM</label>
+            <label class="custom-control-label" for="unit_cm" style="text-transform: none; font-size: 0.85rem;">CM</label>
           </div>
         </div>
 
@@ -259,53 +233,50 @@
           @error('selling_price')<div class="text-danger small">{{ $message }}</div>@enderror
         </div>
 
-        <div class="col-md-6">
-          <label class="d-block text-left font-weight-bold mb-1">MRP (Original Price)</label>
-          <input type="number" name="mrp" placeholder="MRP (₹)" value="{{ old('mrp') }}">
+        <div class="col-6 mb-2">
+          <label class="d-block text-left font-weight-bold mb-1">MRP (₹)</label>
+          <input type="number" name="mrp" placeholder="MRP" value="{{ old('mrp') }}">
           @error('mrp')<div class="text-danger small">{{ $message }}</div>@enderror
         </div>
 
-        <div class="col-md-6">
+        <div class="col-6 mb-2">
           <label class="d-block text-left font-weight-bold mb-1">Quantity <span class="text-danger">*</span></label>
-          <input type="number" name="sku" placeholder="Quantity" value="{{ old('sku', 1) }}" required>
+          <input type="number" name="sku" placeholder="Qty" value="{{ old('sku', 1) }}" required>
           @error('sku')<div class="text-danger small">{{ $message }}</div>@enderror
         </div>
       </div>
       
       <!-- Availability Management Section -->
-      <div class="availability-section">
-        <h4>📆 Availability Management</h4>
-        <p class="text-muted">Manage when your cloth is available for rent or blocked for personal use</p>
+      <div class="availability-section border-top pt-3">
+        <div class="d-flex align-items-center mb-2">
+          <h5 class="mb-0 font-weight-bold" style="font-size: 1rem;">📆 Availability Management</h5>
+        </div>
         
         <div class="row">
-          <div class="col-md-6">
-            <h6 class="mb-1" style="font-size: 0.9rem;">Available Dates</h6>
-            <p class="text-muted mb-2" style="font-size: 0.7rem;">Set dates for rent</p>
-            <div class="alert alert-info py-1 px-2 mb-2" style="font-size: 0.65rem;">
-              <i class="fas fa-info-circle"></i>
+          <div class="col-md-6 mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="font-weight-bold small text-uppercase" style="color: #2e7d32;">Available for Rent</span>
+              <button type="button" class="btn btn-outline-success btn-xs py-1 px-2" style="font-size: 0.7rem;" onclick="addAvailabilityBlock('available')">
+                <i class="fas fa-plus"></i> Add
+              </button>
+            </div>
+            <div class="alert alert-success py-1 px-2 mb-2" style="font-size: 0.65rem; background-color: #f1f8e9; border: none; color: #2e7d32;">
               Leave empty if always available. Min 4 days.
             </div>
-            <div id="available-dates">
-              <!-- Available dates will be added here dynamically -->
-            </div>
-            <button type="button" class="btn btn-success btn-sm" onclick="addAvailabilityBlock('available')">
-              <i class="fas fa-plus"></i> Add Available Date
-            </button>
+            <div id="available-dates"></div>
           </div>
           
           <div class="col-md-6">
-            <h6 class="mb-1" style="font-size: 0.9rem;">Blocked Dates</h6>
-            <p class="text-muted mb-2" style="font-size: 0.7rem;">Dates for personal use</p>
-            <div class="alert alert-warning py-1 px-2 mb-2" style="font-size: 0.65rem;">
-              <i class="fas fa-exclamation-triangle"></i>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="font-weight-bold small text-uppercase" style="color: #e65100;">Personal Block Dates</span>
+              <button type="button" class="btn btn-outline-warning btn-xs py-1 px-2" style="font-size: 0.7rem; color: #e65100; border-color: #e65100;" onclick="addAvailabilityBlock('blocked')">
+                <i class="fas fa-plus"></i> Add
+              </button>
+            </div>
+            <div class="alert alert-warning py-1 px-2 mb-2" style="font-size: 0.65rem; background-color: #fff3e0; border: none; color: #e65100;">
               Block dates to avoid rental conflicts.
             </div>
-            <div id="blocked-dates">
-              <!-- Blocked dates will be added here dynamically -->
-            </div>
-            <button type="button" class="btn btn-warning btn-sm" onclick="addAvailabilityBlock('blocked')">
-              <i class="fas fa-plus"></i> Add Blocked Date
-            </button>
+            <div id="blocked-dates"></div>
           </div>
         </div>
       </div>
@@ -646,9 +617,6 @@
 }
 </style>
 
-<!-- Hidden container for summary image pre-rendering -->
-<div id="imagePreviewContainer" style="display: none;"></div>
-
 <!-- Summary Modal -->
 <div class="modal fade" id="summaryModal" tabindex="-1" role="dialog" aria-labelledby="summaryModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
@@ -698,9 +666,6 @@
   </div>
 </div>
 
-<div class="decorative">
-  <img src="{{ asset('images/footer.png') }}" alt="Decoration">
-</div>
 @endsection
 
 @section('scripts')

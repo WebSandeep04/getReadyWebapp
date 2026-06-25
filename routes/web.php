@@ -233,6 +233,7 @@ Route::get('/user', [UserController::class, 'index'])->name('user.index');
 Route::get('/product', [ProductController::class, 'index'])->name('product');
 Route::get('/clothes', [ProductController::class, 'index'])->name('clothes.index');
 Route::get('/clothes/{id}', [App\Http\Controllers\ClothController::class, 'show'])->name('clothes.show');
+Route::get('/ajax-search', [ProductController::class, 'ajaxSearch'])->name('search.ajax');
 
 // Product Reviews and Questions (Requires Authentication)
 Route::middleware(['auth'])->group(function () {

@@ -194,6 +194,8 @@ if (imageInputs.length > 0) {
 }
 
 function refreshImagePreviews() {
+  if (!imagePreviewContainer) return;
+  
   imagePreviewContainer.innerHTML = '';
   imageInputs.forEach(input => {
     if (input.files && input.files[0]) {
@@ -414,12 +416,18 @@ function showSummary() {
   html += '<div class="summary-item">';
   html += '<span class="summary-label">Selected Images</span>';
   html += '<div class="d-flex flex-wrap mt-2">';
-  const previewImgs = imagePreviewContainer.querySelectorAll('img');
-  if (previewImgs.length > 0) {
-    previewImgs.forEach(img => {
-      html += `<img src="${img.src}" class="summary-image-preview">`;
-    });
-  } else {
+  let hasImages = false;
+  for (let i = 1; i <= 4; i++) {
+    const preview = document.getElementById(`preview-${i}`);
+    if (preview && preview.style.backgroundImage) {
+      const bgImage = preview.style.backgroundImage;
+      const url = bgImage.replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
+      html += `<img src="${url}" class="summary-image-preview" style="width: 80px; height: 80px; margin: 5px; object-fit: cover; border-radius: 4px;">`;
+      hasImages = true;
+    }
+  }
+
+  if (!hasImages) {
     html += '<span class="text-muted small">No images selected</span>';
   }
   html += '</div></div>';

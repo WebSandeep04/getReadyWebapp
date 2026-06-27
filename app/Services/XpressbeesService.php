@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Models\FrontendSetting;
 
 class XpressbeesService
 {
@@ -12,7 +13,7 @@ class XpressbeesService
     public function __construct()
     {
         // Use sandbox or production URL based on config
-        $this->baseUrl = config('services.xpressbees.base_url', 'https://api.xpressbees.com/v1');
+        $this->baseUrl = config('services.xpressbees.base_url', 'https://shipment.xpressbees.com/api');
     }
 
     public function login()
@@ -21,26 +22,63 @@ class XpressbeesService
         $password = config('services.xpressbees.password');
 
         if (empty($email) || empty($password)) {
-            Log::warning("Xpressbees credentials missing. Using MOCK mode.");
-            return 'MOCK_TOKEN';
+            Log::error("Xpressbees credentials missing.");
+            return null;
         }
 
         try {
-            $response = Http::post($this->baseUrl . '/login', [
+            $response = Http::post($this->baseUrl . '/users/login', [
                 'email' => $email,
                 'password' => $password
             ]);
 
             if ($response->successful()) {
-                return $response->json()['data'] ?? null;
+                // The new API usually returns the token directly in response or in data.
+                // Depending on actual response structure, typically it's $response->json('data') or similar.
+                // We'll try to extract token
+                $data = $response->json();
+                return $data['data'] ?? $data['token'] ?? null;
             }
 
             Log::error('Xpressbees Login Failed: ' . $response->body());
             return null;
         } catch (\Exception $e) {
             Log::error('Xpressbees Connection Error: ' . $e->getMessage());
-            return 'MOCK_TOKEN'; // Fallback to mock for local testing
+            return null;
         }
+    }
+
+    protected function getPickupDetails()
+    {
+        $name = substr(FrontendSetting::getValue('site_title', 'GetReady'), 0, 30); // Max 30 chars
+        if (strlen($name) > 30 || strlen($name) < 2) {
+            $name = "GetReady Warehouse"; // Fallback to safe dummy name
+        }
+        
+        $phone = FrontendSetting::getValue('contact_phone', '9999999999');
+        $addressFull = FrontendSetting::getValue('footer_address', '123 Fashion Street, Style City, SC 12345');
+        
+        // Very basic parsing for default address format
+        $parts = array_map('trim', explode(',', $addressFull));
+        $address = $parts[0] ?? '123 Fashion Street';
+        $city = $parts[1] ?? 'Mumbai';
+        
+        // Clean phone number to 10 digits
+        $phone = preg_replace('/[^0-9]/', '', $phone);
+        if (strlen($phone) > 10) {
+            $phone = substr($phone, -10);
+        }
+
+        return [
+            "warehouse_name" => "GetReady Warehouse", // Fixed Dummy Name < 30 chars
+            "name" => "GetReady Warehouse",
+            "address" => substr($address, 0, 100), // Safety truncation
+            "address_2" => "",
+            "city" => substr($city, 0, 40),
+            "state" => "Maharashtra", // Dummy State
+            "pincode" => "400001", // Dummy Pincode
+            "phone" => str_pad($phone, 10, '9', STR_PAD_LEFT)
+        ];
     }
 
     public function createOrder($orderData)
@@ -51,25 +89,31 @@ class XpressbeesService
             return null;
         }
 
-        // MOCK MODE
-        if ($token === 'MOCK_TOKEN') {
-            Log::info("Xpressbees [MOCK]: Creating Forward Order #" . ($orderData['order_number'] ?? 'unknown'));
-            // Simulate random processing time
-            sleep(1); 
-            
-            return [
-                'status' => true,
-                'message' => 'Order created successfully (Mock)',
-                'awb_number' => 'XB' . rand(100000999, 999999999),
-                'order_id' => $orderData['order_number'],
-                'label_url' => 'https://www.xpressbees.com/track', // Dummy URL
-            ];
+        // Add pickup details to the payload automatically
+        if (!isset($orderData['pickup'])) {
+            $orderData['pickup'] = $this->getPickupDetails();
         }
 
-        $response = Http::withToken($token)->post($this->baseUrl . '/orders', $orderData);
+
+
+        Log::info('Xpressbees Create Order Request:', $orderData);
+        $response = Http::withToken($token)->post($this->baseUrl . '/shipments2', $orderData);
 
         if ($response->successful()) {
-            return $response->json();
+            $json = $response->json();
+            Log::info('Xpressbees Create Order Success Response:', $json);
+            
+            // Map the new API format to what the controllers expect
+            if (isset($json['data'])) {
+                return [
+                    'status' => $json['status'] ?? true,
+                    'awb_number' => $json['data']['awb_number'] ?? null,
+                    'order_id' => $json['data']['order_id'] ?? null,
+                    'label_url' => $json['data']['label'] ?? null,
+                    'raw_data' => $json
+                ];
+            }
+            return $json;
         }
         
         Log::error('Xpressbees Create Order Failed: ' . $response->body());
@@ -78,34 +122,9 @@ class XpressbeesService
 
     public function createReturnOrder($orderData)
     {
-        // For many couriers, reverse pickup is a different API or has a specific flag.
-        // For now, we use the same createOrder but Log it specifically as Return.
-        // In a real integration, we might change the endpoint to /reverse-pickup
-        
-        $token = $this->login();
-        if (!$token) return null;
-
-        if ($token === 'MOCK_TOKEN') {
-            Log::info("Xpressbees [MOCK]: Creating Return Order #" . ($orderData['order_number'] ?? 'unknown'));
-            sleep(1);
-            return [
-                'status' => true,
-                'message' => 'Return Order created successfully (Mock)',
-                'awb_number' => 'RXB' . rand(100000999, 999999999),
-                'order_id' => 'R-' . $orderData['order_number'],
-                'label_url' => 'https://www.xpressbees.com/track',
-            ];
-        }
-
-        // Potential different endpoint for reverse
-        $response = Http::withToken($token)->post($this->baseUrl . '/reverse-pickup', $orderData);
-
-        if ($response->successful()) {
-            return $response->json();
-        }
-
-        Log::error('Xpressbees Create Return Order Failed: ' . $response->body());
-        return null;
+        // Document says valid payment_type values: cod, prepaid & reverse
+        $orderData['payment_type'] = 'reverse';
+        return $this->createOrder($orderData);
     }
 
     public function trackShipment($awb)
@@ -114,28 +133,16 @@ class XpressbeesService
 
         if (!$token) return null;
 
-        // MOCK MODE
-        if ($token === 'MOCK_TOKEN') {
-            // Return random statuses for testing based on AWB
-            // Use AWB to deterministically pick a status so it doesn't flip-flop every second
-            // But for demo, random change is better
-            
-            $statuses = ['In Transit', 'Out for Delivery', 'Delivered'];
-            $status = $statuses[rand(0, 2)];
-            
-            return [
-                'data' => [
-                    'status' => $status,
-                    'current_status' => $status,
-                    'scans' => [
-                        ['location' => 'Mumbai Hub', 'date' => now()->subDays(1)->toDateTimeString(), 'status' => 'Picked Up'],
-                        ['location' => 'Delhi Hub', 'date' => now()->toDateTimeString(), 'status' => $status],
-                    ]
-                ]
-            ];
-        }
 
-        $response = Http::withToken($token)->get($this->baseUrl . '/track/' . $awb);
+
+        Log::info('Xpressbees Track Shipment Request for AWB: ' . $awb);
+        $response = Http::withToken($token)->get($this->baseUrl . '/shipments2/track/' . $awb);
+
+        if ($response->successful()) {
+            Log::info('Xpressbees Track Shipment Success Response:', $response->json());
+        } else {
+            Log::error('Xpressbees Track Shipment Failed: ' . $response->body());
+        }
 
         return $response->json();
     }

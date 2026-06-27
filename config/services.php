@@ -48,4 +48,10 @@ return [
         'key_secret' => env('RAZORPAY_KEY_SECRET', 'rzorpay_secret'),
     ],
 
+    'xpressbees' => [
+        'email' => env('XPRESSBEES_EMAIL'),
+        'password' => env('XPRESSBEES_PASSWORD'),
+        'base_url' => env('XPRESSBEES_BASE_URL', 'https://shipment.xpressbees.com/api'),
+    ],
+
 ];

@@ -299,31 +299,41 @@ class CheckoutController extends Controller
             
             $addressParts = explode(',', $order->delivery_address);
             $city = trim($addressParts[count($addressParts)-2] ?? 'Mumbai');
-            $pincode = trim($addressParts[count($addressParts)-1] ?? '400001');
+            $pincodeRaw = trim($addressParts[count($addressParts)-1] ?? '400001');
+            // Clean non-digits
+            $pincodeClean = preg_replace('/[^0-9]/', '', $pincodeRaw);
+            $pincode = (strlen($pincodeClean) >= 6) ? substr($pincodeClean, -6) : '400001';
 
             $orderLoad = [
-                'order_number' => $order->id,
-                'payment_method' => $paymentType, // 'Prepaid' or 'COD'
-                'collectable_amount' => ($paymentType === 'COD') ? $order->total_amount : 0,
-                'consignee_name' => $user->name,
-                'consignee_phone' => $user->phone ?? '9999999999',
-                'consignee_address' => $order->delivery_address,
-                'consignee_pincode' => $pincode,
-                'consignee_city' => $city,
-                'consignee_state' => 'Maharashtra',
-                'products' => [],
-                'total_amount' => $order->total_amount,
-                'weight' => 0.5,
-                'length' => 10,
-                'breadth' => 10,
-                'height' => 10
+                'order_number' => (string)$order->id,
+                'payment_type' => strtolower($paymentType) === 'cod' ? 'cod' : 'prepaid',
+                'order_amount' => $order->total_amount,
+                'collectable_amount' => (strtolower($paymentType) === 'cod') ? $order->total_amount : 0,
+                'package_weight' => 500, // default 500g
+                'package_length' => 10,
+                'package_breadth' => 10,
+                'package_height' => 10,
+                'request_auto_pickup' => 'yes',
+                'shipping_charges' => 0,
+                'discount' => 0,
+                'cod_charges' => 0,
+                'consignee' => [
+                    'name' => $user->name,
+                    'address' => $order->delivery_address,
+                    'address_2' => '',
+                    'city' => $city,
+                    'state' => 'Maharashtra',
+                    'pincode' => $pincode,
+                    'phone' => str_pad(preg_replace('/[^0-9]/', '', $user->phone ?? '9999999999'), 10, '9', STR_PAD_LEFT)
+                ],
+                'order_items' => []
             ];
 
             foreach ($order->items as $item) {
-                 $orderLoad['products'][] = [
+                 $orderLoad['order_items'][] = [
                      'name' => $item->cloth->title ?? 'Item',
                      'qty' => 1,
-                        'price' => $item->price
+                     'price' => $item->price
                     ];
                 }
 

@@ -106,33 +106,49 @@ class ProcessRentalReturns extends Command
             // Consignee (Receiver) = Seller
             // Pickup Address = Buyer's Address (from Order)
 
+            // Buyer's address parsing for pickup
+            $pickupAddressParts = explode(',', $order->delivery_address);
+            $pickupCity = trim($pickupAddressParts[count($pickupAddressParts)-2] ?? 'Mumbai');
+            $pickupPincode = trim($pickupAddressParts[count($pickupAddressParts)-1] ?? '400001');
+            $pickupPincode = str_pad(preg_replace('/[^0-9]/', '', $pickupPincode), 6, '0', STR_PAD_RIGHT);
+
             $orderLoad = [
-                'order_number' => $order->id . '-RET-' . $seller->id,
-                'payment_method' => 'Prepaid', // Return shipments are always prepaid by the platform
+                'order_number' => (string)$order->id . '-RET-' . $seller->id,
+                'payment_type' => 'reverse',
+                'order_amount' => 0,
                 'collectable_amount' => 0,
-                'consignee_name' => $seller->name,
-                'consignee_phone' => $seller->phone ?? '9999999999',
-                'consignee_address' => $seller->address ?? 'Seller Address Not Found',
-                'consignee_pincode' => '400001', // Should ideally come from seller model
-                'consignee_city' => $seller->city ?? 'Mumbai',
-                'consignee_state' => 'Maharashtra',
-                
-                // Pickup Info (The Buyer)
-                'pickup_name' => $buyer->name,
-                'pickup_phone' => $buyer->phone ?? '9999999999',
-                'pickup_address' => $order->delivery_address,
-                
-                'products' => [],
-                'total_amount' => 0,
-                'weight' => 0.5,
-                'length' => 10,
-                'breadth' => 10,
-                'height' => 10,
-                'is_reverse' => true // Custom flag for API if needed
+                'package_weight' => 500, // default 500g
+                'package_length' => 10,
+                'package_breadth' => 10,
+                'package_height' => 10,
+                'request_auto_pickup' => 'yes',
+                'shipping_charges' => 0,
+                'discount' => 0,
+                'cod_charges' => 0,
+                'consignee' => [
+                    'name' => $seller->name,
+                    'address' => $seller->address ?? 'Seller Address Not Found',
+                    'address_2' => '',
+                    'city' => $seller->city ?? 'Mumbai',
+                    'state' => 'Maharashtra',
+                    'pincode' => '400001', // Needs to be 6 digits, ideally from seller
+                    'phone' => str_pad(preg_replace('/[^0-9]/', '', $seller->phone ?? '9999999999'), 10, '9', STR_PAD_LEFT)
+                ],
+                'pickup' => [
+                    'warehouse_name' => $buyer->name,
+                    'name' => $buyer->name,
+                    'address' => $order->delivery_address,
+                    'address_2' => '',
+                    'city' => $pickupCity,
+                    'state' => 'Maharashtra',
+                    'pincode' => $pickupPincode,
+                    'phone' => str_pad(preg_replace('/[^0-9]/', '', $buyer->phone ?? '9999999999'), 10, '9', STR_PAD_LEFT)
+                ],
+                'order_items' => []
             ];
 
             foreach ($items as $item) {
-                $orderLoad['products'][] = [
+                $orderLoad['order_items'][] = [
                     'name' => 'RETURN: ' . ($item->cloth->title ?? 'Item'),
                     'qty' => 1,
                     'price' => 0

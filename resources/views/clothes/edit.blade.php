@@ -285,7 +285,7 @@
         <form id="editClothForm" enctype="multipart/form-data">
             @csrf
             @method('PUT')
-            <input type="hidden" name="sku" value="{{ $cloth->sku ?? 1 }}">
+
             
             <div class="row g-4">
                 <!-- Left Column: Form Details -->
@@ -414,11 +414,15 @@
                             </div>
                         </div>
                         <div class="row align-items-center">
-                            <div class="col-md-6 premium-input-group">
+                            <div class="col-md-4 premium-input-group">
                                 <label>Original MRP</label>
                                 <input type="number" class="form-control" name="mrp" value="{{ $cloth->mrp }}">
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4 premium-input-group">
+                                <label>Quantity (SKU) *</label>
+                                <input type="number" class="form-control" name="sku" value="{{ $cloth->sku ?? 1 }}" min="1" required>
+                            </div>
+                            <div class="col-md-4">
                                 <div class="form-check form-switch mb-0" style="padding-left: 3.5rem;">
                                     <input class="form-check-input" type="checkbox" id="is_purchased" name="is_purchased" value="1" {{ $cloth->is_purchased ? 'checked' : '' }} style="width: 3rem; height: 1.5rem; margin-left:-2.55rem cursor: pointer;">
                                     <label class="form-check-label fw-bold ms-2" for="is_purchased" style="text-transform: none; margin-top:7px">Enable Selling</label>

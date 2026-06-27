@@ -618,14 +618,18 @@
                 url: form.attr('action'),
                 method: 'POST',
                 data: form.serialize(),
+                dataType: 'json',
                 success: function(res) {
                     if (res.success) {
                         $('#rateModal').modal('hide');
                         location.reload();
+                    } else {
+                        alert(res.message || 'Error submitting review.');
                     }
                 },
                 error: function(xhr) {
-                    alert('Error submitting review. Please try again.');
+                    const msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Error submitting review. Please try again.';
+                    alert(msg);
                 },
                 complete: function() {
                     btn.prop('disabled', false).text('Submit Review');

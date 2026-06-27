@@ -754,13 +754,6 @@
                 days: selectedDays 
             }, function(res) {
                 if(res.success) {
-                    if(!res.key || res.key.includes('dummy')) {
-                        if(confirm("Test mode: Simulate successful payment?")) {
-                            verifyExt(res.extension_id, 'mock_' + Date.now());
-                        }
-                        return;
-                    }
-
                     const opt = {
                         "key": res.key,
                         "amount": res.razorpay_order.amount,

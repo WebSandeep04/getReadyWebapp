@@ -4,12 +4,43 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\AadhaarVerificationController;
+use App\Http\Controllers\Admin\AuthController as AdminAuthController;
+use App\Http\Controllers\Admin\BodyTypeFitController as AdminBodyTypeFitController;
+use App\Http\Controllers\Admin\BottomTypeController as AdminBottomTypeController;
+use App\Http\Controllers\Admin\BrandController as AdminBrandController;
+use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Admin\CityController as AdminCityController;
+use App\Http\Controllers\Admin\ClothController as AdminClothController;
+use App\Http\Controllers\Admin\ColorController as AdminColorController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\FabricTypeController as AdminFabricTypeController;
+use App\Http\Controllers\Admin\FrontendController as AdminFrontendController;
+use App\Http\Controllers\Admin\GarmentConditionController as AdminGarmentConditionController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\PanelUserController as AdminPanelUserController;
+use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
+use App\Http\Controllers\Admin\PayoutController as AdminPayoutController;
+use App\Http\Controllers\Admin\PromptController as AdminPromptController;
+use App\Http\Controllers\Admin\ReportController as AdminReportController;
+use App\Http\Controllers\Admin\RoleMasterController as AdminRoleMasterController;
+use App\Http\Controllers\Admin\SecurityController as AdminSecurityController;
+use App\Http\Controllers\Admin\SizeController as AdminSizeController;
+use App\Http\Controllers\Admin\StateController as AdminStateController;
+use App\Http\Controllers\Admin\TaxController as AdminTaxController;
+use App\Http\Controllers\ClothController;
+use App\Http\Controllers\GeminiController;
+use App\Http\Controllers\GstVerificationController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\OrderReturnController;
+use App\Http\Controllers\RatingController;
+use App\Http\Controllers\RejectionController;
+use App\Http\Controllers\VirtualTryOnController;
 
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\ClothController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderExtensionController;
@@ -31,11 +62,11 @@ Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // GST Verification
-Route::post('/verify-gst', [\App\Http\Controllers\GstVerificationController::class, 'verifyGst'])->name('verify.gst');
+Route::post('/verify-gst', [GstVerificationController::class, 'verifyGst'])->name('verify.gst');
 
 // Aadhaar KYC Verification (IM Wallet)
-Route::post('/aadhaar/start', [\App\Http\Controllers\AadhaarVerificationController::class, 'startKyc'])->name('aadhaar.start');
-Route::any('/aadhaar/callback', [\App\Http\Controllers\AadhaarVerificationController::class, 'callback'])->name('aadhaar.callback');
+Route::post('/aadhaar/start', [AadhaarVerificationController::class, 'startKyc'])->name('aadhaar.start');
+Route::any('/aadhaar/callback', [AadhaarVerificationController::class, 'callback'])->name('aadhaar.callback');
 
 // Profile (Requires Authentication)
 Route::middleware(['auth'])->group(function () {
@@ -47,17 +78,17 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/sell', [ClothController::class, 'create'])->name('sell');
     Route::post('/sell', [ClothController::class, 'store'])->name('sell.store');
-    Route::post('/generate-description', [App\Http\Controllers\GeminiController::class, 'generateDescription'])->name('generate.description');
+    Route::post('/generate-description', [GeminiController::class, 'generateDescription'])->name('generate.description');
 });
 
 // Virtual Try On (Public/Auth decided by user, we can make it public since show.blade.php is public)
-Route::post('/clothes/virtual-try-on', [\App\Http\Controllers\VirtualTryOnController::class, 'generate'])->name('clothes.virtual-try-on');
-Route::get('/clothes/virtual-try-on/status/{id}', [\App\Http\Controllers\VirtualTryOnController::class, 'status'])->name('api.vto.status');
+Route::post('/clothes/virtual-try-on', [VirtualTryOnController::class, 'generate'])->name('clothes.virtual-try-on');
+Route::get('/clothes/virtual-try-on/status/{id}', [VirtualTryOnController::class, 'status'])->name('api.vto.status');
 
 // Admin Auth
-Route::get('/admin/login', [App\Http\Controllers\Admin\AuthController::class, 'showLoginForm'])->name('admin.login');
-Route::post('/admin/login', [App\Http\Controllers\Admin\AuthController::class, 'login'])->name('admin.login.post');
-Route::post('/admin/logout', [App\Http\Controllers\Admin\AuthController::class, 'logout'])->name('admin.logout');
+Route::get('/admin/login', [AdminAuthController::class, 'showLoginForm'])->name('admin.login');
+Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('admin.login.post');
+Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
 
 // Protected Admin Routes
 Route::middleware(['admin.auth'])->group(function () {
@@ -67,18 +98,18 @@ Route::middleware(['admin.auth'])->group(function () {
 
     // Admin Dashboard
     // Admin Dashboard
-    Route::get('/admin/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 
     // Cloth approval workspace
-    Route::get('/admin/cloth-approval', [App\Http\Controllers\Admin\ClothController::class, 'clothApproval'])->name('admin.cloth-approval');
-    Route::get('/admin/orders', [App\Http\Controllers\Admin\OrderController::class, 'index'])->name('admin.orders');
-    Route::get('/admin/orders/data', [App\Http\Controllers\Admin\OrderController::class, 'ordersData'])->name('admin.orders.data');
-    Route::post('/admin/orders/{id}/return', [App\Http\Controllers\Admin\OrderController::class, 'markAsReturned'])->name('admin.orders.return');
-    Route::post('/admin/orders/{id}/status', [App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('admin.orders.status');
-    Route::post('/admin/orders/{id}/retry-shipment', [App\Http\Controllers\Admin\OrderController::class, 'retryShipment'])->name('admin.orders.retry-shipment');
-    Route::post('/admin/orders/{id}/approve-return', [App\Http\Controllers\Admin\OrderController::class, 'approveOrderReturn'])->name('admin.orders.approve-return');
-    Route::post('/admin/orders/{id}/reject-return', [App\Http\Controllers\Admin\OrderController::class, 'rejectOrderReturn'])->name('admin.orders.reject-return');
-    Route::post('/admin/orders/{id}/refund-payment', [App\Http\Controllers\Admin\PaymentController::class, 'refundOrderPayment'])->name('admin.orders.refund-payment');
+    Route::get('/admin/cloth-approval', [AdminClothController::class, 'clothApproval'])->name('admin.cloth-approval');
+    Route::get('/admin/orders', [AdminOrderController::class, 'index'])->name('admin.orders');
+    Route::get('/admin/orders/data', [AdminOrderController::class, 'ordersData'])->name('admin.orders.data');
+    Route::post('/admin/orders/{id}/return', [AdminOrderController::class, 'markAsReturned'])->name('admin.orders.return');
+    Route::post('/admin/orders/{id}/status', [AdminOrderController::class, 'updateStatus'])->name('admin.orders.status');
+    Route::post('/admin/orders/{id}/retry-shipment', [AdminOrderController::class, 'retryShipment'])->name('admin.orders.retry-shipment');
+    Route::post('/admin/orders/{id}/approve-return', [AdminOrderController::class, 'approveOrderReturn'])->name('admin.orders.approve-return');
+    Route::post('/admin/orders/{id}/reject-return', [AdminOrderController::class, 'rejectOrderReturn'])->name('admin.orders.reject-return');
+    Route::post('/admin/orders/{id}/refund-payment', [AdminPaymentController::class, 'refundOrderPayment'])->name('admin.orders.refund-payment');
 
     // User
     Route::get('/admin/user/fetch', [UserController::class, 'fetch'])->name('user.fetch');
@@ -86,145 +117,145 @@ Route::middleware(['admin.auth'])->group(function () {
     Route::delete('/admin/user/delete/{id}', [UserController::class, 'destroy'])->name('user.delete');  
 
     // Clothes Approval (Admin)
-    Route::get('/admin/clothes/fetch', [App\Http\Controllers\Admin\ClothController::class, 'fetchClothes'])->name('clothes.fetch');
-    Route::post('/admin/clothes/approve/{id}', [App\Http\Controllers\Admin\ClothController::class, 'approveCloth'])->name('clothes.approve');
-    Route::post('/admin/clothes/reject/{id}', [App\Http\Controllers\Admin\ClothController::class, 'rejectCloth'])->name('clothes.reject');  
-    Route::get('/admin/clothes/reject-reason/{id}', [App\Http\Controllers\Admin\ClothController::class, 'getRejectionReason'])->name('clothes.reject-reason');
-    Route::post('/admin/clothes/{id}/images', [App\Http\Controllers\Admin\ClothController::class, 'uploadImages'])->name('admin.clothes.images.upload');
-    Route::delete('/admin/clothes/images/{imageId}', [App\Http\Controllers\Admin\ClothController::class, 'destroyImage'])->name('admin.clothes.images.destroy');
+    Route::get('/admin/clothes/fetch', [AdminClothController::class, 'fetchClothes'])->name('clothes.fetch');
+    Route::post('/admin/clothes/approve/{id}', [AdminClothController::class, 'approveCloth'])->name('clothes.approve');
+    Route::post('/admin/clothes/reject/{id}', [AdminClothController::class, 'rejectCloth'])->name('clothes.reject');  
+    Route::get('/admin/clothes/reject-reason/{id}', [AdminClothController::class, 'getRejectionReason'])->name('clothes.reject-reason');
+    Route::post('/admin/clothes/{id}/images', [AdminClothController::class, 'uploadImages'])->name('admin.clothes.images.upload');
+    Route::delete('/admin/clothes/images/{imageId}', [AdminClothController::class, 'destroyImage'])->name('admin.clothes.images.destroy');
 
     // Dashboard stats (Admin)
-    Route::get('/admin/dashboard/stats', [App\Http\Controllers\Admin\DashboardController::class, 'dashboardStats']);
-    Route::get('/admin/dashboard/orders/fetch', [App\Http\Controllers\Admin\DashboardController::class, 'fetchOrders'])->name('admin.dashboard.orders.fetch');
-    Route::get('/admin/dashboard/payments/fetch', [App\Http\Controllers\Admin\PaymentController::class, 'fetchDashboardPayments'])->name('admin.dashboard.payments.fetch');
-    Route::get('/admin/dashboard/security/fetch', [App\Http\Controllers\Admin\SecurityController::class, 'fetchData'])->name('admin.dashboard.security.fetch');
-    Route::get('/admin/dashboard/payouts/fetch', [App\Http\Controllers\Admin\PayoutController::class, 'fetchData'])->name('admin.dashboard.payouts.fetch');
-    Route::get('/admin/payouts', [App\Http\Controllers\Admin\PayoutController::class, 'index'])->name('admin.payouts');
-    Route::get('/admin/payouts/fetch', [App\Http\Controllers\Admin\PayoutController::class, 'fetchData'])->name('admin.payouts.fetch');
-    Route::post('/admin/payouts/mark-paid/{id}', [App\Http\Controllers\Admin\PayoutController::class, 'markPaid'])->name('admin.payouts.mark-paid');
+    Route::get('/admin/dashboard/stats', [AdminDashboardController::class, 'dashboardStats']);
+    Route::get('/admin/dashboard/orders/fetch', [AdminDashboardController::class, 'fetchOrders'])->name('admin.dashboard.orders.fetch');
+    Route::get('/admin/dashboard/payments/fetch', [AdminPaymentController::class, 'fetchDashboardPayments'])->name('admin.dashboard.payments.fetch');
+    Route::get('/admin/dashboard/security/fetch', [AdminSecurityController::class, 'fetchData'])->name('admin.dashboard.security.fetch');
+    Route::get('/admin/dashboard/payouts/fetch', [AdminPayoutController::class, 'fetchData'])->name('admin.dashboard.payouts.fetch');
+    Route::get('/admin/payouts', [AdminPayoutController::class, 'index'])->name('admin.payouts');
+    Route::get('/admin/payouts/fetch', [AdminPayoutController::class, 'fetchData'])->name('admin.payouts.fetch');
+    Route::post('/admin/payouts/mark-paid/{id}', [AdminPayoutController::class, 'markPaid'])->name('admin.payouts.mark-paid');
 
     // Security Deposit Management
-    Route::get('/admin/security', [App\Http\Controllers\Admin\SecurityController::class, 'index'])->name('admin.security');
-    Route::get('/admin/security/fetch', [App\Http\Controllers\Admin\SecurityController::class, 'fetchData'])->name('admin.security.fetch');
-    Route::post('/admin/security/mark-returned/{id}', [App\Http\Controllers\Admin\SecurityController::class, 'markAsReturned'])->name('admin.security.mark-returned');
+    Route::get('/admin/security', [AdminSecurityController::class, 'index'])->name('admin.security');
+    Route::get('/admin/security/fetch', [AdminSecurityController::class, 'fetchData'])->name('admin.security.fetch');
+    Route::post('/admin/security/mark-returned/{id}', [AdminSecurityController::class, 'markAsReturned'])->name('admin.security.mark-returned');
 
     // Payment Management
-    Route::get('/admin/payments', [App\Http\Controllers\Admin\PaymentController::class, 'index'])->name('admin.payments');
-    Route::get('/admin/payments/fetch', [App\Http\Controllers\Admin\PaymentController::class, 'fetchData'])->name('admin.payments.fetch');
+    Route::get('/admin/payments', [AdminPaymentController::class, 'index'])->name('admin.payments');
+    Route::get('/admin/payments/fetch', [AdminPaymentController::class, 'fetchData'])->name('admin.payments.fetch');
 
-    Route::post('/admin/orders/{id}/process-issue-refund', [App\Http\Controllers\Admin\PaymentController::class, 'processIssueRefund'])->name('admin.orders.process-issue-refund');
+    Route::post('/admin/orders/{id}/process-issue-refund', [AdminPaymentController::class, 'processIssueRefund'])->name('admin.orders.process-issue-refund');
 
     // Reports
-    Route::get('/admin/reports/financial', [App\Http\Controllers\Admin\ReportController::class, 'financial'])->name('admin.reports.financial');
-    Route::get('/admin/reports/calendar', [App\Http\Controllers\Admin\ReportController::class, 'calendar'])->name('admin.reports.calendar');
+    Route::get('/admin/reports/financial', [AdminReportController::class, 'financial'])->name('admin.reports.financial');
+    Route::get('/admin/reports/calendar', [AdminReportController::class, 'calendar'])->name('admin.reports.calendar');
     
     // Frontend Management (Admin)
-    Route::get('/admin/frontend', [App\Http\Controllers\Admin\FrontendController::class, 'frontend'])->name('admin.frontend');
-    Route::post('/admin/frontend/update', [App\Http\Controllers\Admin\FrontendController::class, 'updateFrontendSetting'])->name('admin.frontend.update');
-    Route::get('/admin/frontend/settings/{section}', [App\Http\Controllers\Admin\FrontendController::class, 'getFrontendSettings'])->name('admin.frontend.settings');  
+    Route::get('/admin/frontend', [AdminFrontendController::class, 'frontend'])->name('admin.frontend');
+    Route::post('/admin/frontend/update', [AdminFrontendController::class, 'updateFrontendSetting'])->name('admin.frontend.update');
+    Route::get('/admin/frontend/settings/{section}', [AdminFrontendController::class, 'getFrontendSettings'])->name('admin.frontend.settings');  
 
     // Category Management (Admin)
-    Route::get('/admin/categories', [App\Http\Controllers\Admin\CategoryController::class, 'index'])->name('categories.index');
-    Route::post('/admin/categories', [App\Http\Controllers\Admin\CategoryController::class, 'store'])->name('categories.store');
-    Route::put('/admin/categories/{id}', [App\Http\Controllers\Admin\CategoryController::class, 'update'])->name('categories.update');
-    Route::delete('/admin/categories/{id}', [App\Http\Controllers\Admin\CategoryController::class, 'destroy'])->name('categories.destroy');  
-    Route::get('/admin/categories/json', [App\Http\Controllers\Admin\CategoryController::class, 'json'])->name('categories.json');
+    Route::get('/admin/categories', [AdminCategoryController::class, 'index'])->name('categories.index');
+    Route::post('/admin/categories', [AdminCategoryController::class, 'store'])->name('categories.store');
+    Route::put('/admin/categories/{id}', [AdminCategoryController::class, 'update'])->name('categories.update');
+    Route::delete('/admin/categories/{id}', [AdminCategoryController::class, 'destroy'])->name('categories.destroy');  
+    Route::get('/admin/categories/json', [AdminCategoryController::class, 'json'])->name('categories.json');
 
     // Fabric Type Management (Admin)
-    Route::get('/admin/fabric-types', [App\Http\Controllers\Admin\FabricTypeController::class, 'index'])->name('fabric_types.index');
-    Route::get('/admin/fabric-types/json', [App\Http\Controllers\Admin\FabricTypeController::class, 'json'])->name('fabric_types.json');
-    Route::post('/admin/fabric-types', [App\Http\Controllers\Admin\FabricTypeController::class, 'store'])->name('fabric_types.store');
-    Route::put('/admin/fabric-types/{id}', [App\Http\Controllers\Admin\FabricTypeController::class, 'update'])->name('fabric_types.update');
-    Route::delete('/admin/fabric-types/{id}', [App\Http\Controllers\Admin\FabricTypeController::class, 'destroy'])->name('fabric_types.destroy');
+    Route::get('/admin/fabric-types', [AdminFabricTypeController::class, 'index'])->name('fabric_types.index');
+    Route::get('/admin/fabric-types/json', [AdminFabricTypeController::class, 'json'])->name('fabric_types.json');
+    Route::post('/admin/fabric-types', [AdminFabricTypeController::class, 'store'])->name('fabric_types.store');
+    Route::put('/admin/fabric-types/{id}', [AdminFabricTypeController::class, 'update'])->name('fabric_types.update');
+    Route::delete('/admin/fabric-types/{id}', [AdminFabricTypeController::class, 'destroy'])->name('fabric_types.destroy');
 
     // Color Management (Admin)
-    Route::get('/admin/colors', [App\Http\Controllers\Admin\ColorController::class, 'index'])->name('colors.index');
-    Route::get('/admin/colors/json', [App\Http\Controllers\Admin\ColorController::class, 'json'])->name('colors.json');
-    Route::post('/admin/colors', [App\Http\Controllers\Admin\ColorController::class, 'store'])->name('colors.store');
-    Route::put('/admin/colors/{id}', [App\Http\Controllers\Admin\ColorController::class, 'update'])->name('colors.update');
-    Route::delete('/admin/colors/{id}', [App\Http\Controllers\Admin\ColorController::class, 'destroy'])->name('colors.destroy');
+    Route::get('/admin/colors', [AdminColorController::class, 'index'])->name('colors.index');
+    Route::get('/admin/colors/json', [AdminColorController::class, 'json'])->name('colors.json');
+    Route::post('/admin/colors', [AdminColorController::class, 'store'])->name('colors.store');
+    Route::put('/admin/colors/{id}', [AdminColorController::class, 'update'])->name('colors.update');
+    Route::delete('/admin/colors/{id}', [AdminColorController::class, 'destroy'])->name('colors.destroy');
 
     // Brand Management (Admin)
-    Route::get('/admin/brands', [App\Http\Controllers\Admin\BrandController::class, 'index'])->name('brands.index');
-    Route::get('/admin/brands/json', [App\Http\Controllers\Admin\BrandController::class, 'json'])->name('brands.json');
-    Route::post('/admin/brands', [App\Http\Controllers\Admin\BrandController::class, 'store'])->name('brands.store');
-    Route::put('/admin/brands/{id}', [App\Http\Controllers\Admin\BrandController::class, 'update'])->name('brands.update');
-    Route::delete('/admin/brands/{id}', [App\Http\Controllers\Admin\BrandController::class, 'destroy'])->name('brands.destroy');
+    Route::get('/admin/brands', [AdminBrandController::class, 'index'])->name('brands.index');
+    Route::get('/admin/brands/json', [AdminBrandController::class, 'json'])->name('brands.json');
+    Route::post('/admin/brands', [AdminBrandController::class, 'store'])->name('brands.store');
+    Route::put('/admin/brands/{id}', [AdminBrandController::class, 'update'])->name('brands.update');
+    Route::delete('/admin/brands/{id}', [AdminBrandController::class, 'destroy'])->name('brands.destroy');
 
     // Bottom Type Management (Admin)
-    Route::get('/admin/bottom-types', [App\Http\Controllers\Admin\BottomTypeController::class, 'index'])->name('bottom_types.index');
-    Route::get('/admin/bottom-types/json', [App\Http\Controllers\Admin\BottomTypeController::class, 'json'])->name('bottom_types.json');
-    Route::post('/admin/bottom-types', [App\Http\Controllers\Admin\BottomTypeController::class, 'store'])->name('bottom_types.store');
-    Route::put('/admin/bottom-types/{id}', [App\Http\Controllers\Admin\BottomTypeController::class, 'update'])->name('bottom_types.update');
-    Route::delete('/admin/bottom-types/{id}', [App\Http\Controllers\Admin\BottomTypeController::class, 'destroy'])->name('bottom_types.destroy');
+    Route::get('/admin/bottom-types', [AdminBottomTypeController::class, 'index'])->name('bottom_types.index');
+    Route::get('/admin/bottom-types/json', [AdminBottomTypeController::class, 'json'])->name('bottom_types.json');
+    Route::post('/admin/bottom-types', [AdminBottomTypeController::class, 'store'])->name('bottom_types.store');
+    Route::put('/admin/bottom-types/{id}', [AdminBottomTypeController::class, 'update'])->name('bottom_types.update');
+    Route::delete('/admin/bottom-types/{id}', [AdminBottomTypeController::class, 'destroy'])->name('bottom_types.destroy');
 
     // Size Management (Admin)
-    Route::get('/admin/sizes', [App\Http\Controllers\Admin\SizeController::class, 'index'])->name('sizes.index');
-    Route::get('/admin/sizes/json', [App\Http\Controllers\Admin\SizeController::class, 'json'])->name('sizes.json');
-    Route::post('/admin/sizes', [App\Http\Controllers\Admin\SizeController::class, 'store'])->name('sizes.store');
-    Route::put('/admin/sizes/{id}', [App\Http\Controllers\Admin\SizeController::class, 'update'])->name('sizes.update');
-    Route::delete('/admin/sizes/{id}', [App\Http\Controllers\Admin\SizeController::class, 'destroy'])->name('sizes.destroy');
+    Route::get('/admin/sizes', [AdminSizeController::class, 'index'])->name('sizes.index');
+    Route::get('/admin/sizes/json', [AdminSizeController::class, 'json'])->name('sizes.json');
+    Route::post('/admin/sizes', [AdminSizeController::class, 'store'])->name('sizes.store');
+    Route::put('/admin/sizes/{id}', [AdminSizeController::class, 'update'])->name('sizes.update');
+    Route::delete('/admin/sizes/{id}', [AdminSizeController::class, 'destroy'])->name('sizes.destroy');
 
     // Body Type Fit Management (Admin)
-    Route::get('/admin/body-type-fits', [App\Http\Controllers\Admin\BodyTypeFitController::class, 'index'])->name('body_type_fits.index');
-    Route::get('/admin/body-type-fits/json', [App\Http\Controllers\Admin\BodyTypeFitController::class, 'json'])->name('body_type_fits.json');
-    Route::post('/admin/body-type-fits', [App\Http\Controllers\Admin\BodyTypeFitController::class, 'store'])->name('body_type_fits.store');
-    Route::put('/admin/body-type-fits/{id}', [App\Http\Controllers\Admin\BodyTypeFitController::class, 'update'])->name('body_type_fits.update');
-    Route::delete('/admin/body-type-fits/{id}', [App\Http\Controllers\Admin\BodyTypeFitController::class, 'destroy'])->name('body_type_fits.destroy');
+    Route::get('/admin/body-type-fits', [AdminBodyTypeFitController::class, 'index'])->name('body_type_fits.index');
+    Route::get('/admin/body-type-fits/json', [AdminBodyTypeFitController::class, 'json'])->name('body_type_fits.json');
+    Route::post('/admin/body-type-fits', [AdminBodyTypeFitController::class, 'store'])->name('body_type_fits.store');
+    Route::put('/admin/body-type-fits/{id}', [AdminBodyTypeFitController::class, 'update'])->name('body_type_fits.update');
+    Route::delete('/admin/body-type-fits/{id}', [AdminBodyTypeFitController::class, 'destroy'])->name('body_type_fits.destroy');
 
     // Garment Condition Management (Admin)
-    Route::get('/admin/garment-conditions', [App\Http\Controllers\Admin\GarmentConditionController::class, 'index'])->name('garment_conditions.index');
-    Route::get('/admin/garment-conditions/json', [App\Http\Controllers\Admin\GarmentConditionController::class, 'json'])->name('garment_conditions.json');
-    Route::post('/admin/garment-conditions', [App\Http\Controllers\Admin\GarmentConditionController::class, 'store'])->name('garment_conditions.store');
-    Route::put('/admin/garment-conditions/{id}', [App\Http\Controllers\Admin\GarmentConditionController::class, 'update'])->name('garment_conditions.update');
-    Route::delete('/admin/garment-conditions/{id}', [App\Http\Controllers\Admin\GarmentConditionController::class, 'destroy'])->name('garment_conditions.destroy');
+    Route::get('/admin/garment-conditions', [AdminGarmentConditionController::class, 'index'])->name('garment_conditions.index');
+    Route::get('/admin/garment-conditions/json', [AdminGarmentConditionController::class, 'json'])->name('garment_conditions.json');
+    Route::post('/admin/garment-conditions', [AdminGarmentConditionController::class, 'store'])->name('garment_conditions.store');
+    Route::put('/admin/garment-conditions/{id}', [AdminGarmentConditionController::class, 'update'])->name('garment_conditions.update');
+    Route::delete('/admin/garment-conditions/{id}', [AdminGarmentConditionController::class, 'destroy'])->name('garment_conditions.destroy');
 
     // Admin Panel User Management
-    Route::get('/admin/panel-users', [App\Http\Controllers\Admin\PanelUserController::class, 'index'])->name('admin_panel_users.index');
-    Route::get('/admin/panel-users/json', [App\Http\Controllers\Admin\PanelUserController::class, 'json'])->name('admin_panel_users.json');
-    Route::post('/admin/panel-users', [App\Http\Controllers\Admin\PanelUserController::class, 'store'])->name('admin_panel_users.store');
-    Route::put('/admin/panel-users/{id}', [App\Http\Controllers\Admin\PanelUserController::class, 'update'])->name('admin_panel_users.update');
-    Route::delete('/admin/panel-users/{id}', [App\Http\Controllers\Admin\PanelUserController::class, 'destroy'])->name('admin_panel_users.destroy');
+    Route::get('/admin/panel-users', [AdminPanelUserController::class, 'index'])->name('admin_panel_users.index');
+    Route::get('/admin/panel-users/json', [AdminPanelUserController::class, 'json'])->name('admin_panel_users.json');
+    Route::post('/admin/panel-users', [AdminPanelUserController::class, 'store'])->name('admin_panel_users.store');
+    Route::put('/admin/panel-users/{id}', [AdminPanelUserController::class, 'update'])->name('admin_panel_users.update');
+    Route::delete('/admin/panel-users/{id}', [AdminPanelUserController::class, 'destroy'])->name('admin_panel_users.destroy');
 
     // State Management (Admin)
-    Route::get('/admin/states', [App\Http\Controllers\Admin\StateController::class, 'index'])->name('states.index');
-    Route::post('/admin/states', [App\Http\Controllers\Admin\StateController::class, 'store'])->name('states.store');
-    Route::put('/admin/states/{id}', [App\Http\Controllers\Admin\StateController::class, 'update'])->name('states.update');
-    Route::delete('/admin/states/{id}', [App\Http\Controllers\Admin\StateController::class, 'destroy'])->name('states.destroy');
-    Route::post('/admin/states/toggle/{id}', [App\Http\Controllers\Admin\StateController::class, 'toggleStatus'])->name('states.toggle');
+    Route::get('/admin/states', [AdminStateController::class, 'index'])->name('states.index');
+    Route::post('/admin/states', [AdminStateController::class, 'store'])->name('states.store');
+    Route::put('/admin/states/{id}', [AdminStateController::class, 'update'])->name('states.update');
+    Route::delete('/admin/states/{id}', [AdminStateController::class, 'destroy'])->name('states.destroy');
+    Route::post('/admin/states/toggle/{id}', [AdminStateController::class, 'toggleStatus'])->name('states.toggle');
 
     // City Management (Admin)
-    Route::get('/admin/cities', [App\Http\Controllers\Admin\CityController::class, 'index'])->name('cities.index');
-    Route::post('/admin/cities', [App\Http\Controllers\Admin\CityController::class, 'store'])->name('cities.store');
-    Route::put('/admin/cities/{id}', [App\Http\Controllers\Admin\CityController::class, 'update'])->name('cities.update');
-    Route::delete('/admin/cities/{id}', [App\Http\Controllers\Admin\CityController::class, 'destroy'])->name('cities.destroy');
-    Route::post('/admin/cities/toggle/{id}', [App\Http\Controllers\Admin\CityController::class, 'toggleStatus'])->name('cities.toggle');
+    Route::get('/admin/cities', [AdminCityController::class, 'index'])->name('cities.index');
+    Route::post('/admin/cities', [AdminCityController::class, 'store'])->name('cities.store');
+    Route::put('/admin/cities/{id}', [AdminCityController::class, 'update'])->name('cities.update');
+    Route::delete('/admin/cities/{id}', [AdminCityController::class, 'destroy'])->name('cities.destroy');
+    Route::post('/admin/cities/toggle/{id}', [AdminCityController::class, 'toggleStatus'])->name('cities.toggle');
 
     // Tax Management (Admin)
-    Route::get('/admin/tax-management', [App\Http\Controllers\Admin\TaxController::class, 'index'])->name('admin.tax');
-    Route::get('/admin/tax/json', [App\Http\Controllers\Admin\TaxController::class, 'json'])->name('admin.tax.json');
-    Route::post('/admin/tax', [App\Http\Controllers\Admin\TaxController::class, 'store'])->name('admin.tax.store');
-    Route::put('/admin/tax/{id}', [App\Http\Controllers\Admin\TaxController::class, 'update'])->name('admin.tax.update');
-    Route::delete('/admin/tax/{id}', [App\Http\Controllers\Admin\TaxController::class, 'destroy'])->name('admin.tax.destroy');
-    Route::post('/admin/tax/toggle/{id}', [App\Http\Controllers\Admin\TaxController::class, 'toggleStatus'])->name('admin.tax.toggle');
+    Route::get('/admin/tax-management', [AdminTaxController::class, 'index'])->name('admin.tax');
+    Route::get('/admin/tax/json', [AdminTaxController::class, 'json'])->name('admin.tax.json');
+    Route::post('/admin/tax', [AdminTaxController::class, 'store'])->name('admin.tax.store');
+    Route::put('/admin/tax/{id}', [AdminTaxController::class, 'update'])->name('admin.tax.update');
+    Route::delete('/admin/tax/{id}', [AdminTaxController::class, 'destroy'])->name('admin.tax.destroy');
+    Route::post('/admin/tax/toggle/{id}', [AdminTaxController::class, 'toggleStatus'])->name('admin.tax.toggle');
 
     // Role Master
-    Route::get('/admin/role-master', [App\Http\Controllers\Admin\RoleMasterController::class, 'index'])->name('role_master.index');
-    Route::get('/admin/role-master/permissions/{id}', [App\Http\Controllers\Admin\RoleMasterController::class, 'getRolePermissions'])->name('role_master.permissions');
-    Route::post('/admin/role-master/save', [App\Http\Controllers\Admin\RoleMasterController::class, 'saveRolePermissions'])->name('role_master.save');
-     Route::post('/admin/role-master/store', [App\Http\Controllers\Admin\RoleMasterController::class, 'store'])->name('role_master.store');
+    Route::get('/admin/role-master', [AdminRoleMasterController::class, 'index'])->name('role_master.index');
+    Route::get('/admin/role-master/permissions/{id}', [AdminRoleMasterController::class, 'getRolePermissions'])->name('role_master.permissions');
+    Route::post('/admin/role-master/save', [AdminRoleMasterController::class, 'saveRolePermissions'])->name('role_master.save');
+     Route::post('/admin/role-master/store', [AdminRoleMasterController::class, 'store'])->name('role_master.store');
 
     // Prompt Management (Admin)
-    Route::get('/admin/prompts', [App\Http\Controllers\Admin\PromptController::class, 'index'])->name('prompts.index');
-    Route::get('/admin/prompts/json', [App\Http\Controllers\Admin\PromptController::class, 'json'])->name('prompts.json');
-    Route::post('/admin/prompts', [App\Http\Controllers\Admin\PromptController::class, 'store'])->name('prompts.store');
-    Route::put('/admin/prompts/{id}', [App\Http\Controllers\Admin\PromptController::class, 'update'])->name('prompts.update');
-    Route::delete('/admin/prompts/{id}', [App\Http\Controllers\Admin\PromptController::class, 'destroy'])->name('prompts.destroy');
+    Route::get('/admin/prompts', [AdminPromptController::class, 'index'])->name('prompts.index');
+    Route::get('/admin/prompts/json', [AdminPromptController::class, 'json'])->name('prompts.json');
+    Route::post('/admin/prompts', [AdminPromptController::class, 'store'])->name('prompts.store');
+    Route::put('/admin/prompts/{id}', [AdminPromptController::class, 'update'])->name('prompts.update');
+    Route::delete('/admin/prompts/{id}', [AdminPromptController::class, 'destroy'])->name('prompts.destroy');
 });
 
 // Public API routes for mobile/frontend
-Route::get('/admin/states/json', [App\Http\Controllers\Admin\StateController::class, 'json'])->name('states.json');
-Route::get('/admin/cities/json', [App\Http\Controllers\Admin\CityController::class, 'json'])->name('cities.json');
+Route::get('/admin/states/json', [AdminStateController::class, 'json'])->name('states.json');
+Route::get('/admin/cities/json', [AdminCityController::class, 'json'])->name('cities.json');
 
 // User (Non-admin route, kept outside)
 Route::get('/user', [UserController::class, 'index'])->name('user.index');
@@ -232,7 +263,7 @@ Route::get('/user', [UserController::class, 'index'])->name('user.index');
 // Product Page
 Route::get('/product', [ProductController::class, 'index'])->name('product');
 Route::get('/clothes', [ProductController::class, 'index'])->name('clothes.index');
-Route::get('/clothes/{id}', [App\Http\Controllers\ClothController::class, 'show'])->name('clothes.show');
+Route::get('/clothes/{id}', [ClothController::class, 'show'])->name('clothes.show');
 Route::get('/ajax-search', [ProductController::class, 'ajaxSearch'])->name('search.ajax');
 
 // Product Reviews and Questions (Requires Authentication)
@@ -265,10 +296,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/my-sales', [OrderController::class, 'sales'])->name('orders.sales');
     Route::get('/transactions', [OrderController::class, 'transactions'])->name('transactions.index');
-    Route::get('/invoices', [App\Http\Controllers\InvoiceController::class, 'index'])->name('invoices.index');
-    Route::post('/ratings', [App\Http\Controllers\RatingController::class, 'store'])->name('ratings.store');
-    Route::post('/orders/{id}/return-request', [App\Http\Controllers\OrderReturnController::class, 'store'])->name('orders.return-request');
-    Route::post('/orders/{id}/early-return', [App\Http\Controllers\OrderReturnController::class, 'earlyReturn'])->name('orders.early-return');
+    Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index');
+    Route::post('/ratings', [RatingController::class, 'store'])->name('ratings.store');
+    Route::post('/orders/{id}/return-request', [OrderReturnController::class, 'store'])->name('orders.return-request');
+    Route::post('/orders/{id}/early-return', [OrderReturnController::class, 'earlyReturn'])->name('orders.early-return');
 
     // Rental Extensions
     Route::get('/orders/{id}/extension-quote', [OrderExtensionController::class, 'quote'])->name('orders.extension.quote');
@@ -297,11 +328,11 @@ Route::middleware(['auth'])->group(function () {
 
 // Rejection Management (Requires Authentication)
 Route::middleware(['auth'])->group(function () {
-    Route::get('/rejections', [App\Http\Controllers\RejectionController::class, 'index'])->name('rejections.index');
-    Route::get('/rejections/{id}', [App\Http\Controllers\RejectionController::class, 'show'])->name('rejections.show');
-    Route::put('/rejections/{id}', [App\Http\Controllers\RejectionController::class, 'update'])->name('rejections.update');
-    Route::get('/rejections/{id}/details', [App\Http\Controllers\RejectionController::class, 'getRejectionDetails'])->name('rejections.details');
-    Route::get('/rejections-list', [App\Http\Controllers\RejectionController::class, 'getRejectedItems'])->name('rejections.list');
+    Route::get('/rejections', [RejectionController::class, 'index'])->name('rejections.index');
+    Route::get('/rejections/{id}', [RejectionController::class, 'show'])->name('rejections.show');
+    Route::put('/rejections/{id}', [RejectionController::class, 'update'])->name('rejections.update');
+    Route::get('/rejections/{id}/details', [RejectionController::class, 'getRejectionDetails'])->name('rejections.details');
+    Route::get('/rejections-list', [RejectionController::class, 'getRejectedItems'])->name('rejections.list');
 });
 
 // Listed Clothes (Requires Authentication)
@@ -316,4 +347,4 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // Invoice Download
-Route::get('/invoices/{id}/download', [App\Http\Controllers\InvoiceController::class, 'download'])->name('invoices.download');
+Route::get('/invoices/{id}/download', [InvoiceController::class, 'download'])->name('invoices.download');

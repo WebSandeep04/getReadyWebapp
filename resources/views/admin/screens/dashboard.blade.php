@@ -845,15 +845,8 @@ $(function() {
                 let actionBtn = `<div class="d-flex gap-1 justify-content-end">`;
                 
                 // 1. Move to Next Status
-                if (['Pending', 'Confirmed', 'Order Confirmed & Shipment Created'].includes(order.status)) {
-                    let nextStatus = (order.status === 'Pending') ? 'Confirmed' : 'Delivered';
-                    let nextIcon = (order.status === 'Pending') ? 'bi-check-circle' : 'bi-truck';
-                    actionBtn += `<button class="btn btn-sm btn-outline-success update-status-btn" data-order-id="${order.id}" data-status="${nextStatus}" title="Move to ${nextStatus}" style="padding: 0.15rem 0.4rem; font-size: 0.7rem;"><i class="bi ${nextIcon}"></i></button>`;
-                }
-
-                // 2. Mark as Returned
-                if (order.is_rental && !['Returned', 'Cancelled', 'Return Requested'].includes(order.status) && ['Delivered', 'Return In Progress', 'Order Confirmed & Shipment Created', 'Confirmed', 'Shipped'].includes(order.status)) {
-                    actionBtn += `<button class="btn btn-sm btn-outline-primary mark-returned-btn" data-order-id="${order.id}" title="Mark as Returned" style="padding: 0.15rem 0.4rem; font-size: 0.7rem;"><i class="bi bi-box-arrow-in-left"></i></button>`;
+                if (order.status === 'Pending') {
+                    actionBtn += `<button class="btn btn-sm btn-outline-success update-status-btn" data-order-id="${order.id}" data-status="Confirmed" title="Confirm Order" style="padding: 0.15rem 0.4rem; font-size: 0.7rem;"><i class="bi bi-check-circle"></i></button>`;
                 }
 
                 // 3. Retry Shipment

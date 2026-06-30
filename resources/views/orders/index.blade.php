@@ -109,7 +109,7 @@
             $totalSpent = 0;
             $activeRentals = 0;
             foreach($orders as $order) {
-                $totalSpent += $order->total_amount + ($order->has_rental_items ? $order->security_amount : 0);
+                $totalSpent += $order->total_amount;
                 if($order->has_rental_items && !in_array($order->status, ['Returned', 'Cancelled'])) {
                     $activeRentals++;
                 }
@@ -261,7 +261,7 @@
                             <div class="col-lg-5 text-lg-end mt-3 mt-lg-0">
                                 <div class="sale-amount-section mb-4 d-none d-md-block">
                                     <span class="label">Total Paid</span>
-                                    <span class="value">₹{{ number_format($order->total_amount + ($order->has_rental_items ? $order->security_amount : 0)) }}</span>
+                                    <span class="value">₹{{ number_format($order->total_amount)}}</span>
                                     <div class="extra-small fw-bold mt-1 {{ $latestPayment ? 'text-success' : 'text-warning' }}">
                                         <i class="bi {{ $latestPayment ? 'bi-check-circle-fill' : 'bi-hourglass-split' }}"></i>
                                         {{ $latestPayment ? strtoupper($latestPayment->payment_method) : 'PENDING PAYMENT' }}

@@ -72,6 +72,7 @@ class ProcessRentalReturns extends Command
                 }
             }
 
+            $allSuccess = true;
             foreach ($itemsBySeller as $sellerId => $items) {
                 $seller = $items[0]->cloth->user;
                 
@@ -86,12 +87,19 @@ class ProcessRentalReturns extends Command
                     continue;
                 }
 
-                $this->createReturnShipment($order, $seller, $items, $courier);
+                $success = $this->createReturnShipment($order, $seller, $items, $courier);
+                if (!$success) {
+                    $allSuccess = false;
+                }
             }
 
-            // Update order status
-            $order->update(['status' => 'Return In Progress']);
-            $this->info("Order #{$order->id} status updated to 'Return In Progress'");
+            // Update order status only if shipments were successful
+            if ($allSuccess) {
+                $order->update(['status' => 'Return In Progress']);
+                $this->info("Order #{$order->id} status updated to 'Return In Progress'");
+            } else {
+                $this->error("Failed to create return shipment for Order #{$order->id}. Status not updated.");
+            }
         }
 
         $this->info("Finished processing returns.");
@@ -108,14 +116,18 @@ class ProcessRentalReturns extends Command
 
             // Buyer's address parsing for pickup
             $pickupAddressParts = explode(',', $order->delivery_address);
-            $pickupCity = trim($pickupAddressParts[count($pickupAddressParts)-2] ?? 'Mumbai');
-            $pickupPincode = trim($pickupAddressParts[count($pickupAddressParts)-1] ?? '400001');
-            $pickupPincode = str_pad(preg_replace('/[^0-9]/', '', $pickupPincode), 6, '0', STR_PAD_RIGHT);
+            $pickupCity = count($pickupAddressParts) > 1 ? trim($pickupAddressParts[count($pickupAddressParts)-2]) : 'Mumbai';
+            
+            $rawPincode = count($pickupAddressParts) > 1 ? trim($pickupAddressParts[count($pickupAddressParts)-1]) : '';
+            $digitsOnly = preg_replace('/[^0-9]/', '', $rawPincode);
+            
+            // If we don't have exactly a 6-digit pincode in the address (common in dummy data), fallback to a known serviceable one.
+            $pickupPincode = (strlen($digitsOnly) === 6) ? $digitsOnly : '400001';
 
             $orderLoad = [
                 'order_number' => (string)$order->id . '-RET-' . $seller->id,
                 'payment_type' => 'reverse',
-                'order_amount' => 0,
+                'order_amount' => 10,
                 'collectable_amount' => 0,
                 'package_weight' => 500, // default 500g
                 'package_length' => 10,
@@ -151,7 +163,7 @@ class ProcessRentalReturns extends Command
                 $orderLoad['order_items'][] = [
                     'name' => 'RETURN: ' . ($item->cloth->title ?? 'Item'),
                     'qty' => 1,
-                    'price' => 0
+                    'price' => 10
                 ];
             }
 
@@ -195,11 +207,14 @@ class ProcessRentalReturns extends Command
                     'data' => ['order_id' => $order->id, 'awb' => $response['awb_number']],
                 ]);
 
+                return true;
             } else {
-                Log::error("Return Shipment Failed for Order #{$order->id} to Seller #{$sellerId}");
+                Log::error("Return Shipment Failed for Order #{$order->id} to Seller #{$seller->id}. Response: " . json_encode($response));
+                return false;
             }
         } catch (\Exception $e) {
             Log::error("Exception in createReturnShipment: " . $e->getMessage());
+            return false;
         }
     }
 }

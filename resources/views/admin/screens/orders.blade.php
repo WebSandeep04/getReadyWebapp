@@ -215,7 +215,7 @@
 
     <div class="card order-card">
         <div class="card-body p-0">
-            <div class="table-responsive">
+            <div class="table-responsive" style="min-height: 300px;">
                 <table class="table table-hover mb-0 align-middle">
                     <thead class="table-light">
                         <tr>

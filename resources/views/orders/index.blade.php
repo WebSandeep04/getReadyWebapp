@@ -155,6 +155,20 @@
                     $canRate = in_array($order->status, ['Delivered', 'Returned']);
                     $hasRated = \App\Models\Rating::where('order_id', $order->id)->where('rater_id', auth()->id())->exists();
                     $firstItem = $order->items->first();
+
+                    $blockedDates = [];
+                    $availableDates = [];
+                    if($order->has_rental_items) {
+                        foreach($order->items as $item) {
+                            if($item->cloth && $item->cloth->availabilityBlocks) {
+                                foreach($item->cloth->availabilityBlocks as $block) {
+                                    $b = ['from' => \Carbon\Carbon::parse($block->start_date)->format('Y-m-d'), 'to' => \Carbon\Carbon::parse($block->end_date)->format('Y-m-d')];
+                                    if($block->type == 'blocked') $blockedDates[] = $b;
+                                    else if($block->type == 'available') $availableDates[] = $b;
+                                }
+                            }
+                        }
+                    }
                 @endphp
 
                 <div class="sale-card">
@@ -270,7 +284,9 @@
                                             <button type="button" class="btn btn-premium px-3 py-2 rounded-pill fw-900 shadow-sm" style="font-size: 0.72rem;" data-toggle="modal" data-target="#extensionModal"
                                                 data-order-id="{{ $order->id }}" 
                                                 data-current-to="{{ ($order->return_date ?? \Carbon\Carbon::parse($order->rental_to)->addDay())->format('d M Y') }}"
-                                                data-rental-to="{{ \Carbon\Carbon::parse($order->rental_to)->format('Y-m-d') }}">
+                                                data-rental-to="{{ \Carbon\Carbon::parse($order->rental_to)->format('Y-m-d') }}"
+                                                data-blocked-dates="{{ json_encode($blockedDates) }}"
+                                                data-available-dates="{{ json_encode($availableDates) }}">
                                                 <i class="bi bi-calendar-plus me-1"></i> EXTEND
                                             </button>
                                         @endif
@@ -328,7 +344,9 @@
                                          <button type="button" class="btn btn-premium btn-sale-action" data-toggle="modal" data-target="#extensionModal"
                                             data-order-id="{{ $order->id }}" 
                                             data-current-to="{{ ($order->return_date ?? \Carbon\Carbon::parse($order->rental_to)->addDay())->format('d M Y') }}"
-                                            data-rental-to="{{ \Carbon\Carbon::parse($order->rental_to)->format('Y-m-d') }}">
+                                            data-rental-to="{{ \Carbon\Carbon::parse($order->rental_to)->format('Y-m-d') }}"
+                                            data-blocked-dates="{{ json_encode($blockedDates) }}"
+                                            data-available-dates="{{ json_encode($availableDates) }}">
                                             <i class="bi bi-calendar-plus"></i> EXTEND
                                          </button>
                                     @endif
@@ -697,12 +715,45 @@
 
             if (extensionDatePicker) extensionDatePicker.destroy();
 
+            const blockedDates = button.data('blocked-dates') || [];
+            const availableDates = button.data('available-dates') || [];
+
+            const disableFunction = function(date) {
+                if (availableDates.length > 0) {
+                    let isAvailable = false;
+                    for (let i = 0; i < availableDates.length; i++) {
+                        let from = new Date(availableDates[i].from);
+                        let to = new Date(availableDates[i].to);
+                        from.setHours(0,0,0,0);
+                        to.setHours(23,59,59,999);
+                        if (date >= from && date <= to) {
+                            isAvailable = true;
+                            break;
+                        }
+                    }
+                    if (!isAvailable) return true;
+                }
+                
+                for (let i = 0; i < blockedDates.length; i++) {
+                    let from = new Date(blockedDates[i].from);
+                    let to = new Date(blockedDates[i].to);
+                    from.setHours(0,0,0,0);
+                    to.setHours(23,59,59,999);
+                    if (date >= from && date <= to) {
+                        return true;
+                    }
+                }
+                
+                return false;
+            };
+
             extensionDatePicker = flatpickr("#extension_date", {
                 minDate: minDate,
                 dateFormat: "Y-m-d",
                 altInput: true,
                 altFormat: "d M Y",
                 disableMobile: "true",
+                disable: [disableFunction],
                 onChange: function(dates, dateStr) {
                     if (dates.length > 0) {
                         const newDate = dates[0];

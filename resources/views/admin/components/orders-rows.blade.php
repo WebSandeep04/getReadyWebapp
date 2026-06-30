@@ -94,22 +94,16 @@
                     </a>
                 @endif
                 
-                @if($order->status === 'Pending' || $order->status === 'Confirmed' || $order->status === 'Order Confirmed & Shipment Created')
+                @if($order->status === 'Pending')
                     <button class="btn btn-sm btn-outline-success update-status-btn" 
                             data-order-id="{{ $order->id }}" 
-                            data-status="{{ $order->status === 'Pending' ? 'Confirmed' : 'Delivered' }}"
-                            title="Move to Next Status">
-                        <i class="bi {{ $order->status === 'Pending' ? 'bi-check-circle' : 'bi-truck' }}"></i>
+                            data-status="Confirmed"
+                            title="Confirm Order">
+                        <i class="bi bi-check-circle"></i>
                     </button>
                 @endif
 
-                @if($order->has_rental_items && !in_array($order->status, ['Returned', 'Cancelled', 'Return Requested']) && in_array($order->status, ['Delivered', 'Return In Progress', 'Order Confirmed & Shipment Created', 'Confirmed', 'Shipped']))
-                    <button class="btn btn-sm btn-outline-primary mark-returned-btn" 
-                            data-order-id="{{ $order->id }}" 
-                            title="Mark as Returned">
-                        <i class="bi bi-box-arrow-in-left"></i>
-                    </button>
-                @endif
+
 
                 @if($shipmentMissing)
                     <button class="btn btn-sm btn-outline-warning retry-shipment-btn" 

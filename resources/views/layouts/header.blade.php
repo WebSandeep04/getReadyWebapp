@@ -95,6 +95,8 @@
           <a class="dropdown-item" href="{{ route('listed.clothes') }}"><i class="bi bi-list-stars"></i> My Listings</a>
           <a class="dropdown-item" href="{{ route('orders.sales') }}"><i class="bi bi-graph-up-arrow"></i> Sales Dashboard</a>
           <a class="dropdown-item" href="{{ route('orders.index') }}"><i class="bi bi-bag"></i> My Orders</a>
+          <a class="dropdown-item" href="{{ route('invoices.index') }}"><i class="bi bi-receipt"></i> My Invoices</a>
+          <a class="dropdown-item" href="{{ route('transactions.index') }}"><i class="bi bi-cash-stack"></i> My Transactions</a>
           <a class="dropdown-item" href="{{ route('rejections.index') }}"><i class="bi bi-x-circle"></i> Rejected Items</a>
           <a class="dropdown-item" href="{{ route('profile') }}"><i class="bi bi-gear"></i> Profile Settings</a>
           <div class="dropdown-divider"></div>
@@ -239,6 +241,8 @@
             <a class="dropdown-item" href="{{ route('listed.clothes') }}"><i class="bi bi-list-stars"></i> My Listings</a>
             <a class="dropdown-item" href="{{ route('orders.sales') }}"><i class="bi bi-graph-up-arrow"></i> Sales Dashboard</a>
             <a class="dropdown-item" href="{{ route('orders.index') }}"><i class="bi bi-bag-heart"></i> My Orders</a>
+            <a class="dropdown-item" href="{{ route('invoices.index') }}"><i class="bi bi-receipt"></i> My Invoices</a>
+            <a class="dropdown-item" href="{{ route('transactions.index') }}"><i class="bi bi-cash-stack"></i> My Transactions</a>
             <a class="dropdown-item" href="{{ route('profile') }}"><i class="bi bi-person-gear"></i> Profile Settings</a>
             <div class="dropdown-divider"></div>
             <form action="{{ route('logout') }}" method="POST" class="m-0">

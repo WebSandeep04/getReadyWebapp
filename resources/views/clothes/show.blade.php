@@ -184,7 +184,11 @@
           </div>
           
           <div class="floating-badge shadow-sm" style="background: rgba(255,255,255,0.95); color: #1e293b; border: 1px solid rgba(0,0,0,0.05); font-weight: 600; backdrop-filter: blur(5px); z-index: 10;">
-            <i class="bi bi-patch-check-fill text-primary" style="font-size: 1.1rem;"></i> QC Passed
+            @if($cloth->is_approved)
+              <i class="bi bi-patch-check-fill text-primary" style="font-size: 1.1rem;"></i> QC Passed
+            @else
+              <i class="bi bi-hourglass-split text-warning" style="font-size: 1.1rem;"></i> QC Pending
+            @endif
           </div>
         </div>
 
@@ -246,16 +250,10 @@
 
         <div class="product-description-refined">
           <div class="row g-4">
-            <div class="col-md-6">
+            <div class="col-md-12">
               <h6 class="text-uppercase small fw-bold text-muted mb-2 ls-1">Fabric & Highlights</h6>
               <p class="mb-0 text-dark" style="font-size: 0.95rem; line-height: 1.6;">
                 Crafted from {{ strtolower($cloth->fabric->name ?? 'premium fabric') }} with a {{ strtolower($cloth->color->name ?? 'multi') }} tone finish. Features a signature {{ strtolower($cloth->bottomType->name ?? 'designer') }} silhouette.
-              </p>
-            </div>
-            <div class="col-md-6">
-              <h6 class="text-uppercase small fw-bold text-muted mb-2 ls-1">Owner's Notes</h6>
-              <p class="mb-0 text-dark" style="font-size: 0.95rem; line-height: 1.6;">
-                <i class="bi bi-chat-left-quote text-primary-subtle me-2"></i>{{ $cloth->defects ?? 'This piece is in pristine condition with no visible flaws.' }}
               </p>
             </div>
           </div>
@@ -503,7 +501,7 @@ $(document).ready(function() {
         ];
     }));
 
-    const config = {
+    const endPicker = flatpickr("#end_date", {
         altInput: true,
         altFormat: "F j, Y",
         dateFormat: "Y-m-d",
@@ -512,10 +510,27 @@ $(document).ready(function() {
         onChange: function(selectedDates, dateStr, instance) {
             calculateRental();
         }
-    };
+    });
 
-    const startPicker = flatpickr("#start_date", config);
-    const endPicker = flatpickr("#end_date", config);
+    const startPicker = flatpickr("#start_date", {
+        altInput: true,
+        altFormat: "F j, Y",
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        disable: disabledDates,
+        onChange: function(selectedDates, dateStr, instance) {
+            if (selectedDates.length > 0) {
+                const startDate = selectedDates[0];
+                endPicker.set("minDate", startDate);
+                
+                const endDate = new Date(startDate);
+                endDate.setDate(endDate.getDate() + 3);
+                endPicker.setDate(endDate);
+                
+                calculateRental();
+            }
+        }
+    });
 
     let currentRentalDays = 0;
     let currentRentalCost = 0;

@@ -279,7 +279,7 @@ if (form) {
 
     if (!isValid) {
       // Show an alert to the user so they know why it's not submitting
-      alert('Please fill in the following required fields:\n- ' + missingFields.join('\n- '));
+      // alert('Please fill in the following required fields:\n- ' + missingFields.join('\n- '));
 
       if (firstInvalidStep !== -1 && firstInvalidStep !== currentStep) {
         steps[currentStep].classList.remove("active");

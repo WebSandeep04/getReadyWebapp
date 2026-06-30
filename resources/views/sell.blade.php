@@ -533,7 +533,7 @@
 }
 
 .cloud-header {
-    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    background: #1e293b;
     padding: 2rem 1.5rem;
     text-align: center;
     color: white;
@@ -560,13 +560,13 @@
 }
 
 .cloud-textarea:focus {
-    border-color: #6366f1;
+    border-color: #f78c1c;
     background: #fff;
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    box-shadow: 0 0 0 4px rgba(247, 140, 28, 0.1);
 }
 
 .cloud-btn {
-    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    background: #f78c1c;
     border: none;
     border-radius: 12px;
     padding: 0.8rem 2.5rem;
@@ -574,7 +574,7 @@
     font-weight: 700;
     font-size: 1rem;
     letter-spacing: 0.5px;
-    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 4px 15px rgba(247, 140, 28, 0.3);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: inline-flex;
     align-items: center;
@@ -582,8 +582,9 @@
 }
 
 .cloud-btn:hover {
+    background: #e87b11;
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+    box-shadow: 0 8px 25px rgba(247, 140, 28, 0.4);
 }
 
 .cloud-close {
@@ -654,7 +655,7 @@
           placeholder="Describe your outfit in a few words... e.g. 'Red silk saree, worn once, perfect for weddings'"></textarea>
 
         <div id="aiLoading" class="mb-4" style="display: none;">
-            <div class="spinner-border text-primary" role="status" style="width: 1.5rem; height: 1.5rem; color: #6366f1 !important;"></div>
+            <div class="spinner-border text-primary" role="status" style="width: 1.5rem; height: 1.5rem; color: #f78c1c !important;"></div>
             <p class="mt-2 text-muted small fw-bold">Generating premium description...</p>
         </div>
 

@@ -67,9 +67,6 @@
         </div>
         <h4 class="text-muted fw-bold">No products found</h4>
         <p class="text-muted mb-4">We couldn't find any clothes matching your selected dates or filters.</p>
-        <a href="{{ route('clothes.index') }}" class="btn btn-outline-warning">
-            <i class="bi bi-x-circle me-1"></i> Clear all filters
-        </a>
     </div>
 @endforelse
 

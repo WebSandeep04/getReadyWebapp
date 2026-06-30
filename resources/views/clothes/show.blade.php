@@ -404,7 +404,7 @@
 
             @if($cloth->sku > 0)
               <div class="d-grid gap-3">
-                <button class="rent-button add-to-cart-btn w-100" data-cloth-id="{{ $cloth->id }}" id="productRentBtn" disabled>
+                <button class="rent-button w-100" data-cloth-id="{{ $cloth->id }}" id="productRentBtn" disabled>
                   <i class="bi bi-calendar2-plus me-2"></i> Select dates to rent
                 </button>
                 
@@ -494,19 +494,55 @@ $(document).ready(function() {
     });
 
     // Flatpickr initialization
-    const disabledDates = @json($cloth->availabilityBlocks->where('type', 'blocked')->map(function($block) {
+    const blockedDates = @json($cloth->availabilityBlocks->where('type', 'blocked')->map(function($block) {
         return [
             'from' => $block->start_date->format('Y-m-d'),
             'to' => $block->end_date->format('Y-m-d')
         ];
-    }));
+    })->values());
+
+    const availableDates = @json($cloth->availabilityBlocks->where('type', 'available')->map(function($block) {
+        return [
+            'from' => $block->start_date->format('Y-m-d'),
+            'to' => $block->end_date->format('Y-m-d')
+        ];
+    })->values());
+
+    const disableFunction = function(date) {
+        if (availableDates.length > 0) {
+            let isAvailable = false;
+            for (let i = 0; i < availableDates.length; i++) {
+                let from = new Date(availableDates[i].from);
+                let to = new Date(availableDates[i].to);
+                from.setHours(0,0,0,0);
+                to.setHours(23,59,59,999);
+                if (date >= from && date <= to) {
+                    isAvailable = true;
+                    break;
+                }
+            }
+            if (!isAvailable) return true;
+        }
+        
+        for (let i = 0; i < blockedDates.length; i++) {
+            let from = new Date(blockedDates[i].from);
+            let to = new Date(blockedDates[i].to);
+            from.setHours(0,0,0,0);
+            to.setHours(23,59,59,999);
+            if (date >= from && date <= to) {
+                return true;
+            }
+        }
+        
+        return false;
+    };
 
     const endPicker = flatpickr("#end_date", {
         altInput: true,
         altFormat: "F j, Y",
         dateFormat: "Y-m-d",
         minDate: "today",
-        disable: disabledDates,
+        disable: [disableFunction],
         onChange: function(selectedDates, dateStr, instance) {
             calculateRental();
         }
@@ -517,7 +553,7 @@ $(document).ready(function() {
         altFormat: "F j, Y",
         dateFormat: "Y-m-d",
         minDate: "today",
-        disable: disabledDates,
+        disable: [disableFunction],
         onChange: function(selectedDates, dateStr, instance) {
             if (selectedDates.length > 0) {
                 const startDate = selectedDates[0];

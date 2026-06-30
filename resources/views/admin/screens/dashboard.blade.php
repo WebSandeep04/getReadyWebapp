@@ -49,7 +49,7 @@
             <div class="dashboard-hero__title">Welcome back, {{ Auth::user()->name ?? 'Admin' }} 👋</div>
             <p class="dashboard-hero__subtitle">Keep track of submissions, approvals and storefront health at a glance.</p>
         </div>
-        <div class="d-flex gap-4 text-center">
+        <!-- <div class="d-flex gap-4 text-center">
             <div>
                 <div class="text-uppercase small text-white-50">Total Listings</div>
                 <div class="fs-3 fw-semibold" id="totalCount">0</div>
@@ -66,7 +66,7 @@
                 <div class="text-uppercase small text-white-50">Security Held</div>
                 <div class="fs-3 fw-semibold" id="totalDepositSum">₹0</div>
             </div>
-        </div>
+        </div> -->
     </div>
 
     <div class="row g-3 mb-4">

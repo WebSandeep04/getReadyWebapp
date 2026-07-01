@@ -929,12 +929,37 @@
                     
                     let html = `
                         <div class="d-flex justify-content-between small mb-2">
-                            <span class="text-muted fw-medium">Selling Price</span>
-                            <span class="fw-bold text-dark">₹${quote.pricing_breakdown.base_price}</span>
+                            <span class="text-muted fw-medium">
+                                Total Purchase Value 
+                                <i class="bi bi-info-circle ms-1 text-primary" style="cursor: pointer;" onclick="$('#price_distribution').slideToggle('fast')" title="Click to see breakdown"></i>
+                            </span>
+                            <span class="fw-bold text-dark">₹${quote.total_purchase_value.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                        </div>
+                        <div id="price_distribution" class="bg-white rounded-3 p-2 mb-2 border border-secondary-subtle" style="display: none; font-size: 0.75rem;">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="text-muted">Item Base Price</span>
+                                <span>₹${quote.pricing_breakdown.base_price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="text-muted">Platform Fee</span>
+                                <span>₹${quote.pricing_breakdown.buyer_comm.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="text-muted">Item Tax (18%)</span>
+                                <span>₹${quote.pricing_breakdown.item_tax_fee.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Platform Fee GST (18%)</span>
+                                <span>₹${quote.pricing_breakdown.buyer_comm_gst.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between small mb-2">
+                            <span class="text-muted fw-medium">Rent Already Paid</span>
+                            <span class="fw-bold text-success">- ₹${quote.paid_rent.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                         </div>
                         <div class="d-flex justify-content-between small mb-2">
                             <span class="text-muted fw-medium">Security Deposit Held</span>
-                            <span class="fw-bold text-success">- ₹${quote.security_deposit}</span>
+                            <span class="fw-bold text-success">- ₹${quote.security_deposit.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                         </div>
                     `;
                     $('#buy_rental_items').html(html);

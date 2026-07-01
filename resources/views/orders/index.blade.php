@@ -100,7 +100,9 @@
                 <i class="bi bi-check-circle-fill fs-4 text-success"></i>
                 <div class="fw-medium">{{ session('success') }}</div>
             </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
         </div>
     @endif
 
@@ -289,6 +291,14 @@
                                                 data-available-dates="{{ json_encode($availableDates) }}">
                                                 <i class="bi bi-calendar-plus me-1"></i> EXTEND
                                             </button>
+                                            @if($order->status === 'Delivered')
+                                                <button type="button" class="btn btn-premium early-return-trigger px-3 py-2 rounded-pill fw-900 shadow-sm" style="font-size: 0.72rem;" data-toggle="modal" data-target="#earlyReturnModal" data-order-id="{{ $order->id }}" data-max-date="{{ \Carbon\Carbon::parse($order->rental_to)->format('Y-m-d') }}">
+                                                    <i class="bi bi-clock-history me-1"></i> EARLY RETURN
+                                                </button>
+                                                <button type="button" class="btn btn-premium buy-rental-trigger px-3 py-2 rounded-pill fw-900 shadow-sm" style="font-size: 0.72rem;" data-order-id="{{ $order->id }}" data-cloth-id="{{ $firstItem->cloth_id ?? '' }}">
+                                                    <i class="bi bi-cart-check me-1"></i> BUY RENTAL
+                                                </button>
+                                            @endif
                                         @endif
 
                                         @if($canRate || $order->status === 'Delivered')
@@ -349,6 +359,14 @@
                                             data-available-dates="{{ json_encode($availableDates) }}">
                                             <i class="bi bi-calendar-plus"></i> EXTEND
                                          </button>
+                                         @if($order->status === 'Delivered')
+                                             <button type="button" class="btn btn-premium btn-sale-action early-return-trigger" data-toggle="modal" data-target="#earlyReturnModal" data-order-id="{{ $order->id }}" data-max-date="{{ \Carbon\Carbon::parse($order->rental_to)->format('Y-m-d') }}">
+                                                <i class="bi bi-clock-history"></i> EARLY RETURN
+                                             </button>
+                                             <button type="button" class="btn btn-premium btn-sale-action buy-rental-trigger" data-order-id="{{ $order->id }}" data-cloth-id="{{ $firstItem->cloth_id ?? '' }}">
+                                                <i class="bi bi-cart-check"></i> BUY RENTAL
+                                             </button>
+                                         @endif
                                     @endif
 
                                     @if($canRate || $order->status === 'Delivered')
@@ -397,26 +415,32 @@
         <div class="modal-content border-0 shadow rounded-4">
             <form id="earlyReturnForm" action="" method="POST">
                 @csrf
-                <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title fw-bold" id="earlyReturnModalLabel"><i class="bi bi-clock-history me-2 text-primary"></i>Schedule Early Return</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                <div class="modal-header border-0 align-items-center">
+                    <div>
+                        <h4 class="modal-title fw-bold text-dark mb-1">Schedule Early Return</h4>
+                        <p class="text-muted small mb-0">Select the date you will return the item early.</p>
+                    </div>
+                    <button type="button" class="btn-close ms-auto" data-dismiss="modal" aria-label="Close" style="background: none; border: none; font-size: 1.5rem; color: #94a3b8;">&times;</button>
                 </div>
-                <div class="modal-body py-4">
-                    <p class="text-muted small mb-4">Select the date you will return the item. Please note that no refunds are issued for early returns as per policy.</p>
+                <div class="modal-body px-4 py-4">
+                    <div class="alert alert-warning rounded-4 border-0 p-3 small mb-4 d-flex gap-3 align-items-center">
+                        <i class="bi bi-info-circle-fill fs-5"></i>
+                        <span>Please note that no refunds are issued for early returns as per our rental policy.</span>
+                    </div>
                     
-                    <div class="form-group mb-0">
-                        <label for="new_return_date" class="form-label fw-bold small text-uppercase letter-spacing-1">Return Date</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-0"><i class="bi bi-calendar-check text-primary"></i></span>
-                            <input type="text" id="new_return_date" name="new_return_date" class="form-control bg-light border-0 fw-bold" placeholder="Choose a date" readonly required>
+                    <div class="date-selection-box d-flex align-items-center mb-2">
+                        <div class="me-3 text-primary d-flex align-items-center justify-content-center" style="min-width: 24px;">
+                            <i class="bi bi-calendar-check fs-5"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <span class="d-block text-muted extra-small text-uppercase fw-bold letter-spacing-1 mb-1">Return Date</span>
+                            <input type="text" id="new_return_date" name="new_return_date" class="form-control border-0 p-0 fw-bold bg-transparent" placeholder="Choose a date" readonly required style="box-shadow: none; font-size: 0.9rem;">
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-light rounded-pill px-4" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Confirm Return</button>
+                <div class="modal-footer border-0 px-4 pb-4 pt-0 gap-3">
+                    <button type="button" class="btn btn-light btn-premium-action px-4" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-premium btn-premium-action flex-grow-1">Confirm Return</button>
                 </div>
             </form>
         </div>
@@ -498,6 +522,58 @@
                     <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm">Report Issue</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Buy Rental Modal -->
+<div class="modal fade" id="buyRentalModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header border-0 align-items-center">
+                <div>
+                    <h4 class="modal-title fw-bold text-dark mb-1">Buy Rental Outright</h4>
+                    <p class="text-muted small mb-0">Keep this item forever instead of returning it.</p>
+                </div>
+                <button type="button" class="btn-close ms-auto" data-dismiss="modal" aria-label="Close" style="background: none; border: none; font-size: 1.5rem; color: #94a3b8;">&times;</button>
+            </div>
+            <div class="modal-body px-4 py-4">
+                <div id="buy_rental_loading" class="text-center py-4">
+                    <div class="spinner-border text-success mb-3" role="status"></div>
+                    <p class="text-muted small fw-medium">Checking eligibility and calculating quote...</p>
+                </div>
+                
+                <div id="buy_rental_error" class="alert alert-danger d-none rounded-4 border-0 p-3 small mb-0"></div>
+
+                <div id="buy_rental_quote_container" class="d-none">
+                    <div class="alert alert-success rounded-4 border-0 p-3 small mb-4 d-flex gap-3 align-items-center">
+                        <i class="bi bi-check-circle-fill fs-5"></i>
+                        <span>You can purchase this item outright! Your security deposit will be adjusted against the purchase price.</span>
+                    </div>
+                    
+                    <div class="quote-receipt">
+                        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-secondary-subtle border-dashed">
+                            <h6 class="fw-bold small text-uppercase mb-0">Purchase Quote</h6>
+                        </div>
+                        
+                        <div id="buy_rental_items" class="mb-3"></div>
+                        
+                        <div class="d-flex justify-content-between align-items-center pt-3 border-top border-secondary-subtle" style="border-top-style: dashed !important;">
+                            <div>
+                                <span class="d-block text-muted extra-small text-uppercase fw-bold">Amount Due</span>
+                                <span class="fs-4 fw-bold text-dark">₹<span id="buy_rental_amount_due">0.00</span></span>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-success-subtle text-success rounded-pill px-2 py-1 extra-small">TAX INCLUDED</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4 pt-0 gap-3">
+                <button type="button" class="btn btn-light btn-premium-action px-4" data-dismiss="modal">Cancel</button>
+                <button type="button" id="proceed_buy_rental" class="btn btn-premium-success btn-premium-action flex-grow-1 d-none">Proceed to Buy <i class="bi bi-arrow-right ms-2"></i></button>
+            </div>
         </div>
     </div>
 </div>
@@ -827,6 +903,112 @@
                 razorpay_payment_id: pid
             }, function(res) {
                 if(res.success) location.reload();
+            });
+        }
+
+        // Buy Rental Logic
+        let activeBuyOrderId = null;
+        let activeBuyClothId = null;
+        let activeBuyOrderItemId = null;
+
+        $('.buy-rental-trigger').on('click', function() {
+            const btn = $(this);
+            activeBuyOrderId = btn.data('order-id');
+            activeBuyClothId = btn.data('cloth-id');
+
+            $('#buy_rental_loading').removeClass('d-none');
+            $('#buy_rental_error, #buy_rental_quote_container, #proceed_buy_rental').addClass('d-none');
+            $('#buyRentalModal').modal('show');
+
+            $.get(`/orders/${activeBuyOrderId}/purchase-eligibility`, { cloth_id: activeBuyClothId }, function(res) {
+                $('#buy_rental_loading').addClass('d-none');
+                if(res.success && res.is_eligible) {
+                    $('#buy_rental_quote_container, #proceed_buy_rental').removeClass('d-none');
+                    const quote = res.conversion_quote;
+                    $('#buy_rental_amount_due').text(quote.amount_due.toLocaleString('en-IN', { minimumFractionDigits: 2 }));
+                    
+                    let html = `
+                        <div class="d-flex justify-content-between small mb-2">
+                            <span class="text-muted fw-medium">Selling Price</span>
+                            <span class="fw-bold text-dark">₹${quote.pricing_breakdown.base_price}</span>
+                        </div>
+                        <div class="d-flex justify-content-between small mb-2">
+                            <span class="text-muted fw-medium">Security Deposit Held</span>
+                            <span class="fw-bold text-success">- ₹${quote.security_deposit}</span>
+                        </div>
+                    `;
+                    $('#buy_rental_items').html(html);
+                }
+            }).fail(function(xhr) {
+                $('#buy_rental_loading').addClass('d-none');
+                const msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Item not eligible for purchase.';
+                $('#buy_rental_error').text(msg).removeClass('d-none');
+            });
+        });
+
+        $('#proceed_buy_rental').on('click', function() {
+            const btn = $(this);
+            btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Processing...');
+
+            $.post(`/orders/${activeBuyOrderId}/convert-to-purchase`, {
+                _token: $('meta[name="csrf-token"]').attr('content'),
+                cloth_id: activeBuyClothId
+            }, function(res) {
+                if(res.success) {
+                    activeBuyOrderItemId = res.order_item_id;
+                    if(!res.requires_payment) {
+                        verifyBuy(activeBuyOrderItemId, null);
+                        return;
+                    }
+                    if(!res.key || res.key.includes('dummy')) {
+                        if(confirm("Test mode: Simulate successful payment?")) {
+                            verifyBuy(activeBuyOrderItemId, 'mock_' + Date.now());
+                        } else {
+                            btn.prop('disabled', false).html('Proceed to Buy');
+                        }
+                        return;
+                    }
+
+                    const opt = {
+                        "key": res.key,
+                        "amount": res.razorpay_order.amount,
+                        "currency": "INR",
+                        "name": "GetReady Rental",
+                        "description": "Buy Rental Outright",
+                        "handler": function (p) { verifyBuy(activeBuyOrderItemId, p.razorpay_payment_id); },
+                        "prefill": { "name": "{{ auth()->user()->name }}", "email": "{{ auth()->user()->email }}" },
+                        "theme": { "color": "#198754" }
+                    };
+                    const rzp = new Razorpay(opt);
+                    rzp.on('payment.failed', function (response){
+                        btn.prop('disabled', false).html('Proceed to Buy');
+                    });
+                    rzp.open();
+                } else {
+                    alert(res.message || 'Error initiating purchase.');
+                    btn.prop('disabled', false).html('Proceed to Buy');
+                }
+            }).fail(function(xhr) {
+                alert('Error initiating purchase. Please try again.');
+                btn.prop('disabled', false).html('Proceed to Buy');
+            });
+        });
+
+        function verifyBuy(orderItemId, paymentId) {
+            $.post('/orders/conversion/verify', {
+                _token: $('meta[name="csrf-token"]').attr('content'),
+                order_item_id: orderItemId,
+                razorpay_payment_id: paymentId
+            }, function(res) {
+                if(res.success) {
+                    location.reload();
+                } else {
+                    alert(res.message || 'Error verifying purchase.');
+                    $('#proceed_buy_rental').prop('disabled', false).html('Proceed to Buy');
+                }
+            }).fail(function() {
+                alert('Server error verifying purchase.');
+                $('#proceed_buy_rental').prop('disabled', false).html('Proceed to Buy');
             });
         }
     });

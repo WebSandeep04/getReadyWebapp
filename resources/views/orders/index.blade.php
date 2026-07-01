@@ -106,6 +106,18 @@
         </div>
     @endif
 
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show rounded-4 border-0 shadow-sm p-4 mb-4" role="alert">
+            <div class="d-flex align-items-center gap-3">
+                <i class="bi bi-exclamation-triangle-fill fs-4 text-danger"></i>
+                <div class="fw-medium">{{ session('error') }}</div>
+            </div>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    @endif
+
     @if(!$orders->isEmpty())
         @php
             $totalSpent = 0;
@@ -292,6 +304,11 @@
                                                 <i class="bi bi-calendar-plus me-1"></i> EXTEND
                                             </button>
                                             @if($order->status === 'Delivered')
+                                                @if($order->delivered_at && \Carbon\Carbon::parse($order->delivered_at)->addMinutes(2)->isFuture())
+                                                    <button type="button" class="btn btn-premium return-trigger px-3 py-2 rounded-pill fw-900 shadow-sm" style="font-size: 0.72rem;" data-toggle="modal" data-target="#returnModal" data-order-id="{{ $order->id }}">
+                                                        <i class="bi bi-box-arrow-left me-1"></i> RETURN
+                                                    </button>
+                                                @endif
                                                 <button type="button" class="btn btn-premium early-return-trigger px-3 py-2 rounded-pill fw-900 shadow-sm" style="font-size: 0.72rem;" data-toggle="modal" data-target="#earlyReturnModal" data-order-id="{{ $order->id }}" data-max-date="{{ \Carbon\Carbon::parse($order->rental_to)->format('Y-m-d') }}">
                                                     <i class="bi bi-clock-history me-1"></i> EARLY RETURN
                                                 </button>
@@ -360,6 +377,11 @@
                                             <i class="bi bi-calendar-plus"></i> EXTEND
                                          </button>
                                          @if($order->status === 'Delivered')
+                                             @if($order->delivered_at && \Carbon\Carbon::parse($order->delivered_at)->addMinutes(2)->isFuture())
+                                                 <button type="button" class="btn btn-premium btn-sale-action return-trigger" data-toggle="modal" data-target="#returnModal" data-order-id="{{ $order->id }}">
+                                                    <i class="bi bi-box-arrow-left"></i> RETURN
+                                                 </button>
+                                             @endif
                                              <button type="button" class="btn btn-premium btn-sale-action early-return-trigger" data-toggle="modal" data-target="#earlyReturnModal" data-order-id="{{ $order->id }}" data-max-date="{{ \Carbon\Carbon::parse($order->rental_to)->format('Y-m-d') }}">
                                                 <i class="bi bi-clock-history"></i> EARLY RETURN
                                              </button>
@@ -494,17 +516,23 @@
 <div class="modal fade" id="returnModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow rounded-4">
-            <form action="" method="POST">
+            <form action="" method="POST" enctype="multipart/form-data">
                 @csrf
-                <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title fw-bold text-danger">Report an Issue</h5>
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <div class="modal-header border-0 align-items-center">
+                    <div>
+                        <h4 class="modal-title fw-bold text-dark mb-1">Instant Return</h4>
+                        <p class="text-muted small mb-0">Report issues and return immediately</p>
+                    </div>
+                    <button type="button" class="btn-close ms-auto" data-dismiss="modal" aria-label="Close" style="background: none; border: none; font-size: 1.5rem; color: #94a3b8;">&times;</button>
                 </div>
-                <div class="modal-body py-4">
-                    <p class="text-muted small mb-4">If you received damaged items or have concerns, please report it within 2 minutes of delivery for priority assistance.</p>
+                <div class="modal-body px-4 py-4">
+                    <div class="alert alert-warning rounded-4 border-0 p-3 small mb-4 d-flex gap-3 align-items-center">
+                        <i class="bi bi-info-circle-fill fs-5"></i>
+                        <span>If you received damaged items or have concerns, please report it within 2 minutes of delivery for an instant return.</span>
+                    </div>
                     <div class="form-group mb-3">
-                        <label class="small fw-bold text-uppercase letter-spacing-1">Issue Category</label>
-                        <select name="reason" class="form-control bg-light border-0 rounded-3" required>
+                        <label class="form-label fw-bold small text-uppercase letter-spacing-1">Issue Category</label>
+                        <select name="return_reason" class="form-control bg-light border-0 rounded-3" style="box-shadow: none;" required>
                             <option value="">Select a reason</option>
                             <option value="Damaged Item">Damaged Item</option>
                             <option value="Wrong Size/Color">Wrong Size/Color</option>
@@ -512,14 +540,18 @@
                             <option value="Other">Other</option>
                         </select>
                     </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-bold small text-uppercase letter-spacing-1">Detailed Description</label>
+                        <textarea name="return_details" class="form-control bg-light border-0 rounded-3" rows="4" placeholder="Please describe the issue in detail..." style="box-shadow: none;" required></textarea>
+                    </div>
                     <div class="form-group mb-0">
-                        <label class="small fw-bold text-uppercase letter-spacing-1">Detailed Description</label>
-                        <textarea name="details" class="form-control bg-light border-0 rounded-3" rows="4" placeholder="Please describe the issue in detail..." required></textarea>
+                        <label class="form-label fw-bold small text-uppercase letter-spacing-1">Upload Images (Optional)</label>
+                        <input type="file" name="return_images[]" multiple class="form-control bg-light border-0 rounded-3" accept="image/*">
                     </div>
                 </div>
-                <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-light rounded-pill px-4" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm">Report Issue</button>
+                <div class="modal-footer border-0 px-4 pb-4 pt-0 gap-3">
+                    <button type="button" class="btn btn-light btn-premium-action px-4" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-premium btn-premium-action flex-grow-1" style="background: #ef4444; color: white;">Request Return</button>
                 </div>
             </form>
         </div>

@@ -127,7 +127,7 @@ class FrontendSettingsSeeder extends Seeder
             ],
             [
                 'key' => 'footer_address',
-                'value' => '123 Fashion Street, Style City, SC 12345',
+                'value' => 'Flat 1807, D Wing, Mahaavir Exotique, Upper Kharghar, Navi Mumbai, Maharashtra',
                 'type' => 'text',
                 'section' => 'footer',
                 'label' => 'Footer Address',
@@ -143,7 +143,7 @@ class FrontendSettingsSeeder extends Seeder
             ],
             [
                 'key' => 'footer_email',
-                'value' => 'info@getready.com',
+                'value' => 'Contactgetready2@gmail.com',
                 'type' => 'text',
                 'section' => 'footer',
                 'label' => 'Footer Email',
@@ -211,7 +211,7 @@ class FrontendSettingsSeeder extends Seeder
             ],
             [
                 'key' => 'contact_email',
-                'value' => 'support@getready.com',
+                'value' => 'Contactgetready2@gmail.com',
                 'type' => 'text',
                 'section' => 'general',
                 'label' => 'Contact Email',

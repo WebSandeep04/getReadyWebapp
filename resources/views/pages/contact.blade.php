@@ -18,9 +18,9 @@
                         <div>
                             <h5 class="mb-1">Registered Office</h5>
                             <p class="mb-0 text-muted">
-                                DP and Co.,<br>
-                                F-80, Basement, Lajpat Nagar-1,<br>
-                                New Delhi - 110024, India
+                                Flat 1807, D Wing, Mahaavir Exotique,<br>
+                                Upper Kharghar, Navi Mumbai,<br>
+                                Maharashtra
                             </p>
                         </div>
                     </div>
@@ -30,7 +30,7 @@
                         <div>
                             <h5 class="mb-1">Email Support</h5>
                             <p class="mb-0 text-muted">
-                                <a href="mailto:care@Getready.co.in" class="text-decoration-none text-muted">care@Getready.co.in</a>
+                                <a href="mailto:Contactgetready2@gmail.com" class="text-decoration-none text-muted">Contactgetready2@gmail.com</a>
                             </p>
                         </div>
                     </div>
@@ -43,7 +43,7 @@
                 <div class="card-body p-4 p-md-5 d-flex flex-column justify-content-center text-center">
                     <h4 class="mb-3">Need Immediate Assistance?</h4>
                     <p class="text-muted mb-4">Our support team is available to help you with your orders, returns, and any other inquiries.</p>
-                    <a href="mailto:care@Getready.co.in" class="btn btn-dark btn-lg">Email Us Now</a>
+                    <a href="mailto:Contactgetready2@gmail.com" class="btn btn-dark btn-lg">Email Us Now</a>
                 </div>
             </div>
         </div>

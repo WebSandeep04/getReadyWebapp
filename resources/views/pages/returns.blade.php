@@ -198,6 +198,17 @@
                         </div>
 
                         <div class="policy-subsection">
+                            <h6><i class="bi bi-clock-history"></i> Rental Extensions</h6>
+                            <p class="policy-text">
+                                Users can choose to extend their rental period before the original Return Date, subject to the availability of the product(s).
+                                <br><br>
+                                <strong>Extension Request:</strong> An extension request can be made via your Orders Dashboard. The system will calculate the additional charges for the requested extra days.
+                                <br>
+                                <strong>Approval & Payment:</strong> If the product is available, the extension will be confirmed upon successful payment of the calculated extension fees. Once confirmed, your new Return Date will be updated automatically.
+                            </p>
+                        </div>
+
+                        <div class="policy-subsection">
                             <h6><i class="bi bi-exclamation-triangle"></i> Instant Return on Delivery (Issues)</h6>
                             <p class="policy-text">
                                 Please check your product(s) properly at the time of delivery for size, color, style, or damage. 

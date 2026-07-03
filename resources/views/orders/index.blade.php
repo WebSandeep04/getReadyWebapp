@@ -347,6 +347,15 @@
                                                 </button>
                                             @endif
                                         @endif
+
+                                        @if(in_array($order->status, ['Pending', 'Confirmed']))
+                                            <form action="{{ route('orders.cancel', $order->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to cancel this order? A full refund will be initiated.');">
+                                                @csrf
+                                                <button type="submit" class="btn btn-outline-danger px-3 py-2 rounded-pill fw-900 shadow-sm" style="font-size: 0.72rem;">
+                                                    <i class="bi bi-x-circle me-1"></i> CANCEL
+                                                </button>
+                                            </form>
+                                        @endif
                                     </div>
                                 </div>
 
@@ -419,6 +428,15 @@
                                                 <i class="bi bi-star"></i> RATE ORDER
                                             </button>
                                         @endif
+                                    @endif
+
+                                    @if(in_array($order->status, ['Pending', 'Confirmed']))
+                                        <form action="{{ route('orders.cancel', $order->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to cancel this order? A full refund will be initiated.');">
+                                            @csrf
+                                            <button type="submit" class="btn btn-outline-danger btn-sale-action">
+                                                <i class="bi bi-x-circle"></i> CANCEL
+                                            </button>
+                                        </form>
                                     @endif
                                 </div>
                             </div>

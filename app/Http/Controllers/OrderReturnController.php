@@ -24,8 +24,8 @@ class OrderReturnController extends Controller
             return back()->with('error', 'Only delivered orders can be reported for issues.');
         }
 
-        if (!$order->delivered_at || $order->delivered_at->addMinutes(2)->isPast()) {
-            return back()->with('error', 'The reporting period for this order has expired (limit: 2 minutes after delivery).');
+        if (!$order->delivered_at || $order->delivered_at->addHours(4)->isPast()) {
+            return back()->with('error', 'The reporting period for this order has expired (limit: 4 hours after delivery).');
         }
 
         $imagePaths = [];

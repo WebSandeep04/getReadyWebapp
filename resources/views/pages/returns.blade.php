@@ -2,49 +2,247 @@
 
 @section('title', 'Cancellation and Returns Policy')
 
-@section('content')
-<div class="container py-5">
-    <h1 class="mb-4">Cancellation and Returns Policy</h1>
+@section('styles')
+<style>
+    /* Premium Page Aesthetics */
+    .premium-page-wrapper {
+        background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+        min-height: 100vh;
+        padding: 5rem 0;
+        font-family: 'Inter', sans-serif;
+    }
     
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-4 p-md-5">
-            <h5 class="mt-4">1. Cancellation of an Order (Cancellation Clause)</h5>
-            
-            <h6 class="mt-3">i. Cancellation by GETREADY</h6>
-            <p>GETREADY reserves the right, at its sole discretion, to refuse or cancel any order for any product(s) whether for rent or sale made by the user which GETREADY is unable to accept for various reasons such as the product being no longer available or being temporarily unavailable; limited quantities of the identified product(s) being available for renting by the user registered on the site/app and the same product having been ordered by another user prior to your order; a problem(s) is identified by GETREADY in relation to the payment made by the user for any product displayed on the site/app; inaccurate or insufficient shipping address or other inaccurate detail(s) have been provided by the user at the time of placing an order of any product; the product is requested to be delivered at a location where GETREADY does not cater or is otherwise inaccessible; or there are inaccuracies, defect or errors in the identified product(s) or its pricing information; or any malpractice or abuse is identified by GETREADY on part of the user while placing any order for a product or any malpractice or abuse by the user of the Services rendered by GETREADY or any other reason.</p>
-            <p>GETREADY may also require additional verification or information before accepting any order placed by you. GETREADY will contact you on the details provided by you during your registration on the site/app, subject to these terms, if all or any portion of your order is cancelled or if additional information is required by us to accept your order. If your order is cancelled after your credit card/debit card/account has been charged, the rental amount or the sale price, as the case maybe, shall be reversed back in your card/debit card/account in a time span as may be considered reasonable by GETREADY.</p>
+    .premium-header {
+        text-align: center;
+        margin-bottom: 4rem;
+        animation: fadeInDown 0.8s ease-out;
+    }
+    
+    .premium-header h1 {
+        font-size: 3rem;
+        font-weight: 800;
+        background: linear-gradient(90deg, #1f2937 0%, #4b5563 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -1px;
+    }
+    
+    .premium-header p {
+        font-size: 1.1rem;
+        color: #6b7280;
+        max-width: 600px;
+        margin: 1rem auto 0;
+    }
 
-            <h6 class="mt-3">ii. Cancellation by USER</h6>
-            <p>GETREADY reserves the right to accept or reject requests for cancellation for any reason. Cancellations made after GETREADY has dispatched the products shall be subject to a cancellation fee of ₹50. GETREADY may alter the said cancellation fee on case to case basis to any amount it deems fit at its absolute discretion. The time at which any order is made by you for any of the product (s) shall be recorded by GETREADY at its sole discretion and such time shall not be disputed by you. The user agrees not to dispute the decision made by GETREADY in relation to the determination of the applicable cancellation fee and accept GETREADY’s decision made in response to any cancellation request made by the User. It is further clarified GETREADY owes no liability to the user for citing any reason for cancelling any order made by the user.</p>
+    /* Glassmorphism Card */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 24px;
+        padding: 3rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+        animation: fadeInUp 0.8s ease-out;
+    }
 
-            <h5 class="mt-4">2. Return of Products (Return Clause)</h5>
-            
-            <h6 class="mt-3">i. Return of Products after Use</h6>
-            <p>You hereby agree and acknowledge that you shall be solely responsible for returning the rented product(s) to GET READY on the Return Date, which shall mean the day immediately following the last day of the Rental Period, as specified on the site/app. The product(s) must be returned in a satisfactory condition and in accordance with these Terms. You further acknowledge that you shall have the option to initiate an early return of the product(s) through the site/app.</p>
+    /* Section Styling */
+    .policy-section {
+        margin-bottom: 3rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+    }
+    .policy-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
 
-            <p><strong>In the event you fail to return the product(s) by the scheduled Return Date:</strong></p>
-            <ul>
-                <li><strong>Delay up to 8 (Eight) Days:</strong> For each day of delay (up to a maximum of 8 days), you shall be liable to pay a Late Fee equivalent to one (1) day’s rental amount for each delayed product. This Late Fee shall be in addition to the original rental amount and all applicable taxes.</li>
-                <li><strong>Delay Beyond 8 (Eight) Days:</strong> If the product(s) is not returned within 8 days from the Return Date, GET READY shall be entitled to charge you an amount equivalent to 100% of the MRP (retail price) of the product(s) as displayed on the site/app, plus all applicable taxes.</li>
-            </ul>
+    .policy-title {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 1.5rem;
+    }
 
-            <p>You agree that GET READY shall have the right to adjust all Late Fees and/or MRP charges against any Security Deposit paid by you. If the payable amount exceeds the Security Deposit, you hereby authorize GET READY to charge the remaining amount to the debit/credit card or any payment method linked to your account. Any balance Security Deposit, after such adjustments, shall be refunded in accordance with these Terms.</p>
-            <p>Where the product has been used by the user, the applicable refund shall be initiated after 48 hours from the time at which the seller receives the returned product.</p>
+    .policy-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+        color: #4f46e5;
+        border-radius: 14px;
+        font-size: 1.2rem;
+    }
 
-            <h6 class="mt-3">ii. Return of Products without Use</h6>
-            <p>GETREADY reserves the right to accept or reject requests for returns for any reason. The user is hereby advised to check the product(s) properly at the time of delivery for size, colour, style and/ or damage and also try the product if needed. In case the user wishes to return the product, the user shall return the products via app/website stating the reason for return within 4 hours of receiving the products. No request for return will be entertained by GETREADY after expiry of 4 hours from the time of delivery. In the event GET READY accepts a user’s request for the return of any order, any applicable refund of the Security Deposit and/or Rental Fee and/or Delivery Charges and/or any other charges shall be processed after the expiry of one (1) day from the Return Date, and shall remain subject to such deductions as may be deemed appropriate by GET READY, in its sole discretion, including but not limited to Late Fees, damage charges, or any other amounts payable under these Terms.</p>
+    .policy-subsection {
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid rgba(229, 231, 235, 0.5);
+    }
 
-            <h6 class="mt-3">iii. Pick-Up</h6>
-            <p>It is further agreed that the product(s) shall be returned in a safe and acceptable manner, only to the person designated by GETREADY, who shall pick up the product(s) from your Shipping Address on or before the return date, at the time as mentioned by the user on the app/website. In case the user wishes to change the scheduled pick up time the user may contact GETREADY on the phone number(s) as mentioned in the sms/email notification which the user will receive on the day of the pick-up.</p>
+    .policy-subsection:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.03);
+    }
 
-            <h6 class="mt-3">iv. Return terms for Products on Sale</h6>
-            <p>It is hereby clarified that GETREADY shall not accept any request for return of product(s) by a user for purchased products listed for sale on the site/app and all such orders shall be final and binding on the user placing such orders. It is explicitly clarified GETREADY owes no liability to the user for any damage whatsoever caused in case of returning any order made by the user.</p>
+    .policy-subsection h6 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #374151;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .policy-subsection h6 i {
+        color: #8b5cf6;
+    }
 
-            <h5 class="mt-4">3. Refunds</h5>
-            <p>All refunds shall be processed through the Third-Party Payment Gateways engaged by GET READY. The actual time taken for the refund to reflect in the user’s account shall be subject to the processing timelines and policies of the respective bank(s) and/or payment gateway(s). GET READY shall not be liable for any delay or failure arising from such third-party systems. GET READY shall, however, take reasonable steps to ensure that refund requests are forwarded and processed in a timely manner, but no specific timelines are guaranteed.</p>
+    .policy-text {
+        color: #4b5563;
+        line-height: 1.7;
+        font-size: 0.95rem;
+        margin-bottom: 0;
+    }
 
-            <h5 class="mt-4">4. Returns and Cancellation on Sale</h5>
-            <p>There shall be no returns and cancellations on the products available on GETREADY for sale.</p>
+    /* Info Highlight */
+    .info-highlight {
+        background: linear-gradient(to right, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05));
+        border-left: 4px solid #3b82f6;
+        padding: 1.25rem;
+        border-radius: 0 12px 12px 0;
+        margin: 1.5rem 0;
+        font-weight: 500;
+        color: #1e3a8a;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+@endsection
+
+@section('content')
+<div class="premium-page-wrapper">
+    <div class="container">
+        <div class="premium-header">
+            <h1>Cancellation & Returns</h1>
+            <p>Clear, transparent, and fair policies tailored for your luxury rental experience.</p>
+        </div>
+        
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="glass-card">
+                    
+                    <!-- 1. Cancellation -->
+                    <div class="policy-section">
+                        <div class="policy-title">
+                            <div class="policy-icon"><i class="bi bi-x-octagon"></i></div>
+                            1. Order Cancellations
+                        </div>
+                        
+                        <div class="policy-subsection">
+                            <h6><i class="bi bi-person-x"></i> Cancellation by User</h6>
+                            <p class="policy-text">
+                                Users can seamlessly cancel their orders directly from the <strong>Orders Dashboard</strong>. 
+                                <br><br>
+                                <strong>Pending or Confirmed Orders:</strong> If your order has not yet been dispatched, you can cancel it for a <strong>full refund</strong>, which will be processed automatically to your original payment method.
+                            </p>
+                        </div>
+                        
+                        <div class="policy-subsection">
+                            <h6><i class="bi bi-shield-x"></i> Cancellation by GETREADY</h6>
+                            <p class="policy-text">
+                                GETREADY reserves the right, at its sole discretion, to refuse or cancel any order for reasons such as product unavailability, payment anomalies, inaccurate shipping details, or suspected malpractice. 
+                                <br><br>
+                                If your order is cancelled after your payment method has been charged, the full amount will be reversed back to your account in a timely manner.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 2. Returns (Rental) -->
+                    <div class="policy-section">
+                        <div class="policy-title">
+                            <div class="policy-icon"><i class="bi bi-box-arrow-in-left"></i></div>
+                            2. Rental Returns
+                        </div>
+                        
+                        <div class="policy-subsection">
+                            <h6><i class="bi bi-calendar-check"></i> Standard Return After Use</h6>
+                            <p class="policy-text">
+                                You are responsible for returning the rented product(s) to GET READY on the <strong>Return Date</strong> (the day immediately following the last day of the Rental Period). Products must be returned in satisfactory condition. 
+                            </p>
+                            <div class="info-highlight">
+                                <i class="bi bi-clock-history me-2"></i><strong>Early Returns:</strong> You have the option to initiate an early return through the site/app at any time before your scheduled return date!
+                            </div>
+                            <p class="policy-text">
+                                <strong>Delay up to 8 Days:</strong> For each day of delay, a Late Fee equivalent to one (1) day’s rental amount will apply.<br>
+                                <strong>Delay Beyond 8 Days:</strong> GET READY shall be entitled to charge an amount equivalent to 100% of the MRP of the product(s). Late fees and MRP charges will be adjusted against your Security Deposit.
+                            </p>
+                        </div>
+
+                        <div class="policy-subsection">
+                            <h6><i class="bi bi-exclamation-triangle"></i> Instant Return on Delivery (Issues)</h6>
+                            <p class="policy-text">
+                                Please check your product(s) properly at the time of delivery for size, color, style, or damage. 
+                                If you face any issues, you must initiate an <strong>Instant Return</strong> via the app/website within <strong>4 hours</strong> of receiving the delivery. No requests will be entertained after this window.
+                            </p>
+                        </div>
+                        
+                        <div class="policy-subsection">
+                            <h6><i class="bi bi-truck"></i> Pick-Up Logistics</h6>
+                            <p class="policy-text">
+                                The product(s) shall be picked up from your Shipping Address by our designated logistics partner on or before the return date. If you need to reschedule, please contact GETREADY via the details provided in your pickup notification.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 3. Refunds -->
+                    <div class="policy-section">
+                        <div class="policy-title">
+                            <div class="policy-icon"><i class="bi bi-cash-stack"></i></div>
+                            3. Refunds Process
+                        </div>
+                        <div class="policy-subsection">
+                            <p class="policy-text">
+                                All refunds are processed securely through our Third-Party Payment Gateways. The actual time taken for the refund to reflect in your account is subject to the processing timelines of your respective bank or card issuer (typically 5-7 business days). GET READY ensures that all refund requests are forwarded promptly.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 4. Sale Items -->
+                    <div class="policy-section">
+                        <div class="policy-title">
+                            <div class="policy-icon"><i class="bi bi-bag-check"></i></div>
+                            4. Sale Items (Purchases)
+                        </div>
+                        <div class="policy-subsection">
+                            <p class="policy-text">
+                                <strong>4-Hour Issue Reporting:</strong> Just like rentals, if you face any issues with an item you purchased, you can report it and request a return within <strong>4 hours</strong> of delivery for a full refund.
+                                <br><br>
+                                <strong>Final Sale:</strong> After the 4-hour window has passed, all purchased items are considered final sale and cannot be returned or cancelled. GETREADY owes no liability to the user for any damage caused during an unauthorized return attempt.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
         </div>
     </div>
 </div>

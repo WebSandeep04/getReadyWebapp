@@ -129,5 +129,42 @@ class OrderController extends Controller
 
         return view('orders.transactions', compact('payments'));
     }
+
+    public function cancel($id)
+    {
+        $order = Order::with(['items.cloth', 'payments'])->where('buyer_id', Auth::id())->findOrFail($id);
+
+        if (!in_array($order->status, ['Pending', 'Confirmed'])) {
+            return back()->with('error', 'Only Pending or Confirmed orders can be cancelled.');
+        }
+
+        // Cancel order
+        $order->status = 'Cancelled';
+        $order->save();
+
+        // Restore stock and availability
+        $availabilityService = app(\App\Services\AvailabilityService::class);
+        foreach ($order->items as $item) {
+            $cloth = $item->cloth;
+            if ($cloth) {
+                $cloth->sku = $cloth->sku + 1;
+                $cloth->is_available = true;
+                $cloth->save();
+
+                if ($item->purchase_type !== 'buy') {
+                    $availabilityService->restoreAvailabilityForOrder($cloth->id, $order->id);
+                }
+            }
+        }
+
+        // Refund payments
+        $paidPayments = $order->payments()->whereIn('payment_status', ['Paid', 'Success', 'paid', 'success'])->get();
+        foreach ($paidPayments as $payment) {
+            $payment->payment_status = 'Refunded';
+            $payment->save();
+        }
+
+        return back()->with('success', 'Order cancelled successfully and full refund initiated.');
+    }
 }
 

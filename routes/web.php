@@ -302,6 +302,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/checkout/create-order', [CheckoutController::class, 'createOrder'])->name('checkout.create');
     Route::post('/checkout/verify', [CheckoutController::class, 'verifyPayment'])->name('checkout.verify');
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::post('/orders/{id}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
     Route::get('/my-sales', [OrderController::class, 'sales'])->name('orders.sales');
     Route::get('/transactions', [OrderController::class, 'transactions'])->name('transactions.index');
     Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index');

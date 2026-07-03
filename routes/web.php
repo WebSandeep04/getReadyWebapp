@@ -51,6 +51,14 @@ use App\Http\Controllers\ReplyController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
+// Static Pages (Razorpay Approval)
+Route::view('/terms-and-conditions', 'pages.terms')->name('terms');
+Route::view('/privacy-policy', 'pages.privacy')->name('privacy');
+Route::view('/cancellation-and-returns', 'pages.returns')->name('returns');
+Route::view('/shipping-and-delivery', 'pages.shipping')->name('shipping');
+Route::view('/contact-us', 'pages.contact')->name('contact');
+Route::view('/about-us', 'pages.about')->name('about');
+
 // Registration (Moved to Login/OTP flow)
 Route::post('/complete-registration', [LoginController::class, 'completeRegistration'])->name('complete.registration');
 

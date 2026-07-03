@@ -42,14 +42,12 @@
       <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
         <h6 class="footer-heading mb-4">USEFUL LINKS</h6>
         <ul class="footer-links list-unstyled">
-          <li><a href="#">Contact Us</a></li>
-          <li><a href="#">FAQ</a></li>
-          <li><a href="#">T&C</a></li>
-          <li><a href="#">Terms Of Use</a></li>
-          <li><a href="#">Track Orders</a></li>
-          <li><a href="#">Shipping</a></li>
-          <li><a href="#">Cancellation & Returns</a></li>
-          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="{{ route('about') }}">About Us</a></li>
+          <li><a href="{{ route('contact') }}">Contact Us</a></li>
+          <li><a href="{{ route('terms') }}">T&C</a></li>
+          <li><a href="{{ route('shipping') }}">Shipping & Delivery Policy</a></li>
+          <li><a href="{{ route('returns') }}">Cancellation & Returns</a></li>
+          <li><a href="{{ route('privacy') }}">Privacy Policy</a></li>
         </ul>
       </div>
 

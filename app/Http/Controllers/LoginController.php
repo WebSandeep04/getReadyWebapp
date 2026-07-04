@@ -44,6 +44,7 @@ class LoginController extends Controller
      */
     public function login(Request $request)
     {
+        $this->cleanPhone($request);
         // Default to mobile login logic (since we are removing email login)
         return $this->handleMobileLogin($request);
     }
@@ -234,6 +235,7 @@ class LoginController extends Controller
      */
     public function completeRegistration(Request $request)
     {
+        $this->cleanPhone($request);
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string|regex:/^[0-9]{10,15}$/',
             'verification_token' => 'required|string',

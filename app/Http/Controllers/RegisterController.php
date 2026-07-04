@@ -35,6 +35,7 @@ class RegisterController extends Controller
      */
     public function register(Request $request)
     {
+        $this->cleanPhone($request);
         // Default to mobile signup logic (since we are removing email signup)
         return $this->handleMobileSignup($request);
     }

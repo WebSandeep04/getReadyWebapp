@@ -132,10 +132,21 @@ class OrderController extends Controller
 
     public function cancel($id)
     {
-        $order = Order::with(['items.cloth', 'payments'])->where('buyer_id', Auth::id())->findOrFail($id);
+        $order = Order::with(['items.cloth', 'payments', 'shipments'])->where('buyer_id', Auth::id())->findOrFail($id);
 
-        if (!in_array($order->status, ['Pending', 'Confirmed'])) {
-            return back()->with('error', 'Only Pending or Confirmed orders can be cancelled.');
+        if (!in_array($order->status, ['Pending', 'Confirmed', 'Order Confirmed & Shipment Created'])) {
+            return back()->with('error', 'Only Pending, Confirmed or recently shipped orders can be cancelled.');
+        }
+
+        // Cancel shipment if any
+        if ($order->status === 'Order Confirmed & Shipment Created') {
+            $forwardShipment = $order->shipments()->where('type', 'forward')->where('status', '!=', 'Cancelled')->first();
+            if ($forwardShipment && $forwardShipment->waybill_number) {
+                $xpressbees = app(\App\Services\XpressbeesService::class);
+                $xpressbees->cancelShipment($forwardShipment->waybill_number);
+                $forwardShipment->status = 'Cancelled';
+                $forwardShipment->save();
+            }
         }
 
         // Cancel order
@@ -157,9 +168,24 @@ class OrderController extends Controller
             }
         }
 
-        // Refund payments
+        // Refund payments via Razorpay API
         $paidPayments = $order->payments()->whereIn('payment_status', ['Paid', 'Success', 'paid', 'success'])->get();
         foreach ($paidPayments as $payment) {
+            // Check if it's a Razorpay payment and we have a transaction ID
+            if (str_contains(strtolower($payment->payment_method), 'razorpay') && $payment->transaction_id) {
+                try {
+                    $keyId = config('services.razorpay.key_id');
+                    $keySecret = config('services.razorpay.key_secret');
+                    
+                    \Illuminate\Support\Facades\Http::withBasicAuth($keyId, $keySecret)
+                        ->post("https://api.razorpay.com/v1/payments/{$payment->transaction_id}/refund", [
+                            'amount' => (int) round($payment->amount * 100)
+                        ]);
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error('Razorpay Refund Failed for Order ID ' . $order->id . ': ' . $e->getMessage());
+                }
+            }
+
             $payment->payment_status = 'Refunded';
             $payment->save();
         }

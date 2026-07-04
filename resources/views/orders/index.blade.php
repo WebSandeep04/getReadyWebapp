@@ -312,7 +312,7 @@
                                         @endif
                                     </div>
                                     <div class="d-flex flex-column align-items-end gap-2">
-                                        @if($order->has_rental_items && !in_array($order->status, ['Cancelled', 'Returned', 'Return Requested']))
+                                        @if($order->has_rental_items && $order->status === 'Delivered')
                                             <button type="button" class="btn btn-premium px-3 py-2 rounded-pill fw-900 shadow-sm" style="font-size: 0.72rem;" data-toggle="modal" data-target="#extensionModal"
                                                 data-order-id="{{ $order->id }}" 
                                                 data-current-to="{{ ($order->return_date ?? \Carbon\Carbon::parse($order->rental_to)->addDay())->format('d M Y') }}"
@@ -321,19 +321,17 @@
                                                 data-available-dates="{{ json_encode($availableDates) }}">
                                                 <i class="bi bi-calendar-plus me-1"></i> EXTEND
                                             </button>
-                                            @if($order->status === 'Delivered')
-                                                @if($order->delivered_at && \Carbon\Carbon::parse($order->delivered_at)->addMinutes(2)->isFuture())
-                                                    <button type="button" class="btn btn-premium return-trigger px-3 py-2 rounded-pill fw-900 shadow-sm" style="font-size: 0.72rem;" data-toggle="modal" data-target="#returnModal" data-order-id="{{ $order->id }}">
-                                                        <i class="bi bi-box-arrow-left me-1"></i> RETURN
-                                                    </button>
-                                                @endif
-                                                <button type="button" class="btn btn-premium early-return-trigger px-3 py-2 rounded-pill fw-900 shadow-sm" style="font-size: 0.72rem;" data-toggle="modal" data-target="#earlyReturnModal" data-order-id="{{ $order->id }}" data-max-date="{{ \Carbon\Carbon::parse($order->rental_to)->format('Y-m-d') }}">
-                                                    <i class="bi bi-clock-history me-1"></i> EARLY RETURN
-                                                </button>
-                                                <button type="button" class="btn btn-premium buy-rental-trigger px-3 py-2 rounded-pill fw-900 shadow-sm" style="font-size: 0.72rem;" data-order-id="{{ $order->id }}" data-cloth-id="{{ $firstItem->cloth_id ?? '' }}">
-                                                    <i class="bi bi-cart-check me-1"></i> BUY RENTAL
+                                            @if($order->delivered_at && \Carbon\Carbon::parse($order->delivered_at)->addMinutes(2)->isFuture())
+                                                <button type="button" class="btn btn-premium return-trigger px-3 py-2 rounded-pill fw-900 shadow-sm" style="font-size: 0.72rem;" data-toggle="modal" data-target="#returnModal" data-order-id="{{ $order->id }}">
+                                                    <i class="bi bi-box-arrow-left me-1"></i> RETURN
                                                 </button>
                                             @endif
+                                            <button type="button" class="btn btn-premium early-return-trigger px-3 py-2 rounded-pill fw-900 shadow-sm" style="font-size: 0.72rem;" data-toggle="modal" data-target="#earlyReturnModal" data-order-id="{{ $order->id }}" data-max-date="{{ \Carbon\Carbon::parse($order->rental_to)->format('Y-m-d') }}">
+                                                <i class="bi bi-clock-history me-1"></i> EARLY RETURN
+                                            </button>
+                                            <button type="button" class="btn btn-premium buy-rental-trigger px-3 py-2 rounded-pill fw-900 shadow-sm" style="font-size: 0.72rem;" data-order-id="{{ $order->id }}" data-cloth-id="{{ $firstItem->cloth_id ?? '' }}">
+                                                <i class="bi bi-cart-check me-1"></i> BUY RENTAL
+                                            </button>
                                         @endif
 
                                         @if($canRate || $order->status === 'Delivered')
@@ -348,13 +346,10 @@
                                             @endif
                                         @endif
 
-                                        @if(in_array($order->status, ['Pending', 'Confirmed']))
-                                            <form action="{{ route('orders.cancel', $order->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to cancel this order? A full refund will be initiated.');">
-                                                @csrf
-                                                <button type="submit" class="btn btn-outline-danger px-3 py-2 rounded-pill fw-900 shadow-sm" style="font-size: 0.72rem;">
-                                                    <i class="bi bi-x-circle me-1"></i> CANCEL
-                                                </button>
-                                            </form>
+                                        @if(in_array($order->status, ['Pending', 'Confirmed', 'Order Confirmed & Shipment Created']))
+                                            <button type="button" class="btn btn-outline-danger px-3 py-2 rounded-pill fw-900 shadow-sm" style="font-size: 0.72rem;" data-toggle="modal" data-target="#cancelOrderModal" data-cancel-url="{{ route('orders.cancel', $order->id) }}">
+                                                <i class="bi bi-x-circle me-1"></i> CANCEL
+                                            </button>
                                         @endif
                                     </div>
                                 </div>
@@ -394,7 +389,7 @@
                                         </div>
                                     @endif
 
-                                    @if($order->has_rental_items && !in_array($order->status, ['Cancelled', 'Returned', 'Return Requested']))
+                                    @if($order->has_rental_items && $order->status === 'Delivered')
                                          <button type="button" class="btn btn-premium btn-sale-action" data-toggle="modal" data-target="#extensionModal"
                                             data-order-id="{{ $order->id }}" 
                                             data-current-to="{{ ($order->return_date ?? \Carbon\Carbon::parse($order->rental_to)->addDay())->format('d M Y') }}"
@@ -403,19 +398,17 @@
                                             data-available-dates="{{ json_encode($availableDates) }}">
                                             <i class="bi bi-calendar-plus"></i> EXTEND
                                          </button>
-                                         @if($order->status === 'Delivered')
-                                             @if($order->delivered_at && \Carbon\Carbon::parse($order->delivered_at)->addMinutes(2)->isFuture())
-                                                 <button type="button" class="btn btn-premium btn-sale-action return-trigger" data-toggle="modal" data-target="#returnModal" data-order-id="{{ $order->id }}">
-                                                    <i class="bi bi-box-arrow-left"></i> RETURN
-                                                 </button>
-                                             @endif
-                                             <button type="button" class="btn btn-premium btn-sale-action early-return-trigger" data-toggle="modal" data-target="#earlyReturnModal" data-order-id="{{ $order->id }}" data-max-date="{{ \Carbon\Carbon::parse($order->rental_to)->format('Y-m-d') }}">
-                                                <i class="bi bi-clock-history"></i> EARLY RETURN
-                                             </button>
-                                             <button type="button" class="btn btn-premium btn-sale-action buy-rental-trigger" data-order-id="{{ $order->id }}" data-cloth-id="{{ $firstItem->cloth_id ?? '' }}">
-                                                <i class="bi bi-cart-check"></i> BUY RENTAL
+                                         @if($order->delivered_at && \Carbon\Carbon::parse($order->delivered_at)->addMinutes(2)->isFuture())
+                                             <button type="button" class="btn btn-premium btn-sale-action return-trigger" data-toggle="modal" data-target="#returnModal" data-order-id="{{ $order->id }}">
+                                                <i class="bi bi-box-arrow-left"></i> RETURN
                                              </button>
                                          @endif
+                                         <button type="button" class="btn btn-premium btn-sale-action early-return-trigger" data-toggle="modal" data-target="#earlyReturnModal" data-order-id="{{ $order->id }}" data-max-date="{{ \Carbon\Carbon::parse($order->rental_to)->format('Y-m-d') }}">
+                                            <i class="bi bi-clock-history"></i> EARLY RETURN
+                                         </button>
+                                         <button type="button" class="btn btn-premium btn-sale-action buy-rental-trigger" data-order-id="{{ $order->id }}" data-cloth-id="{{ $firstItem->cloth_id ?? '' }}">
+                                            <i class="bi bi-cart-check"></i> BUY RENTAL
+                                         </button>
                                     @endif
 
                                     @if($canRate || $order->status === 'Delivered')
@@ -430,13 +423,10 @@
                                         @endif
                                     @endif
 
-                                    @if(in_array($order->status, ['Pending', 'Confirmed']))
-                                        <form action="{{ route('orders.cancel', $order->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to cancel this order? A full refund will be initiated.');">
-                                            @csrf
-                                            <button type="submit" class="btn btn-outline-danger btn-sale-action">
-                                                <i class="bi bi-x-circle"></i> CANCEL
-                                            </button>
-                                        </form>
+                                    @if(in_array($order->status, ['Pending', 'Confirmed', 'Order Confirmed & Shipment Created']))
+                                        <button type="button" class="btn btn-outline-danger btn-sale-action" data-toggle="modal" data-target="#cancelOrderModal" data-cancel-url="{{ route('orders.cancel', $order->id) }}">
+                                            <i class="bi bi-x-circle"></i> CANCEL
+                                        </button>
                                     @endif
                                 </div>
                             </div>
@@ -641,6 +631,34 @@
             <div class="modal-footer border-0 px-4 pb-4 pt-0 gap-3">
                 <button type="button" class="btn btn-light btn-premium-action px-4" data-dismiss="modal">Cancel</button>
                 <button type="button" id="proceed_buy_rental" class="btn btn-premium-success btn-premium-action flex-grow-1 d-none">Proceed to Buy <i class="bi bi-arrow-right ms-2"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Order Modal -->
+<div class="modal fade" id="cancelOrderModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header border-0 align-items-center">
+                <div>
+                    <h4 class="modal-title fw-bold text-dark mb-1">Cancel Order</h4>
+                    <p class="text-muted small mb-0">Are you sure you want to cancel this order?</p>
+                </div>
+                <button type="button" class="btn-close ms-auto" data-dismiss="modal" aria-label="Close" style="background: none; border: none; font-size: 1.5rem; color: #94a3b8;">&times;</button>
+            </div>
+            <div class="modal-body px-4 py-3">
+                <div class="alert alert-warning rounded-4 border-0 p-3 small mb-0 d-flex gap-3 align-items-center">
+                    <i class="bi bi-info-circle-fill fs-5"></i>
+                    <span>A full refund will be initiated immediately to your original payment method.</span>
+                </div>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4 pt-0 gap-3">
+                <button type="button" class="btn btn-light btn-premium-action px-4" data-dismiss="modal">Keep Order</button>
+                <form id="cancelOrderForm" action="" method="POST" class="m-0 flex-grow-1">
+                    @csrf
+                    <button type="submit" class="btn btn-outline-danger btn-premium-action w-100 fw-bold border-0" style="background: #ef4444; color: white;">Confirm Cancel</button>
+                </form>
             </div>
         </div>
     </div>
@@ -1104,6 +1122,14 @@
                 $('#proceed_buy_rental').prop('disabled', false).html('Proceed to Buy');
             });
         }
+
+        // Set action for cancel modal
+        $('#cancelOrderModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            var url = button.data('cancel-url');
+            var form = $(this).find('#cancelOrderForm');
+            form.attr('action', url);
+        });
     });
 </script>
 @endsection

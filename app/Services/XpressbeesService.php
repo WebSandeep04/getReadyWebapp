@@ -146,4 +146,25 @@ class XpressbeesService
 
         return $response->json();
     }
+    public function cancelShipment($awb)
+    {
+        $token = $this->login();
+
+        if (!$token) {
+            return false;
+        }
+
+        Log::info('Xpressbees Cancel Shipment Request for AWB: ' . $awb);
+        $response = Http::withToken($token)->post($this->baseUrl . '/shipments2/cancel', [
+            'awb' => $awb
+        ]);
+
+        if ($response->successful()) {
+            Log::info('Xpressbees Cancel Shipment Success Response:', $response->json());
+            return true;
+        }
+
+        Log::error('Xpressbees Cancel Shipment Failed: ' . $response->body());
+        return false;
+    }
 }

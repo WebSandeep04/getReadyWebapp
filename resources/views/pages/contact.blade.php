@@ -30,7 +30,7 @@
                         <div>
                             <h5 class="mb-1">Email Support</h5>
                             <p class="mb-0 text-muted">
-                                <a href="mailto:Contactgetready2@gmail.com" class="text-decoration-none text-muted">Contactgetready2@gmail.com</a>
+                                <a href="mailto:supportgetready@gmail.com" class="text-decoration-none text-muted">supportgetready@gmail.com</a>
                             </p>
                         </div>
                     </div>
@@ -43,7 +43,7 @@
                 <div class="card-body p-4 p-md-5 d-flex flex-column justify-content-center text-center">
                     <h4 class="mb-3">Need Immediate Assistance?</h4>
                     <p class="text-muted mb-4">Our support team is available to help you with your orders, returns, and any other inquiries.</p>
-                    <a href="mailto:Contactgetready2@gmail.com" class="btn btn-dark btn-lg">Email Us Now</a>
+                    <a href="mailto:supportgetready@gmail.com" class="btn btn-dark btn-lg">Email Us Now</a>
                 </div>
             </div>
         </div>

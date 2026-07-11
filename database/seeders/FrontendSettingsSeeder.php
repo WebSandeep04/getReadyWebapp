@@ -143,7 +143,7 @@ class FrontendSettingsSeeder extends Seeder
             ],
             [
                 'key' => 'footer_email',
-                'value' => 'Contactgetready2@gmail.com',
+                'value' => 'supportgetready@gmail.com',
                 'type' => 'text',
                 'section' => 'footer',
                 'label' => 'Footer Email',
@@ -211,7 +211,7 @@ class FrontendSettingsSeeder extends Seeder
             ],
             [
                 'key' => 'contact_email',
-                'value' => 'Contactgetready2@gmail.com',
+                'value' => 'supportgetready@gmail.com',
                 'type' => 'text',
                 'section' => 'general',
                 'label' => 'Contact Email',

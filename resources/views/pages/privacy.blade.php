@@ -36,7 +36,7 @@
             <p>GETREADY has the discretion to update this privacy policy at any time. When we do, we will revise the updated date at the bottom of this page. We encourage Users to frequently check this page for any changes to stay informed about how we are helping to protect the personal information we collect.</p>
 
             <h5 class="mt-4">7. Contacting Us</h5>
-            <p>If you have any questions about this Privacy Policy, the practices of this site, or your dealings with this site, please contact us at: <a href="mailto:Contactgetready2@gmail.com">Contactgetready2@gmail.com</a>.</p>
+            <p>If you have any questions about this Privacy Policy, the practices of this site, or your dealings with this site, please contact us at: <a href="mailto:supportgetready@gmail.com">supportgetready@gmail.com</a>.</p>
         </div>
     </div>
 </div>

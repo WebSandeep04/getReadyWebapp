@@ -72,13 +72,13 @@
                                                 </div>
                                             @else
                                                 <div class="p-3 rounded-4 bg-light border border-light-subtle shadow-sm">
-                                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                                        <span class="text-muted small fw-semibold">RENTAL COST</span>
-                                                        <span class="fw-bold" style="color: #f78c1c;">₹{{ number_format($cartItem->total_rental_cost) }}</span>
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <span class="text-muted small fw-bold">RENTAL COST</span>
+                                                        <span class="fw-bold fs-6" style="color: #f78c1c;">₹{{ number_format($cartItem->total_rental_cost) }}</span>
                                                     </div>
-                                                    <div class="d-flex align-items-center gap-2 text-muted x-small fw-semibold">
-                                                        <i class="bi bi-calendar3" style="color: #f78c1c;"></i> 
-                                                        <span> {{ \Carbon\Carbon::parse($cartItem->rental_start_date)->format('d M') }} - {{ \Carbon\Carbon::parse($cartItem->rental_end_date)->format('d M, Y') }} ({{ $cartItem->rental_days }} Days)</span>
+                                                    <div class="d-flex align-items-center text-muted small fw-semibold">
+                                                        <i class="bi bi-calendar3" style="color: #f78c1c; font-size: 1.1em; margin-right: 8px;"></i> 
+                                                        <span>{{ \Carbon\Carbon::parse($cartItem->rental_start_date)->format('d M') }} - {{ \Carbon\Carbon::parse($cartItem->rental_end_date)->format('d M, Y') }} ({{ $cartItem->rental_days }} Days)</span>
                                                     </div>
                                                 </div>
                                             @endif
@@ -88,6 +88,7 @@
                                         <div class="d-flex flex-column h-100 py-1">
                                             <div class="d-flex justify-content-between align-items-end w-100 mb-3">
                                                 <div class="text-start">
+                                                    {{-- Quantity option temporarily disabled
                                                     <label class="small fw-semibold text-muted text-uppercase mb-2 d-block">Quantity</label>
                                                     <div class="input-group input-group-sm shadow-sm" style="max-width: 130px; height: 38px;">
                                                         <button class="btn btn-outline-secondary qty-btn px-3 border-end-0" type="button" data-action="minus" style="border-radius: 12px 0 0 12px; background: #fff;">-</button>
@@ -101,6 +102,8 @@
                                                                style="width: 45px; pointer-events: none;">
                                                         <button class="btn btn-outline-secondary qty-btn px-3 border-start-0" type="button" data-action="plus" style="border-radius: 0 12px 12px 0; background: #fff;">+</button>
                                                     </div>
+                                                    --}}
+                                                    <input type="hidden" class="quantity-input" value="1" data-cart-item-id="{{ $cartItem->id }}" data-original-value="1">
                                                 </div>
                                                 <div class="text-end">
                                                     <p class="text-muted x-small mb-1 text-uppercase fw-semibold">Subtotal</p>

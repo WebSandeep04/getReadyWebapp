@@ -41,6 +41,14 @@
             <p class="text-muted">Turn your wardrobe into an earning opportunity</p>
           </div>
           
+          @if(Auth::check() && empty(Auth::user()->address))
+            <div class="text-center mt-4 mb-5 p-4">
+              <i class="bi bi-geo-alt-fill mb-3 d-block" style="font-size: 3rem; color: #f78c1c;"></i>
+              <h4 class="font-weight-bold mb-3" style="color: #e65100;">Address Required</h4>
+              <p class="text-muted mb-4">Please fill out your address details in your profile before you can list an outfit for sale or rent.</p>
+              <a href="{{ route('profile') }}" class="btn btn-sell-premium px-4 py-2 d-inline-block" style="background-color: #f78c1c; color: white; border: none; border-radius: 8px; font-weight: 600; text-decoration: none;">Update Profile Now</a>
+            </div>
+          @else
           <div class="steps-wrapper mb-3">
             <div class="steps-progress">
               <div class="progress-bar-fill" id="progressFill"></div>
@@ -367,6 +375,7 @@
     </div>
     <button type="submit" id="submitBtn" class="submit-btn" style="display: none;">Submit</button>
   </form>
+  @endif
         </div> <!-- end sell-card -->
       </div>
     </div>

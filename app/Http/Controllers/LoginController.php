@@ -11,6 +11,11 @@ use App\Services\Msg91Service;
 use App\Services\ImWalletService;
 use Illuminate\Support\Str;
 use App\Models\State;
+use App\Models\Notification;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Exception;
+use Throwable;
 
 class LoginController extends Controller
 {
@@ -81,8 +86,8 @@ class LoginController extends Controller
 
             try {
                 $this->msg91Service->sendOtp($phone, $otp);
-            } catch (\Throwable $exception) {
-                \Log::error('Unable to send login OTP via MSG91', [
+            } catch (Throwable $exception) {
+                Log::error('Unable to send login OTP via MSG91', [
                     'phone' => $phone,
                     'error' => $exception->getMessage(),
                 ]);
@@ -167,12 +172,12 @@ class LoginController extends Controller
         // Check for first-time login (if last_login_at is null) and send welcome notification if not already sent
         if (is_null($user->last_login_at)) {
             // Check if welcome notification already exists (to avoid duplicates if registration already sent it)
-            $hasWelcomeNotification = \App\Models\Notification::where('user_id', $user->id)
+            $hasWelcomeNotification = Notification::where('user_id', $user->id)
                 ->where('title', 'Welcome to GetReady!')
                 ->exists();
 
             if (!$hasWelcomeNotification) {
-                \App\Models\Notification::create([
+                Notification::create([
                     'user_id' => $user->id,
                     'title' => 'Welcome to GetReady!',
                     'message' => 'We are excited to have you on board. Start your journey by listing your first item or exploring our collection.',
@@ -284,7 +289,7 @@ class LoginController extends Controller
             'is_gst' => $request->is_gst,
             'gstin' => $request->is_gst == 1 ? $request->gstin : null,
             'gst_number' => $request->is_gst == 1 ? $request->gstin : null,
-            'password' => \Illuminate\Support\Facades\Hash::make(Str::random(16)),
+            'password' => Hash::make(Str::random(16)),
         ];
 
         // Fetch GST Details if GST is enabled
@@ -293,7 +298,7 @@ class LoginController extends Controller
                 $gstDetails = $this->imWalletService->getGstDetails($request->gstin);
 
                 if (empty($gstDetails['data'])) {
-                    throw new \Exception('Invalid GST Number or no data returned.');
+                    throw new Exception('Invalid GST Number or no data returned.');
                 }
 
                 // Save entire GST details for future reference
@@ -321,7 +326,7 @@ class LoginController extends Controller
 
 
 
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 return response()->json([
                     'success' => false,
                     'errors' => [
@@ -335,7 +340,7 @@ class LoginController extends Controller
         $user = User::create($userData);
 
         // Create welcome notification
-        \App\Models\Notification::create([
+        Notification::create([
             'user_id' => $user->id,
             'title' => 'Welcome to GetReady!',
             'message' => 'We are excited to have you on board. Start your journey by listing your first item or exploring our collection.',

@@ -362,6 +362,7 @@
               </div>
             </div>
 
+            @if(auth()->id() !== $cloth->user_id)
             <div class="date-picker-sidebar mt-4 mb-4">
               <div class="row g-2">
                 <div class="col-6">
@@ -415,6 +416,8 @@
                 @endif
               </div>
             @endif
+            @endif
+
 
             <div class="assurance-grid mt-4">
               <div class="assurance-card">
@@ -493,6 +496,7 @@ $(document).ready(function() {
         swiperThumbs.changeDirection(window.innerWidth > 992 ? "vertical" : "horizontal");
     });
 
+    @if(auth()->id() !== $cloth->user_id)
     // Flatpickr initialization
     const blockedDates = @json($cloth->availabilityBlocks->where('type', 'blocked')->map(function($block) {
         return [
@@ -720,6 +724,7 @@ $(document).ready(function() {
             }
         });
     });
+    @endif
 });
 </script>
 @endsection

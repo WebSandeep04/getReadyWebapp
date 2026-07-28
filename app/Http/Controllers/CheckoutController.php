@@ -3,9 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Payment;
+use App\Models\Notification;
+use App\Models\User;
+use App\Models\Shipment;
+use App\Services\PriceCalculatorService;
+use App\Services\AvailabilityService;
+use App\Services\InvoiceService;
+use App\Services\XpressbeesService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class CheckoutController extends Controller
@@ -31,7 +41,7 @@ class CheckoutController extends Controller
         }
 
         // Calculate Totals using PriceCalculatorService
-        $priceService = new \App\Services\PriceCalculatorService();
+        $priceService = new PriceCalculatorService();
         
         $rentalSubtotal = 0;
         $buySubtotal = 0;
@@ -75,9 +85,18 @@ class CheckoutController extends Controller
             return response()->json(['success' => false, 'message' => 'Unable to calculate order total'], 422);
         }
 
-        // --- FINAL AVAILABILITY CHECK BEFORE CHECKOUT ---
-        $availabilityService = new \App\Services\AvailabilityService();
+        // --- FINAL AVAILABILITY & SELLER CHECK BEFORE CHECKOUT ---
+        $availabilityService = new AvailabilityService();
         foreach ($cartItems as $item) {
+            // Check Seller Address
+            $seller = $item->cloth->user ?? null;
+            if (!$seller || empty($seller->address) || empty($seller->city) || empty($seller->state)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Sorry, the seller of "' . $item->cloth->title . '" has not provided a complete pickup address. Please remove it from your cart to proceed.'
+                ], 422);
+            }
+
             if ($item->purchase_type !== 'buy' && $item->rental_start_date && $item->rental_end_date) {
                 // If it's a rental, check if the dates are still available
                 $isAvailable = $availabilityService->isAvailable($item->cloth, $item->rental_start_date, $item->rental_end_date);
@@ -111,7 +130,7 @@ class CheckoutController extends Controller
             'delivery_address' => $deliveryAddress,
             'rental_from' => !empty($rentalStartDates) ? min($rentalStartDates) : now(),
             'rental_to' => $rentalTo,
-            'return_date' => \Carbon\Carbon::parse($rentalTo)->addDay(),
+            'return_date' => Carbon::parse($rentalTo)->addDay(),
         ]);
 
         // Create Order Items
@@ -121,7 +140,7 @@ class CheckoutController extends Controller
             
             // For both Rent and Buy, we now populate the detailed breakdown
             // Note: For Buy, base_rent maps to base_price (selling price)
-            \App\Models\OrderItem::create([
+            OrderItem::create([
                 'order_id' => $order->id,
                 'cloth_id' => $item->cloth_id,
                 'purchase_type' => $dItem['is_buy'] ? 'buy' : 'rent',
@@ -239,7 +258,7 @@ class CheckoutController extends Controller
         $this->createShipment($order, $user, $paymentType);
 
         // 3. Send Notification to Buyer
-        \App\Models\Notification::create([
+        Notification::create([
             'user_id' => $user->id,
             'title' => 'Order Placed Successfully',
             'message' => "Your order #{$order->id} has been confirmed. Thank you for shopping with us!",
@@ -257,7 +276,7 @@ class CheckoutController extends Controller
                     $transactionType = $item->purchase_type === 'buy' ? 'sold' : 'rented';
                     $messageType = $item->purchase_type === 'buy' ? 'Sale' : 'Rental';
                     
-                    \App\Models\Notification::create([
+                    Notification::create([
                         'user_id' => $cloth->user_id,
                         'title' => "New {$messageType}!",
                         'message' => "Good news! Your item '{$cloth->title}' has been {$transactionType}.",
@@ -283,65 +302,111 @@ class CheckoutController extends Controller
 
         // 6. Generate Invoices
         try {
-            $invoiceService = new \App\Services\InvoiceService();
+            $invoiceService = new InvoiceService();
             $invoiceService->generateOrderInvoices($order);
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error("Invoice Generation Failed for Order #{$order->id}: " . $e->getMessage());
+            Log::error("Invoice Generation Failed for Order #{$order->id}: " . $e->getMessage());
         }
     }
 
     private function createShipment($order, $user, $paymentType)
     {
         try {
-            \Illuminate\Support\Facades\Log::info("Checkout: Creating {$paymentType} shipment for Order #{$order->id}");
+            Log::info("Checkout: Creating {$paymentType} shipments for Order #{$order->id}");
             
-            $courier = new \App\Services\XpressbeesService();
+            $courier = new XpressbeesService();
             
+            // Consignee details (Buyer)
             $addressParts = explode(',', $order->delivery_address);
-            $city = trim($addressParts[count($addressParts)-2] ?? 'Mumbai');
-            $pincodeRaw = trim($addressParts[count($addressParts)-1] ?? '400001');
-            // Clean non-digits
-            $pincodeClean = preg_replace('/[^0-9]/', '', $pincodeRaw);
-            $pincode = (strlen($pincodeClean) >= 6) ? substr($pincodeClean, -6) : '400001';
+            $buyerCity = trim($addressParts[count($addressParts)-2]);
+            $buyerPincodeRaw = trim($addressParts[count($addressParts)-1]);
+            $buyerPincodeClean = preg_replace('/[^0-9]/', '', $buyerPincodeRaw);
+            $buyerPincode = substr($buyerPincodeClean);
 
-            $orderLoad = [
-                'order_number' => (string)$order->id,
-                'payment_type' => strtolower($paymentType) === 'cod' ? 'cod' : 'prepaid',
-                'order_amount' => $order->total_amount,
-                'collectable_amount' => (strtolower($paymentType) === 'cod') ? $order->total_amount : 0,
-                'package_weight' => 500, // default 500g
-                'package_length' => 10,
-                'package_breadth' => 10,
-                'package_height' => 10,
-                'request_auto_pickup' => 'yes',
-                'shipping_charges' => 0,
-                'discount' => 0,
-                'cod_charges' => 0,
-                'consignee' => [
-                    'name' => $user->name,
-                    'address' => $order->delivery_address,
-                    'address_2' => '',
-                    'city' => $city,
-                    'state' => 'Maharashtra',
-                    'pincode' => $pincode,
-                    'phone' => str_pad(preg_replace('/[^0-9]/', '', $user->phone ?? '9999999999'), 10, '9', STR_PAD_LEFT)
-                ],
-                'order_items' => []
-            ];
-
+            // Group items by seller
+            $itemsBySeller = [];
             foreach ($order->items as $item) {
-                 $orderLoad['order_items'][] = [
-                     'name' => $item->cloth->title ?? 'Item',
-                     'qty' => 1,
-                     'price' => $item->price
+                $sellerId = $item->cloth->user_id ?? 0;
+                $itemsBySeller[$sellerId][] = $item;
+            }
+
+            foreach ($itemsBySeller as $sellerId => $sellerItems) {
+                $seller = User::find($sellerId);
+                
+                // If seller missing address, we fail early now so this shouldn't happen, but fallback just in case
+                $sellerAddress = $seller->address ?? '';
+                $sellerCity = $seller->city ?? '';
+                $sellerState = $seller->state ?? '';
+                $sellerPincode = $seller->pincode ?? '000000';
+                $sellerPhone = str_pad(preg_replace('/[^0-9]/', '', $seller->phone ?? '0000000000'), 10, '0', STR_PAD_LEFT);
+                $sellerName = $seller->name ?? 'Seller';
+                
+                // Calculate collectable amount for THIS specific shipment (only if COD)
+                $shipmentAmount = 0;
+                $shipmentCollectable = 0;
+                $orderItemsArray = [];
+                
+                foreach ($sellerItems as $sItem) {
+                    // Include security deposit if applicable
+                    $itemTotal = $sItem->price;
+                    if ($sItem->purchase_type !== 'buy') {
+                        $itemTotal += (float) ($sItem->cloth->security_deposit ?? 0);
+                    }
+                    
+                    $shipmentAmount += $itemTotal;
+                    
+                    $orderItemsArray[] = [
+                        'name' => $sItem->cloth->title ?? 'Item',
+                        'qty' => 1,
+                        'price' => $sItem->price
                     ];
                 }
+                
+                if (strtolower($paymentType) === 'cod') {
+                    $shipmentCollectable = $shipmentAmount;
+                }
+
+                $orderLoad = [
+                    'order_number' => $order->id . '-' . $sellerId, // Unique order number per seller
+                    'payment_type' => strtolower($paymentType) === 'cod' ? 'cod' : 'prepaid',
+                    'order_amount' => $shipmentAmount,
+                    'collectable_amount' => $shipmentCollectable,
+                    'package_weight' => 500 * count($sellerItems),
+                    'package_length' => 10,
+                    'package_breadth' => 10,
+                    'package_height' => 10,
+                    'request_auto_pickup' => 'yes',
+                    'shipping_charges' => 0,
+                    'discount' => 0,
+                    'cod_charges' => 0,
+                    'consignee' => [
+                        'name' => $user->name,
+                        'address' => $order->delivery_address,
+                        'address_2' => '',
+                        'city' => $buyerCity,
+                        'state' => 'Maharashtra',
+                        'pincode' => $buyerPincode,
+                        'phone' => str_pad(preg_replace('/[^0-9]/', '', $user->phone ?? '9999999999'), 10, '9', STR_PAD_LEFT)
+                    ],
+                    'pickup' => [
+                        'warehouse_name' => substr($sellerName, 0, 30),
+                        'name' => substr($sellerName, 0, 30),
+                        'address' => substr($sellerAddress, 0, 100),
+                        'address_2' => '',
+                        'city' => substr($sellerCity, 0, 40),
+                        'state' => $sellerState,
+                        'pincode' => $sellerPincode,
+                        'phone' => $sellerPhone
+                    ],
+                    'order_items' => $orderItemsArray
+                ];
 
                 $response = $courier->createOrder($orderLoad);
 
                 if ($response && isset($response['awb_number'])) {
-                    \App\Models\Shipment::create([
+                    Shipment::create([
                         'order_id' => $order->id,
+                        'seller_id' => $sellerId,
                         'type' => 'forward',
                         'courier_name' => 'Xpressbees',
                         'waybill_number' => $response['awb_number'],
@@ -351,19 +416,22 @@ class CheckoutController extends Controller
                         'status' => 'Booked',
                     ]);
                     
-                    $order->update(['status' => 'Order Confirmed & Shipment Created']);
-                    \Illuminate\Support\Facades\Log::info("Checkout: Shipment created. AWB: {$response['awb_number']}");
+                    Log::info("Checkout: Shipment created for Seller {$sellerId}. AWB: {$response['awb_number']}");
                 } else {
-                    \Illuminate\Support\Facades\Log::error("Checkout: Failed to create shipment. Response: " . json_encode($response));
+                    Log::error("Checkout: Failed to create shipment for Seller {$sellerId}. Response: " . json_encode($response));
                 }
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error("Checkout: Shipment Exception: " . $e->getMessage());
+            }
+            
+            $order->update(['status' => 'Order Confirmed & Shipment Created']);
+
+        } catch (\Exception $e) {
+            Log::error("Checkout: Shipment Exception: " . $e->getMessage());
         }
     }
 
     private function blockDates($cloth, $start, $end, $orderId)
     {
-        $availabilityService = new \App\Services\AvailabilityService();
+        $availabilityService = new AvailabilityService();
         $availabilityService->blockRentalDates($cloth, $start, $end, $orderId);
     }
 }

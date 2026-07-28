@@ -11,6 +11,7 @@ class Shipment extends Model
 
     protected $fillable = [
         'order_id',
+        'seller_id',
         'type', // forward or reverse
         'courier_name',
         'waybill_number',

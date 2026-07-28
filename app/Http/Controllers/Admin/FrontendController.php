@@ -11,7 +11,16 @@ class FrontendController extends Controller
     // Frontend Management
     public function frontend()
     {
-        return view('admin.screens.frontend_management');
+        $settings = FrontendSetting::all();
+        $sections = [
+            'general' => 'General Settings',
+            'logo' => 'Logo & Assets',
+            'hero' => 'Hero Section',
+            'about' => 'About Section',
+            'footer' => 'Footer Info',
+            'social' => 'Social Links',
+        ];
+        return view('admin.screens.frontend', compact('sections', 'settings'));
     }
 
     // Update frontend setting (AJAX)

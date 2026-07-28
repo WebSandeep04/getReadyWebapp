@@ -50,18 +50,14 @@ class XpressbeesService
 
     protected function getPickupDetails()
     {
-        $name = substr(FrontendSetting::getValue('site_title', 'GetReady'), 0, 30); // Max 30 chars
-        if (strlen($name) > 30 || strlen($name) < 2) {
-            $name = "GetReady Warehouse"; // Fallback to safe dummy name
-        }
+        $name = substr(FrontendSetting::getValue('site_title', config('app.name', 'Warehouse')), 0, 30);
+        $phone = FrontendSetting::getValue('contact_phone', '');
+        $addressFull = FrontendSetting::getValue('footer_address', '');
         
-        $phone = FrontendSetting::getValue('contact_phone', '9999999999');
-        $addressFull = FrontendSetting::getValue('footer_address', '123 Fashion Street, Style City, SC 12345');
-        
-        // Very basic parsing for default address format
+        // Parse address
         $parts = array_map('trim', explode(',', $addressFull));
-        $address = $parts[0] ?? '123 Fashion Street';
-        $city = $parts[1] ?? 'Mumbai';
+        $address = $parts[0] ?? env('XPRESSBEES_PICKUP_ADDRESS', '');
+        $city = $parts[1] ?? env('XPRESSBEES_PICKUP_CITY', '');
         
         // Clean phone number to 10 digits
         $phone = preg_replace('/[^0-9]/', '', $phone);
@@ -70,14 +66,14 @@ class XpressbeesService
         }
 
         return [
-            "warehouse_name" => "GetReady Warehouse", // Fixed Dummy Name < 30 chars
-            "name" => "GetReady Warehouse",
-            "address" => substr($address, 0, 100), // Safety truncation
+            "warehouse_name" => $name,
+            "name" => $name,
+            "address" => substr($address, 0, 100),
             "address_2" => "",
             "city" => substr($city, 0, 40),
-            "state" => "Maharashtra", // Dummy State
-            "pincode" => "400001", // Dummy Pincode
-            "phone" => str_pad($phone, 10, '9', STR_PAD_LEFT)
+            "state" => env('XPRESSBEES_PICKUP_STATE', ''),
+            "pincode" => env('XPRESSBEES_PICKUP_PINCODE', ''),
+            "phone" => str_pad($phone, 10, '0', STR_PAD_LEFT)
         ];
     }
 

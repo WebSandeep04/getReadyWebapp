@@ -160,8 +160,8 @@
                                     <button class="btn btn-link btn-sm p-0 text-decoration-none fw-bold" onclick="openAddressModal()">Change</button>
                                 </div>
                                 @if(Auth::user()->address)
-                                    <div class="d-flex gap-2">
-                                        <i class="bi bi-geo-alt text-primary mt-1"></i>
+                                    <div class="d-flex align-items-start mt-2">
+                                        <i class="bi bi-geo-alt text-primary me-2" style="font-size: 1.1rem; line-height: 1.2;"></i>
                                         <p class="text-dark small mb-0" id="displayAddress" style="line-height: 1.5;">{{ Auth::user()->address }}</p>
                                     </div>
                                     <input type="hidden" id="finalDeliveryAddress" value="{{ Auth::user()->address }}">

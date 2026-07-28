@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Cloth;
 use App\Models\AvailabilityBlock;
+use App\Models\Order;
 use Carbon\Carbon;
 
 class AvailabilityService
@@ -116,7 +117,7 @@ class AvailabilityService
         $orderDates = [];
         
         if ($excludeOrderId) {
-            $order = \App\Models\Order::find($excludeOrderId);
+            $order = Order::find($excludeOrderId);
             if ($order) {
                 $orderDates = [
                     Carbon::parse($order->rental_from)->subDay()->format('Y-m-d'),

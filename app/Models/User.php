@@ -53,15 +53,7 @@ class User extends Authenticatable
         'aadhaar_details',
     ];
 
-    public function state()
-    {
-        return $this->belongsTo(State::class);
-    }
 
-    public function city()
-    {
-        return $this->belongsTo(City::class);
-    }
 
     /**
      * The attributes that should be hidden for serialization.

@@ -152,7 +152,7 @@
           @error('color')<div class="text-danger small">{{ $message }}</div>@enderror
         </div>
 
-        <div class="col-6">
+        <div class="col-12">
           <label class="d-block text-left font-weight-bold mb-1">Size <span class="text-danger">*</span></label>
           <select name="size" required>
             <option value="">Select Size</option>
@@ -241,17 +241,20 @@
           @error('selling_price')<div class="text-danger small">{{ $message }}</div>@enderror
         </div>
 
-        <div class="col-6 mb-2">
+        <div class="col-12 mb-2">
           <label class="d-block text-left font-weight-bold mb-1">MRP (₹)</label>
           <input type="number" name="mrp" placeholder="MRP" value="{{ old('mrp') }}">
           @error('mrp')<div class="text-danger small">{{ $message }}</div>@enderror
         </div>
 
+        {{-- Quantity temporarily hidden
         <div class="col-6 mb-2">
           <label class="d-block text-left font-weight-bold mb-1">Quantity <span class="text-danger">*</span></label>
           <input type="number" name="sku" placeholder="Qty" value="{{ old('sku', 1) }}" required>
           @error('sku')<div class="text-danger small">{{ $message }}</div>@enderror
         </div>
+        --}}
+        <input type="hidden" name="sku" value="1">
       </div>
       
       <!-- Availability Management Section -->

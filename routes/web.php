@@ -10,7 +10,6 @@ use App\Http\Controllers\Admin\BodyTypeFitController as AdminBodyTypeFitControll
 use App\Http\Controllers\Admin\BottomTypeController as AdminBottomTypeController;
 use App\Http\Controllers\Admin\BrandController as AdminBrandController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
-use App\Http\Controllers\Admin\CityController as AdminCityController;
 use App\Http\Controllers\Admin\ClothController as AdminClothController;
 use App\Http\Controllers\Admin\ColorController as AdminColorController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
@@ -26,7 +25,6 @@ use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Admin\RoleMasterController as AdminRoleMasterController;
 use App\Http\Controllers\Admin\SecurityController as AdminSecurityController;
 use App\Http\Controllers\Admin\SizeController as AdminSizeController;
-use App\Http\Controllers\Admin\StateController as AdminStateController;
 use App\Http\Controllers\Admin\TaxController as AdminTaxController;
 use App\Http\Controllers\ClothController;
 use App\Http\Controllers\GeminiController;
@@ -225,19 +223,6 @@ Route::middleware(['admin.auth'])->group(function () {
     Route::put('/admin/panel-users/{id}', [AdminPanelUserController::class, 'update'])->name('admin_panel_users.update');
     Route::delete('/admin/panel-users/{id}', [AdminPanelUserController::class, 'destroy'])->name('admin_panel_users.destroy');
 
-    // State Management (Admin)
-    Route::get('/admin/states', [AdminStateController::class, 'index'])->name('states.index');
-    Route::post('/admin/states', [AdminStateController::class, 'store'])->name('states.store');
-    Route::put('/admin/states/{id}', [AdminStateController::class, 'update'])->name('states.update');
-    Route::delete('/admin/states/{id}', [AdminStateController::class, 'destroy'])->name('states.destroy');
-    Route::post('/admin/states/toggle/{id}', [AdminStateController::class, 'toggleStatus'])->name('states.toggle');
-
-    // City Management (Admin)
-    Route::get('/admin/cities', [AdminCityController::class, 'index'])->name('cities.index');
-    Route::post('/admin/cities', [AdminCityController::class, 'store'])->name('cities.store');
-    Route::put('/admin/cities/{id}', [AdminCityController::class, 'update'])->name('cities.update');
-    Route::delete('/admin/cities/{id}', [AdminCityController::class, 'destroy'])->name('cities.destroy');
-    Route::post('/admin/cities/toggle/{id}', [AdminCityController::class, 'toggleStatus'])->name('cities.toggle');
 
     // Tax Management (Admin)
     Route::get('/admin/tax-management', [AdminTaxController::class, 'index'])->name('admin.tax');
@@ -262,8 +247,6 @@ Route::middleware(['admin.auth'])->group(function () {
 });
 
 // Public API routes for mobile/frontend
-Route::get('/admin/states/json', [AdminStateController::class, 'json'])->name('states.json');
-Route::get('/admin/cities/json', [AdminCityController::class, 'json'])->name('cities.json');
 
 // User (Non-admin route, kept outside)
 Route::get('/user', [UserController::class, 'index'])->name('user.index');

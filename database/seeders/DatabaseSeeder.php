@@ -109,8 +109,6 @@ class DatabaseSeeder extends Seeder
 
         // Admin System Seeders
         $this->call([
-            StateSeeder::class,
-            CitySeeder::class,
             TaxSeeder::class,
             FrontendSettingsSeeder::class,
             PermissionSeeder::class,

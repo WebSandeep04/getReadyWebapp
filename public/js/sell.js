@@ -570,7 +570,7 @@ function createDeliveryPickupBlocks(startDate, endDate, availableIndex) {
 }
 
 function removeAvailabilityBlock(button) {
-  if (!confirm('Are you sure you want to remove this date block?')) return;
+
   const block = button.closest('.availability-block');
   const blockType = block.getAttribute('data-type');
   const availableIndex = block.getAttribute('data-delivery-for') || block.getAttribute('data-pickup-for');

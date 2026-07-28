@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Cache;
 use App\Services\Msg91Service;
 use App\Services\ImWalletService;
 use Illuminate\Support\Str;
-use App\Models\State;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -40,8 +39,7 @@ class LoginController extends Controller
 
         $redirectTo = request()->query('redirect', $previousUrl);
         
-        $states = State::where('status', 1)->get();
-        return view('login', compact('showFilters', 'redirectTo', 'states'));
+        return view('login', compact('showFilters', 'redirectTo'));
     }
 
     /**

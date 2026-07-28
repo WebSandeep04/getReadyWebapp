@@ -24,6 +24,7 @@ class User extends Authenticatable
         'address',
         'state',
         'city',
+        'pincode',
         'age',
         'gstin',
         'is_gst',

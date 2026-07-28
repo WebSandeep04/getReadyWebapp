@@ -40,6 +40,15 @@ class CheckoutController extends Controller
              return response()->json(['success' => false, 'message' => 'Delivery address is required.'], 422);
         }
 
+        // Update User Profile with new delivery address if provided
+        if ($request->has('delivery_address')) {
+            $user->address = $request->input('delivery_address');
+            if ($request->has('delivery_city')) $user->city = $request->input('delivery_city');
+            if ($request->has('delivery_state')) $user->state = $request->input('delivery_state');
+            if ($request->has('delivery_pincode')) $user->pincode = $request->input('delivery_pincode');
+            $user->save();
+        }
+
         // Calculate Totals using PriceCalculatorService
         $priceService = new PriceCalculatorService();
         
@@ -90,7 +99,7 @@ class CheckoutController extends Controller
         foreach ($cartItems as $item) {
             // Check Seller Address
             $seller = $item->cloth->user ?? null;
-            if (!$seller || empty($seller->address) || empty($seller->city) || empty($seller->state)) {
+            if (!$seller || empty($seller->address) || empty($seller->city) || empty($seller->state) || empty($seller->pincode)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Sorry, the seller of "' . $item->cloth->title . '" has not provided a complete pickup address. Please remove it from your cart to proceed.'
@@ -317,11 +326,10 @@ class CheckoutController extends Controller
             $courier = new XpressbeesService();
             
             // Consignee details (Buyer)
-            $addressParts = explode(',', $order->delivery_address);
-            $buyerCity = trim($addressParts[count($addressParts)-2]);
-            $buyerPincodeRaw = trim($addressParts[count($addressParts)-1]);
-            $buyerPincodeClean = preg_replace('/[^0-9]/', '', $buyerPincodeRaw);
-            $buyerPincode = substr($buyerPincodeClean);
+            $buyerAddress = $user->address;
+            $buyerCity = $user->city;
+            $buyerState = $user->state;
+            $buyerPincode = $user->pincode;
 
             // Group items by seller
             $itemsBySeller = [];
@@ -333,13 +341,12 @@ class CheckoutController extends Controller
             foreach ($itemsBySeller as $sellerId => $sellerItems) {
                 $seller = User::find($sellerId);
                 
-                // If seller missing address, we fail early now so this shouldn't happen, but fallback just in case
-                $sellerAddress = $seller->address ?? '';
-                $sellerCity = $seller->city ?? '';
-                $sellerState = $seller->state ?? '';
-                $sellerPincode = $seller->pincode ?? '000000';
-                $sellerPhone = str_pad(preg_replace('/[^0-9]/', '', $seller->phone ?? '0000000000'), 10, '0', STR_PAD_LEFT);
-                $sellerName = $seller->name ?? 'Seller';
+                $sellerAddress = $seller->address;
+                $sellerCity = $seller->city;
+                $sellerState = $seller->state;
+                $sellerPincode = $seller->pincode;
+                $sellerPhone = str_pad(preg_replace('/[^0-9]/', '', $seller->phone), 10, '0', STR_PAD_LEFT);
+                $sellerName = $seller->name;
                 
                 // Calculate collectable amount for THIS specific shipment (only if COD)
                 $shipmentAmount = 0;
@@ -381,12 +388,12 @@ class CheckoutController extends Controller
                     'cod_charges' => 0,
                     'consignee' => [
                         'name' => $user->name,
-                        'address' => $order->delivery_address,
+                        'address' => $buyerAddress,
                         'address_2' => '',
                         'city' => $buyerCity,
-                        'state' => 'Maharashtra',
+                        'state' => $buyerState,
                         'pincode' => $buyerPincode,
-                        'phone' => str_pad(preg_replace('/[^0-9]/', '', $user->phone ?? '9999999999'), 10, '9', STR_PAD_LEFT)
+                        'phone' => str_pad(preg_replace('/[^0-9]/', '', $user->phone), 10, '9', STR_PAD_LEFT)
                     ],
                     'pickup' => [
                         'warehouse_name' => substr($sellerName, 0, 30),

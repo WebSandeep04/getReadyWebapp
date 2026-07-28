@@ -114,15 +114,7 @@ class ProcessRentalReturns extends Command
             // Consignee (Receiver) = Seller
             // Pickup Address = Buyer's Address (from Order)
 
-            // Buyer's address parsing for pickup
-            $pickupAddressParts = explode(',', $order->delivery_address);
-            $pickupCity = count($pickupAddressParts) > 1 ? trim($pickupAddressParts[count($pickupAddressParts)-2]) : 'Mumbai';
-            
-            $rawPincode = count($pickupAddressParts) > 1 ? trim($pickupAddressParts[count($pickupAddressParts)-1]) : '';
-            $digitsOnly = preg_replace('/[^0-9]/', '', $rawPincode);
-            
-            // If we don't have exactly a 6-digit pincode in the address (common in dummy data), fallback to a known serviceable one.
-            $pickupPincode = (strlen($digitsOnly) === 6) ? $digitsOnly : '400001';
+
 
             $orderLoad = [
                 'order_number' => (string)$order->id . '-RET-' . $seller->id,
@@ -139,22 +131,22 @@ class ProcessRentalReturns extends Command
                 'cod_charges' => 0,
                 'consignee' => [
                     'name' => $seller->name,
-                    'address' => $seller->address ?? 'Seller Address Not Found',
+                    'address' => $seller->address,
                     'address_2' => '',
-                    'city' => $seller->city ?? 'Mumbai',
-                    'state' => 'Maharashtra',
-                    'pincode' => '400001', // Needs to be 6 digits, ideally from seller
-                    'phone' => str_pad(preg_replace('/[^0-9]/', '', $seller->phone ?? '9999999999'), 10, '9', STR_PAD_LEFT)
+                    'city' => $seller->city,
+                    'state' => $seller->state,
+                    'pincode' => $seller->pincode,
+                    'phone' => str_pad(preg_replace('/[^0-9]/', '', $seller->phone), 10, '9', STR_PAD_LEFT)
                 ],
                 'pickup' => [
                     'warehouse_name' => $buyer->name,
                     'name' => $buyer->name,
-                    'address' => $order->delivery_address,
+                    'address' => $buyer->address,
                     'address_2' => '',
-                    'city' => $pickupCity,
-                    'state' => 'Maharashtra',
-                    'pincode' => $pickupPincode,
-                    'phone' => str_pad(preg_replace('/[^0-9]/', '', $buyer->phone ?? '9999999999'), 10, '9', STR_PAD_LEFT)
+                    'city' => $buyer->city,
+                    'state' => $buyer->state,
+                    'pincode' => $buyer->pincode,
+                    'phone' => str_pad(preg_replace('/[^0-9]/', '', $buyer->phone), 10, '9', STR_PAD_LEFT)
                 ],
                 'order_items' => []
             ];

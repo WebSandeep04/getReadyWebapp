@@ -117,15 +117,20 @@
                             @endif
                             <div class="invalid-feedback" id="address-error"></div>
                         </div>
-                        <div class="col-md-6 col-6">
+                        <div class="col-md-4 col-4">
                             <label for="state" class="form-label">State</label>
                             <input type="text" class="form-control" id="state" name="state" placeholder="State" value="{{ $user->state }}">
                             <div class="invalid-feedback" id="state-error"></div>
                         </div>
-                        <div class="col-md-6 col-6">
+                        <div class="col-md-4 col-4">
                             <label for="city" class="form-label">City</label>
                             <input type="text" class="form-control" id="city" name="city" placeholder="City" value="{{ $user->city }}">
                             <div class="invalid-feedback" id="city-error"></div>
+                        </div>
+                        <div class="col-md-4 col-4">
+                            <label for="pincode" class="form-label">Pincode</label>
+                            <input type="text" class="form-control" id="pincode" name="pincode" placeholder="Pincode" value="{{ $user->pincode }}" maxlength="6">
+                            <div class="invalid-feedback" id="pincode-error"></div>
                         </div>
                     </div>
                 </div>

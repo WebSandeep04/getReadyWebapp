@@ -162,9 +162,12 @@
                                 @if(Auth::user()->address)
                                     <div class="d-flex align-items-start mt-2">
                                         <i class="bi bi-geo-alt text-primary me-2" style="font-size: 1.1rem; line-height: 1.2;"></i>
-                                        <p class="text-dark small mb-0" id="displayAddress" style="line-height: 1.5;">{{ Auth::user()->address }}</p>
+                                        <p class="text-dark small mb-0" id="displayAddress" style="line-height: 1.5;">{{ Auth::user()->address }}<br>{{ Auth::user()->city }}, {{ Auth::user()->state }} {{ Auth::user()->pincode }}</p>
                                     </div>
                                     <input type="hidden" id="finalDeliveryAddress" value="{{ Auth::user()->address }}">
+                                    <input type="hidden" id="finalDeliveryCity" value="{{ Auth::user()->city }}">
+                                    <input type="hidden" id="finalDeliveryState" value="{{ Auth::user()->state }}">
+                                    <input type="hidden" id="finalDeliveryPincode" value="{{ Auth::user()->pincode }}">
                                 @else
                                     <div class="d-flex align-items-center gap-2 text-danger small">
                                         <i class="bi bi-exclamation-triangle-fill"></i>
@@ -172,6 +175,9 @@
                                     </div>
                                     <a href="{{ route('profile') }}" class="btn btn-sm btn-outline-danger w-100 mt-2 rounded-pill">Add Address</a>
                                     <input type="hidden" id="finalDeliveryAddress" value="">
+                                    <input type="hidden" id="finalDeliveryCity" value="">
+                                    <input type="hidden" id="finalDeliveryState" value="">
+                                    <input type="hidden" id="finalDeliveryPincode" value="">
                                 @endif
                             </div>
                             
@@ -264,8 +270,23 @@
             </div>
             <div class="modal-body p-4">
                 <p class="text-muted small mb-3">Please provide the complete address where you want your items delivered.</p>
-                <div class="form-group mb-0">
-                    <textarea id="modalAddressInput" class="form-control rounded-3 border-light-subtle bg-light" rows="4" placeholder="Enter your full address (House No, Street, Landmark, City, Pincode)"></textarea>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label small fw-bold text-muted">Street Address</label>
+                        <textarea id="modalAddressInput" class="form-control rounded-3 border-light-subtle bg-light" rows="3" placeholder="House No, Street, Landmark"></textarea>
+                    </div>
+                    <div class="col-md-4 col-4">
+                        <label class="form-label small fw-bold text-muted">State</label>
+                        <input type="text" id="modalStateInput" class="form-control rounded-3 border-light-subtle bg-light" placeholder="State">
+                    </div>
+                    <div class="col-md-4 col-4">
+                        <label class="form-label small fw-bold text-muted">City</label>
+                        <input type="text" id="modalCityInput" class="form-control rounded-3 border-light-subtle bg-light" placeholder="City">
+                    </div>
+                    <div class="col-md-4 col-4">
+                        <label class="form-label small fw-bold text-muted">Pincode</label>
+                        <input type="text" id="modalPincodeInput" class="form-control rounded-3 border-light-subtle bg-light" placeholder="Pincode" maxlength="6">
+                    </div>
                 </div>
             </div>
             <div class="modal-footer border-0 p-4 pt-2">
@@ -698,7 +719,10 @@ if (checkoutBtn) {
                 },
                 body: JSON.stringify({
                     payment_method: paymentMethod,
-                    delivery_address: address
+                    delivery_address: address,
+                    delivery_city: document.getElementById('finalDeliveryCity').value,
+                    delivery_state: document.getElementById('finalDeliveryState').value,
+                    delivery_pincode: document.getElementById('finalDeliveryPincode').value
                 })
             });
             const data = await response.json();
@@ -805,25 +829,32 @@ function toggleCheckoutButton(disabled, text) {
 // Address Modal Logic
 function openAddressModal() {
     // Populate modal with current selected address
-    const currentAddr = $('#finalDeliveryAddress').val();
-    $('#modalAddressInput').val(currentAddr);
+    $('#modalAddressInput').val($('#finalDeliveryAddress').val());
+    $('#modalCityInput').val($('#finalDeliveryCity').val());
+    $('#modalStateInput').val($('#finalDeliveryState').val());
+    $('#modalPincodeInput').val($('#finalDeliveryPincode').val());
     $('#addressModal').modal('show');
 }
 
 function saveCustomAddress() {
     const newAddr = $('#modalAddressInput').val().trim();
-    if (!newAddr) {
-        alert('Address cannot be empty.');
+    const newCity = $('#modalCityInput').val().trim();
+    const newState = $('#modalStateInput').val().trim();
+    const newPincode = $('#modalPincodeInput').val().trim();
+    
+    if (!newAddr || !newCity || !newState || !newPincode) {
+        alert('All address fields are required.');
         return;
     }
     
     // Update Hidden Input and Display
     $('#finalDeliveryAddress').val(newAddr);
-    $('#displayAddress').text(newAddr);
+    $('#finalDeliveryCity').val(newCity);
+    $('#finalDeliveryState').val(newState);
+    $('#finalDeliveryPincode').val(newPincode);
     
-    // Check if it's different from profile (optional visual cue)
-    // $('#displayAddress').addClass('text-primary'); 
-
+    $('#displayAddress').html(`${newAddr}<br>${newCity}, ${newState} ${newPincode}`);
+    
     $('#addressModal').modal('hide');
 }
 </script>

@@ -38,6 +38,7 @@ class UserController extends Controller
             'phone' => 'required|string|max:20|unique:users,phone,' . $id,
             'address' => 'nullable|string|max:255',
             'city' => 'nullable|string|max:100',
+            'pincode' => 'nullable|string|max:10',
             'age' => 'nullable|integer|min:1|max:120',
             'is_gst' => 'required|boolean',
             'gstin' => 'nullable|string|max:15',
@@ -49,7 +50,7 @@ class UserController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
         
-        $data = $request->only(['name', 'email', 'phone', 'address', 'city', 'age', 'gstin', 'gst_number', 'gender', 'is_gst']);
+        $data = $request->only(['name', 'email', 'phone', 'address', 'city', 'pincode', 'age', 'gstin', 'gst_number', 'gender', 'is_gst']);
         
         $user->update($data);
         return response()->json(['success' => true, 'user' => $user]);
@@ -82,6 +83,7 @@ class UserController extends Controller
             'address' => 'nullable|string|max:255',
             'state' => 'nullable|string',
             'city' => 'nullable|string',
+            'pincode' => 'nullable|string|max:10',
             'is_gst' => 'required|boolean',
             'gstin' => 'required_if:is_gst,1|nullable|string|max:15|regex:/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/',
             'gender' => 'required|in:Boy,Girl,Men,Women',
@@ -92,7 +94,7 @@ class UserController extends Controller
             return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
-        $data = $request->only(['name', 'email', 'phone', 'address', 'gstin', 'gender', 'is_gst', 'state', 'city']);
+        $data = $request->only(['name', 'email', 'phone', 'address', 'gstin', 'gender', 'is_gst', 'state', 'city', 'pincode']);
         
         // Ensure GST is preserved
         $data['gst_number'] = $data['gstin'] ?? null;

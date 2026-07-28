@@ -48,34 +48,6 @@ class XpressbeesService
         }
     }
 
-    protected function getPickupDetails()
-    {
-        $name = substr(FrontendSetting::getValue('site_title', config('app.name', 'Warehouse')), 0, 30);
-        $phone = FrontendSetting::getValue('contact_phone', '');
-        $addressFull = FrontendSetting::getValue('footer_address', '');
-        
-        // Parse address
-        $parts = array_map('trim', explode(',', $addressFull));
-        $address = $parts[0] ?? env('XPRESSBEES_PICKUP_ADDRESS', '');
-        $city = $parts[1] ?? env('XPRESSBEES_PICKUP_CITY', '');
-        
-        // Clean phone number to 10 digits
-        $phone = preg_replace('/[^0-9]/', '', $phone);
-        if (strlen($phone) > 10) {
-            $phone = substr($phone, -10);
-        }
-
-        return [
-            "warehouse_name" => $name,
-            "name" => $name,
-            "address" => substr($address, 0, 100),
-            "address_2" => "",
-            "city" => substr($city, 0, 40),
-            "state" => env('XPRESSBEES_PICKUP_STATE', ''),
-            "pincode" => env('XPRESSBEES_PICKUP_PINCODE', ''),
-            "phone" => str_pad($phone, 10, '0', STR_PAD_LEFT)
-        ];
-    }
 
     public function createOrder($orderData)
     {
@@ -85,9 +57,9 @@ class XpressbeesService
             return null;
         }
 
-        // Add pickup details to the payload automatically
         if (!isset($orderData['pickup'])) {
-            $orderData['pickup'] = $this->getPickupDetails();
+            Log::error('Xpressbees Create Order Failed: Pickup details are missing.');
+            return ['status' => false, 'message' => 'Pickup details are missing.'];
         }
 
 

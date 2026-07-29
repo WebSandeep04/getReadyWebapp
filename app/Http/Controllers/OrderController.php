@@ -13,6 +13,7 @@ class OrderController extends Controller
 
         $orders = Order::with(['payments', 'shipments', 'invoices'])
             ->where('buyer_id', Auth::id())
+            ->where('status', '!=', 'Pending')
             ->latest()
             ->paginate(10);
 
@@ -28,6 +29,7 @@ class OrderController extends Controller
         $orders = Order::whereHas('items.cloth', function ($query) use ($userId) {
                 $query->where('user_id', $userId);
             })
+            ->where('status', '!=', 'Pending')
             ->with(['items' => function ($query) use ($userId) {
                 // Filter items to only show those belonging to the current user (in case of mixed carts)
                 $query->whereHas('cloth', function ($q) use ($userId) {

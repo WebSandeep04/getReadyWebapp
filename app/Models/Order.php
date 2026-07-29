@@ -11,10 +11,15 @@ class Order extends Model
 
     protected $fillable = [
         'buyer_id',
+        'buyer_name',
+        'buyer_phone',
         'total_amount',
         'security_amount',
         'status',
         'delivery_address',
+        'delivery_city',
+        'delivery_state',
+        'delivery_pincode',
         'rental_from',
         'rental_to',
         'has_rental_items',

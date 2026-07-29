@@ -131,12 +131,17 @@ class CheckoutController extends Controller
         // Create Order Record
         $order = Order::create([
             'buyer_id' => $user->id,
+            'buyer_name' => $user->name,
+            'buyer_phone' => $user->phone,
             'total_amount' => $grandTotal,
             'security_amount' => $securityDeposit,
             'has_rental_items' => $rentalSubtotal > 0,
             'has_purchase_items' => $buySubtotal > 0,
             'status' => 'Pending',
             'delivery_address' => $deliveryAddress,
+            'delivery_city' => $request->input('delivery_city', $user->city),
+            'delivery_state' => $request->input('delivery_state', $user->state),
+            'delivery_pincode' => $request->input('delivery_pincode', $user->pincode),
             'rental_from' => !empty($rentalStartDates) ? min($rentalStartDates) : now(),
             'rental_to' => $rentalTo,
             'return_date' => Carbon::parse($rentalTo)->addDay(),
@@ -149,9 +154,18 @@ class CheckoutController extends Controller
             
             // For both Rent and Buy, we now populate the detailed breakdown
             // Note: For Buy, base_rent maps to base_price (selling price)
+            $seller = $item->cloth->user ?? null;
             OrderItem::create([
                 'order_id' => $order->id,
                 'cloth_id' => $item->cloth_id,
+                'quantity' => $item->quantity,
+                'seller_id' => $seller ? $seller->id : null,
+                'seller_name' => $seller ? $seller->name : null,
+                'seller_phone' => $seller ? $seller->phone : null,
+                'seller_address' => $seller ? $seller->address : null,
+                'seller_city' => $seller ? $seller->city : null,
+                'seller_state' => $seller ? $seller->state : null,
+                'seller_pincode' => $seller ? $seller->pincode : null,
                 'purchase_type' => $dItem['is_buy'] ? 'buy' : 'rent',
                 'price' => $pricing['total_buyer_pay'],
                 'base_rent' => $pricing['base_price'] ?? $pricing['base_rent'],

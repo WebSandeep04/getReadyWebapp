@@ -256,7 +256,13 @@ class AvailabilityService
 
             if ($availStart->lte($fullBlockEnd) && $availEnd->gte($fullBlockStart)) {
                 if ($fullBlockStart->lte($availStart) && $fullBlockEnd->gte($availEnd)) {
-                    $available->delete();
+                    // Do not delete the block. If we delete the last available block, 
+                    // the system falls back to "flexible booking" (always available).
+                    // Instead, push it to the past so it remains a restricted available block but grants zero future dates.
+                    $available->update([
+                        'start_date' => '1970-01-01',
+                        'end_date' => '1970-01-01'
+                    ]);
                 } elseif ($fullBlockStart->gt($availStart) && $fullBlockEnd->lt($availEnd)) {
                     AvailabilityBlock::create([
                         'cloth_id' => $clothId, 

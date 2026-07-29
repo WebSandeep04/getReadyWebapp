@@ -3,7 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\Payment;
+use App\Services\AvailabilityService;
+use App\Services\XpressbeesService;
+use Exception;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
@@ -49,7 +56,7 @@ class OrderController extends Controller
         $userId = Auth::id();
         
         // 1. Payments made by the user (as Buyer) - Debits
-        $debits = \App\Models\Payment::whereHas('order', function($q) use ($userId) {
+        $debits = Payment::whereHas('order', function($q) use ($userId) {
             $q->where('buyer_id', $userId);
         })
         ->with('order')
@@ -123,10 +130,10 @@ class OrderController extends Controller
         $allTransactions = $debits->concat($payouts)->concat($securityReturns)->sortByDesc('date');
 
         // Manual Pagination
-        $currentPage = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage();
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
         $perPage = 15;
         $currentItems = $allTransactions->slice(($currentPage - 1) * $perPage, $perPage)->values();
-        $payments = new \Illuminate\Pagination\LengthAwarePaginator($currentItems, $allTransactions->count(), $perPage);
+        $payments = new LengthAwarePaginator($currentItems, $allTransactions->count(), $perPage);
         $payments->setPath(request()->url());
 
         return view('orders.transactions', compact('payments'));
@@ -144,7 +151,7 @@ class OrderController extends Controller
         if ($order->status === 'Order Confirmed & Shipment Created') {
             $forwardShipment = $order->shipments()->where('type', 'forward')->where('status', '!=', 'Cancelled')->first();
             if ($forwardShipment && $forwardShipment->waybill_number) {
-                $xpressbees = app(\App\Services\XpressbeesService::class);
+                $xpressbees = app(XpressbeesService::class);
                 $xpressbees->cancelShipment($forwardShipment->waybill_number);
                 $forwardShipment->status = 'Cancelled';
                 $forwardShipment->save();
@@ -156,7 +163,7 @@ class OrderController extends Controller
         $order->save();
 
         // Restore stock and availability
-        $availabilityService = app(\App\Services\AvailabilityService::class);
+        $availabilityService = app(AvailabilityService::class);
         foreach ($order->items as $item) {
             $cloth = $item->cloth;
             if ($cloth) {
@@ -179,12 +186,12 @@ class OrderController extends Controller
                     $keyId = config('services.razorpay.key_id');
                     $keySecret = config('services.razorpay.key_secret');
                     
-                    \Illuminate\Support\Facades\Http::withBasicAuth($keyId, $keySecret)
+                    Http::withBasicAuth($keyId, $keySecret)
                         ->post("https://api.razorpay.com/v1/payments/{$payment->transaction_id}/refund", [
                             'amount' => (int) round($payment->amount * 100)
                         ]);
-                } catch (\Exception $e) {
-                    \Illuminate\Support\Facades\Log::error('Razorpay Refund Failed for Order ID ' . $order->id . ': ' . $e->getMessage());
+                } catch (Exception $e) {
+                    Log::error('Razorpay Refund Failed for Order ID ' . $order->id . ': ' . $e->getMessage());
                 }
             }
 

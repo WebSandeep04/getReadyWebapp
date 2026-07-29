@@ -418,10 +418,13 @@
                                 <label>Original MRP</label>
                                 <input type="number" class="form-control" name="mrp" value="{{ $cloth->mrp }}">
                             </div>
+                            <!-- 
                             <div class="col-md-4 premium-input-group">
                                 <label>Quantity (SKU) *</label>
                                 <input type="number" class="form-control" name="sku" value="{{ $cloth->sku ?? 1 }}" min="1" required>
-                            </div>
+                            </div> 
+                            -->
+                            <input type="hidden" name="sku" value="1">
                             <div class="col-md-4">
                                 <div class="form-check form-switch mb-0" style="padding-left: 3.5rem;">
                                     <input class="form-check-input" type="checkbox" id="is_purchased" name="is_purchased" value="1" {{ $cloth->is_purchased ? 'checked' : '' }} style="width: 3rem; height: 1.5rem; margin-left:-2.55rem cursor: pointer;">
@@ -477,7 +480,7 @@
                         </div>
 
                         <!-- Availability Quick Access -->
-                        <div class="glass-card p-4">
+                        <div class="glass-card p-4 d-none">
                             <h6 class="fw-bold mb-3"><i class="bi bi-calendar-check me-2"></i> Rental Blocks</h6>
                             <p class="extra-small text-muted mb-3">You have {{ $cloth->availabilityBlocks->count() }} active date blocks.</p>
                             <a href="#availability-section" class="btn btn-light btn-sm w-100 rounded-pill fw-bold">Manage Calendar</a>
@@ -530,7 +533,7 @@
                 
                 <div class="row">
                     <!-- Available Dates -->
-                    <div class="col-lg-6 mb-4 mb-lg-0">
+                    <div class="col-lg-12 mb-4 mb-lg-0">
                         <div class="p-3 rounded-4" style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.1);">
                             <div class="d-flex justify-content-between align-items-center mb-4">
                                 <h6 class="fw-bold text-success mb-0">RENTAL PERIODS</h6>
@@ -564,7 +567,7 @@
                     </div>
 
                     <!-- Blocked Dates -->
-                    <div class="col-lg-6">
+                    <div class="col-lg-6 d-none">
                         <div class="p-3 rounded-4" style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.1);">
                             <div class="d-flex justify-content-between align-items-center mb-4">
                                 <h6 class="fw-bold text-danger mb-0">BLOCKED DATES</h6>

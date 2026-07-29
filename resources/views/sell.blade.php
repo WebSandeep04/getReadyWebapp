@@ -234,7 +234,7 @@
       </div>
 
       <div class="row">
-        <div class="col-md-6" id="selling_price_section" style="display: {{ old('is_purchased') ? 'block' : 'none' }};">
+        <div class="col-md-12 mb-2" id="selling_price_section" style="display: {{ old('is_purchased') ? 'block' : 'none' }};">
           <label class="d-block text-left font-weight-bold mb-1">Selling Price <span class="text-danger">*</span></label>
           <input type="number" name="selling_price" placeholder="Selling Price (₹)" value="{{ old('selling_price') }}">
           <div id="sp-error-message" class="text-danger small mt-1" style="display: none;"></div>
@@ -264,7 +264,7 @@
         </div>
         
         <div class="row">
-          <div class="col-md-6 mb-3">
+          <div class="col-md-12 mb-3">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <span class="font-weight-bold small text-uppercase" style="color: #2e7d32;">Available for Rent</span>
               <button type="button" class="btn btn-outline-success btn-xs py-1 px-2" style="font-size: 0.7rem;" onclick="addAvailabilityBlock('available')">
@@ -277,7 +277,7 @@
             <div id="available-dates"></div>
           </div>
           
-          <div class="col-md-6">
+          <div class="col-md-6 d-none">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <span class="font-weight-bold small text-uppercase" style="color: #e65100;">Personal Block Dates</span>
               <button type="button" class="btn btn-outline-warning btn-xs py-1 px-2" style="font-size: 0.7rem; color: #e65100; border-color: #e65100;" onclick="addAvailabilityBlock('blocked')">

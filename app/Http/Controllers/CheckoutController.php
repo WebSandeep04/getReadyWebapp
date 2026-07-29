@@ -387,37 +387,39 @@ class CheckoutController extends Controller
                     $shipmentCollectable = $shipmentAmount;
                 }
 
-                $orderLoad = [
-                    'order_number' => $order->id . '-' . $sellerId, // Unique order number per seller
-                    'payment_type' => strtolower($paymentType) === 'cod' ? 'cod' : 'prepaid',
-                    'order_amount' => $shipmentAmount,
-                    'collectable_amount' => $shipmentCollectable,
-                    'package_weight' => 500 * count($sellerItems),
-                    'package_length' => 10,
-                    'package_breadth' => 10,
-                    'package_height' => 10,
-                    'request_auto_pickup' => 'yes',
-                    'shipping_charges' => 0,
-                    'discount' => 0,
-                    'cod_charges' => 0,
-                    'consignee' => [
-                        'name' => $user->name,
-                        'address' => $buyerAddress,
-                        'address_2' => '',
-                        'city' => $buyerCity,
-                        'state' => $buyerState,
-                        'pincode' => $buyerPincode,
-                        'phone' => str_pad(preg_replace('/[^0-9]/', '', $user->phone), 10, '9', STR_PAD_LEFT)
-                    ],
+                    $buyerPhoneStr = substr(str_pad(preg_replace('/[^0-9]/', '', $user->phone), 10, '0', STR_PAD_LEFT), -10);
+                    
+                    $orderLoad = [
+                        'order_number' => $order->id . '-' . $sellerId, // Unique order number per seller
+                        'payment_type' => strtolower($paymentType) === 'cod' ? 'cod' : 'prepaid',
+                        'order_amount' => $shipmentAmount,
+                        'collectable_amount' => $shipmentCollectable,
+                        'package_weight' => 500 * count($sellerItems),
+                        'package_length' => 10,
+                        'package_breadth' => 10,
+                        'package_height' => 10,
+                        'request_auto_pickup' => 'yes',
+                        'shipping_charges' => 0,
+                        'discount' => 0,
+                        'cod_charges' => 0,
+                        'consignee' => [
+                            'name' => substr(trim($user->name), 0, 100),
+                            'address' => substr(trim($buyerAddress), 0, 200),
+                            'address_2' => '',
+                            'city' => substr(trim($buyerCity), 0, 40),
+                            'state' => substr(trim($buyerState), 0, 40),
+                            'pincode' => substr(trim($buyerPincode), 0, 6),
+                            'phone' => $buyerPhoneStr
+                        ],
                     'pickup' => [
-                        'warehouse_name' => substr($sellerName, 0, 30),
-                        'name' => substr($sellerName, 0, 30),
-                        'address' => substr($sellerAddress, 0, 100),
+                        'warehouse_name' => substr(trim($sellerName), 0, 20),
+                        'name' => substr(trim($sellerName), 0, 100),
+                        'address' => substr(trim($sellerAddress), 0, 200),
                         'address_2' => '',
-                        'city' => substr($sellerCity, 0, 40),
-                        'state' => $sellerState,
-                        'pincode' => $sellerPincode,
-                        'phone' => $sellerPhone
+                        'city' => substr(trim($sellerCity), 0, 40),
+                        'state' => substr(trim($sellerState), 0, 40),
+                        'pincode' => substr(trim($sellerPincode), 0, 6),
+                        'phone' => substr(str_pad(preg_replace('/[^0-9]/', '', $sellerPhone), 10, '0', STR_PAD_LEFT), -10)
                     ],
                     'order_items' => $orderItemsArray
                 ];

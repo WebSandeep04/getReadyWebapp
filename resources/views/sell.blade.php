@@ -41,7 +41,7 @@
             <p class="text-muted">Turn your wardrobe into an earning opportunity</p>
           </div>
           
-          @if(Auth::check() && empty(Auth::user()->address))
+          @if(Auth::check() && (empty(Auth::user()->address) || empty(Auth::user()->city) || empty(Auth::user()->state) || empty(Auth::user()->pincode)))
             <div class="text-center mt-4 mb-5 p-4">
               <i class="bi bi-geo-alt-fill mb-3 d-block" style="font-size: 3rem; color: #f78c1c;"></i>
               <h4 class="font-weight-bold mb-3" style="color: #e65100;">Address Required</h4>

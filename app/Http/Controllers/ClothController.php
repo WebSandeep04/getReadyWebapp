@@ -261,6 +261,10 @@ class ClothController extends Controller
 
     public function store(Request $request)
     {
+        if (empty(Auth::user()->address) || empty(Auth::user()->city) || empty(Auth::user()->state) || empty(Auth::user()->pincode)) {
+            return redirect()->route('profile')->with('error', 'Please complete your profile address details before listing an outfit.');
+        }
+
         $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'description' => 'required|string',

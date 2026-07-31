@@ -230,8 +230,8 @@
                                     <a class="dropdown-item rounded-2 py-2 d-flex align-items-center" href="{{ route('invoices.download', $inv->id) }}">
                                         <i class="bi bi-download me-2 text-primary"></i>
                                         <span class="small fw-medium">
-                                            @if($inv->type == 'rent_sale') Tax Invoice
-                                            @elseif($inv->type == 'platform_fee_buyer') Service Fee
+                                            @if($inv->type == 'rent_sale') {{ $inv->invoice_number }}
+                                            @elseif($inv->type == 'platform_fee_buyer') {{ $inv->invoice_number }}
                                             @else Invoice #{{ $inv->invoice_number }} @endif
                                         </span>
                                     </a>

@@ -77,7 +77,7 @@
                 <div class="sale-card position-relative">
                     @php
                         $sellerInvoices = $order->invoices->filter(function($inv) {
-                            return $inv->issued_by_id == auth()->id() || ($inv->type == 'platform_fee_seller' && $inv->issued_to_id == auth()->id());
+                            return $inv->issued_to_id == auth()->id();
                         });
                     @endphp
                     
@@ -91,8 +91,8 @@
                                     <a class="dropdown-item rounded-2 py-2 d-flex align-items-center" href="{{ route('invoices.download', $inv->id) }}">
                                         <i class="bi bi-download me-2 text-primary"></i>
                                         <span class="small fw-medium">
-                                            @if($inv->type == 'rent_sale') Tax Invoice
-                                            @elseif($inv->type == 'platform_fee_seller') Commission
+                                            @if($inv->type == 'rent_sale') {{ $inv->invoice_number }}
+                                            @elseif($inv->type == 'platform_fee_seller') {{ $inv->invoice_number }}
                                             @else Invoice #{{ $inv->invoice_number }} @endif
                                         </span>
                                     </a>

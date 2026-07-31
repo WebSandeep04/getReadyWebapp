@@ -55,6 +55,7 @@ class OrderController extends Controller
             'buyer_name' => $order->buyer ? $order->buyer->name : 'Unknown',
             'buyer_email' => $order->buyer ? $order->buyer->email : 'N/A',
             'buyer_phone' => $order->buyer ? $order->buyer->phone : 'N/A',
+            'shipment_error' => $order->shipment_error,
         ];
         
         if ($order->has_rental_items && $order->rental_from && $order->rental_to) {
@@ -349,110 +350,6 @@ class OrderController extends Controller
         return response()->json(['success' => true, 'message' => 'Order marked as cancelled and stock restored.']);
     }
 
-    public function retryShipment($id)
-    {
-        $order = Order::with(['items.cloth', 'buyer', 'payments', 'shipments'])->findOrFail($id);
-
-        if (!in_array($order->status, ['Confirmed', 'Order Confirmed & Shipment Created'])) {
-            return response()->json(['success' => false, 'message' => 'Only Confirmed or Shipment Created orders can have shipments retried.'], 400);
-        }
-
-        if ($order->shipments->where('type', 'forward')->isNotEmpty()) {
-            return response()->json(['success' => false, 'message' => 'Forward shipment already exists for this order.'], 400);
-        }
-
-        // Determine Payment Type
-        $latestPayment = $order->payments->sortByDesc('created_at')->first();
-        $paymentType = 'Prepaid';
-        if ($latestPayment && $latestPayment->payment_method === 'cod') {
-            $paymentType = 'COD';
-        }
-
-        try {
-            $courier = new XpressbeesService();
-            
-            $user = $order->buyer;
-            if (!$user) { 
-                 return response()->json(['success' => false, 'message' => 'Buyer information missing.'], 400);
-            }
-
-            $addressParts = explode(',', $order->delivery_address);
-            $city = trim($addressParts[count($addressParts)-2] ?? 'Mumbai');
-            $pincodeRaw = trim($addressParts[count($addressParts)-1] ?? '400001');
-            // Clean non-digits
-            $pincodeClean = preg_replace('/[^0-9]/', '', $pincodeRaw);
-            $pincode = (strlen($pincodeClean) >= 6) ? substr($pincodeClean, -6) : '400001';
-
-            $orderLoad = [
-                'order_number' => (string)$order->id,
-                'payment_type' => strtolower($paymentType) === 'cod' ? 'cod' : 'prepaid',
-                'order_amount' => $order->total_amount,
-                'collectable_amount' => (strtolower($paymentType) === 'cod') ? $order->total_amount : 0,
-                'package_weight' => 500, // default 500g
-                'package_length' => 10,
-                'package_breadth' => 10,
-                'package_height' => 10,
-                'request_auto_pickup' => 'yes',
-                'shipping_charges' => 0,
-                'discount' => 0,
-                'cod_charges' => 0,
-                'consignee' => [
-                    'name' => $user->name,
-                    'address' => $order->delivery_address,
-                    'address_2' => '',
-                    'city' => $city,
-                    'state' => 'Maharashtra',
-                    'pincode' => $pincode,
-                    'phone' => str_pad(preg_replace('/[^0-9]/', '', $user->phone ?? '9999999999'), 10, '9', STR_PAD_LEFT)
-                ],
-                'order_items' => []
-            ];
-
-            foreach ($order->items as $item) {
-                 $orderLoad['order_items'][] = [
-                     'name' => $item->cloth->title ?? 'Item',
-                     'qty' => 1,
-                     'price' => $item->price
-                 ];
-            }
-
-            $response = $courier->createOrder($orderLoad);
-
-            if ($response && isset($response['awb_number'])) {
-                Shipment::create([
-                    'order_id' => $order->id,
-                    'type' => 'forward',
-                    'courier_name' => 'Xpressbees',
-                    'waybill_number' => $response['awb_number'],
-                    'reference_id' => $response['order_id'] ?? null,
-                    'tracking_url' => $response['label_url'] ?? null,
-                    'label_url' => $response['label_url'] ?? null,
-                    'status' => 'Booked',
-                ]);
-                
-                $order->update(['status' => 'Order Confirmed & Shipment Created']);
-                
-                return response()->json([
-                    'success' => true, 
-                    'message' => 'Shipment created successfully. AWB: ' . $response['awb_number']
-                ]);
-            } else {
-                Log::error("Admin Retry Shipment Failed: " . json_encode($response));
-                return response()->json([
-                    'success' => false, 
-                    'message' => 'Failed to create shipment with courier. Check logs.'
-                ], 500);
-            }
-
-        } catch (\Exception $e) {
-            Log::error("Admin Retry Shipment Exception: " . $e->getMessage());
-            return response()->json([
-                'success' => false, 
-                'message' => 'Error: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
     public function approveOrderReturn($id)
     {
         $order = Order::with(['buyer', 'items.cloth.user', 'shipments'])->findOrFail($id);
@@ -626,5 +523,28 @@ class OrderController extends Controller
         ]);
 
         return response()->json(['success' => true, 'message' => 'Return request rejected.']);
+    }
+
+    public function retryShipment($id)
+    {
+        $order = Order::findOrFail($id);
+        
+        if ($order->status !== 'Order Confirmed & Shipment Failed' && $order->status !== 'Order Confirmed & Shipment Created') {
+            return response()->json(['success' => false, 'message' => 'Shipments can only be retried for confirmed orders.'], 400);
+        }
+
+        $paymentType = 'prepaid'; 
+        if ($order->payments()->where('payment_method', 'cod')->exists()) {
+            $paymentType = 'cod';
+        }
+
+        $shipmentService = new \App\Services\OrderShipmentService();
+        $result = $shipmentService->createShipments($order, $order->buyer, $paymentType);
+
+        if ($result['success']) {
+            return response()->json(['success' => true, 'message' => 'Shipments successfully created for all sellers.', 'status' => $order->fresh()->status]);
+        } else {
+            return response()->json(['success' => false, 'message' => 'Failed to create shipments: ' . $result['error'], 'status' => $order->fresh()->status], 500);
+        }
     }
 }

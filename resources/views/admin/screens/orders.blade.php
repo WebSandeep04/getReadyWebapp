@@ -307,6 +307,13 @@
                     <div class="card border-0 shadow-sm mb-4">
                         <div class="card-body">
                             <h6 class="fw-bold text-uppercase small text-muted mb-3">General Info</h6>
+                            <div id="shipmentErrorAlert" class="alert alert-danger d-none d-flex align-items-center" role="alert">
+                                <div>
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                    <strong>Shipment Failed:</strong> <span id="shipmentErrorText"></span>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-danger ms-auto" id="retryShipmentBtn">Retry Shipment</button>
+                            </div>
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="row mb-2"><div class="col-4 text-muted">Status:</div><div class="col-8 fw-semibold" id="mdl_status"></div></div>
@@ -801,6 +808,15 @@ $(function() {
                     $('#mdl_total').text(Number(o.total_amount).toLocaleString());
                     $('#mdl_security').text(Number(o.security_amount).toLocaleString());
                     $('#mdl_placed').text(o.formatted_date);
+                    
+                    if (o.shipment_error || o.status === 'Order Confirmed & Shipment Failed') {
+                        $('#shipmentErrorText').text(o.shipment_error || 'Unknown error occurred during shipment creation.');
+                        $('#shipmentErrorAlert').removeClass('d-none');
+                        $('#retryShipmentBtn').data('order-id', o.id);
+                    } else {
+                        $('#shipmentErrorAlert').addClass('d-none');
+                    }
+
                     $('#mdl_rental_period').html(o.rental_period + ' <span class="text-danger fw-bold">(Return Date: ' + o.return_date_formatted + ')</span>');
                     
                     $('#mdl_buyer_name').text(o.buyer_name);
@@ -905,6 +921,34 @@ $(function() {
             },
             complete: function() {
                 $btn.prop('disabled', false).html('<i class="bi bi-info-circle"></i>');
+            }
+        });
+    });
+
+    // Retry Shipment
+    $('#retryShipmentBtn').on('click', function() {
+        const orderId = $(this).data('order-id');
+        const $btn = $(this);
+        
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Retrying...');
+        
+        $.ajax({
+            url: `/admin/orders/${orderId}/retry-shipment`,
+            type: 'POST',
+            data: { _token: '{{ csrf_token() }}' },
+            success: function(res) {
+                if (res.success) {
+                    window.showAlert(res.message || 'Shipment successfully retried!', 'success');
+                    $('#orderDetailsModal').modal('hide');
+                    fetchOrdersData();
+                } else {
+                    window.showAlert(res.message || 'Failed to retry shipment', 'danger');
+                    $btn.prop('disabled', false).text('Retry Shipment');
+                }
+            },
+            error: function(err) {
+                window.showAlert(err.responseJSON?.message || 'Error retrying shipment', 'danger');
+                $btn.prop('disabled', false).text('Retry Shipment');
             }
         });
     });

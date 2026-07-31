@@ -46,15 +46,17 @@
             <span class="badge bg-secondary">{{ $payment->payment_status }}</span>
         @endif
     </td>
+    {{-- 
     <td class="text-end">
         <!-- Actions: View Details (Link to Order) -->
         <a href="{{ route('admin.orders') }}?search={{ $payment->order_id }}" class="btn btn-sm btn-outline-dark border-0">
              <i class="bi bi-eye text-primary"></i>
         </a>
     </td>
+    --}}
 </tr>
 @empty
 <tr>
-    <td colspan="15" class="text-center py-4 text-muted">No payments found matching criteria.</td>
+    <td colspan="14" class="text-center py-4 text-muted">No payments found matching criteria.</td>
 </tr>
 @endforelse

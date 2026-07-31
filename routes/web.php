@@ -110,6 +110,7 @@ Route::middleware(['admin.auth'])->group(function () {
     Route::get('/admin/cloth-approval', [AdminClothController::class, 'clothApproval'])->name('admin.cloth-approval');
     Route::get('/admin/orders', [AdminOrderController::class, 'index'])->name('admin.orders');
     Route::get('/admin/orders/data', [AdminOrderController::class, 'ordersData'])->name('admin.orders.data');
+    Route::get('/admin/orders/{id}/details', [AdminOrderController::class, 'showDetails'])->name('admin.orders.details');
     Route::post('/admin/orders/{id}/return', [AdminOrderController::class, 'markAsReturned'])->name('admin.orders.return');
     Route::post('/admin/orders/{id}/status', [AdminOrderController::class, 'updateStatus'])->name('admin.orders.status');
     Route::post('/admin/orders/{id}/retry-shipment', [AdminOrderController::class, 'retryShipment'])->name('admin.orders.retry-shipment');

@@ -27,9 +27,11 @@
                 Mark as Paid
             </button>
         @endif
+        {{-- 
         <a href="{{ route('admin.orders') }}?search={{ $order->id }}" class="btn btn-sm btn-outline-dark border-0">
             <i class="bi bi-eye"></i>
         </a>
+        --}}
     </td>
 </tr>
 @empty

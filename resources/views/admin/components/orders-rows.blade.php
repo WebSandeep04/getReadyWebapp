@@ -73,6 +73,7 @@
         <td>{{ $order->created_at->format('d/m/Y, h:i A') }}</td>
         <td>
             <div class="d-flex gap-2">
+                {{-- 
                 @if($order->invoices && $order->invoices->isNotEmpty())
                     <div class="dropdown">
                         <button class="btn btn-sm btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Download Invoices">
@@ -93,7 +94,12 @@
                         <i class="bi bi-envelope"></i>
                     </a>
                 @endif
+                --}}
                 
+                <button class="btn btn-sm btn-outline-dark view-order-btn" data-order-id="{{ $order->id }}" title="View Full Details">
+                    <i class="bi bi-info-circle"></i>
+                </button>
+
                 @if($order->status === 'Pending')
                     <button class="btn btn-sm btn-outline-success update-status-btn" 
                             data-order-id="{{ $order->id }}" 

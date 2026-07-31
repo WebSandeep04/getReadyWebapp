@@ -167,11 +167,11 @@
                             <th>Seller Net</th>
                             <th>Method</th>
                             <th>Status</th>
-                            <th class="text-end">Actions</th>
+                            {{-- <th class="text-end">Actions</th> --}}
                         </tr>
                     </thead>
                     <tbody id="paymentTableBody">
-                        <tr><td colspan="6" class="text-center py-4 text-muted">Loading...</td></tr>
+                        <tr><td colspan="14" class="text-center py-4 text-muted">Loading...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -199,7 +199,7 @@ $(function() {
 
         Object.assign(params, extra);
 
-        $('#paymentTableBody').html('<tr><td colspan="15" class="text-center py-4 text-muted">Loading...</td></tr>');
+        $('#paymentTableBody').html('<tr><td colspan="14" class="text-center py-4 text-muted">Loading...</td></tr>');
 
         $.ajax({
             url: fetchUrl,
@@ -233,7 +233,7 @@ $(function() {
                 }
             },
             error: function() {
-                $('#paymentTableBody').html('<tr><td colspan="15" class="text-center py-4 text-danger">Error loading data.</td></tr>');
+                $('#paymentTableBody').html('<tr><td colspan="14" class="text-center py-4 text-danger">Error loading data.</td></tr>');
             }
         });
     }

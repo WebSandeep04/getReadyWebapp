@@ -293,6 +293,101 @@
             </div>
         </div>
     </div>
+
+    <!-- Order Details Modal -->
+    <div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-bottom">
+                    <h5 class="modal-title fw-bold">Order Details: <span id="mdl_order_id"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <!-- General Info (Full width) -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body">
+                            <h6 class="fw-bold text-uppercase small text-muted mb-3">General Info</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="row mb-2"><div class="col-4 text-muted">Status:</div><div class="col-8 fw-semibold" id="mdl_status"></div></div>
+                                    <div class="row mb-2"><div class="col-4 text-muted">Type:</div><div class="col-8 fw-semibold" id="mdl_type"></div></div>
+                                    <div class="row mb-2"><div class="col-4 text-muted">Placed On:</div><div class="col-8" id="mdl_placed"></div></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="row mb-2"><div class="col-4 text-muted">Total Amount:</div><div class="col-8 fw-bold">₹<span id="mdl_total"></span></div></div>
+                                    <div class="row mb-2"><div class="col-4 text-muted">Security:</div><div class="col-8 fw-semibold">₹<span id="mdl_security"></span></div></div>
+                                    <div class="row mb-2"><div class="col-4 text-muted">Rental Period:</div><div class="col-8" id="mdl_rental_period"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Buyer & Seller Info -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h6 class="fw-bold text-uppercase small text-muted mb-3">Buyer & Delivery</h6>
+                                    <div class="row mb-2"><div class="col-4 text-muted">Name:</div><div class="col-8 fw-semibold" id="mdl_buyer_name"></div></div>
+                                    <div class="row mb-2"><div class="col-4 text-muted">Email:</div><div class="col-8" id="mdl_buyer_email"></div></div>
+                                    <div class="row mb-2"><div class="col-4 text-muted">Phone:</div><div class="col-8" id="mdl_buyer_phone"></div></div>
+                                    <div class="row mb-2"><div class="col-4 text-muted">Address:</div><div class="col-8 small" id="mdl_delivery_address"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h6 class="fw-bold text-uppercase small text-muted mb-3">Seller Details</h6>
+                                    <div id="mdl_seller_info">
+                                        <!-- Will populate dynamically -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Items List -->
+                    <h6 class="fw-bold text-uppercase small text-muted mb-3 mt-4">Order Items</h6>
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0 align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Type</th>
+                                        <th>Price</th>
+                                        <th>Security Deposit</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="mdl_items_body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Payments and Shipments -->
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-uppercase small text-muted mb-3">Payments</h6>
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body p-0">
+                                    <ul class="list-group list-group-flush" id="mdl_payments_list"></ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-uppercase small text-muted mb-3">Shipments</h6>
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body p-0">
+                                    <ul class="list-group list-group-flush" id="mdl_shipments_list"></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 
@@ -684,6 +779,134 @@ $(function() {
         e.preventDefault();
         const page = new URL(this.href).searchParams.get('page') || 1;
         fetchOrders({ page });
+    });
+
+    // Show Order Details
+    $tableBody.on('click', '.view-order-btn', function(e) {
+        e.preventDefault();
+        const $btn = $(this);
+        const orderId = $btn.data('order-id');
+        
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
+
+        $.ajax({
+            url: `/admin/orders/${orderId}/details`,
+            type: 'GET',
+            success: function(res) {
+                if(res.success) {
+                    const o = res.order;
+                    $('#mdl_order_id').text('GR-' + String(o.id).padStart(5, '0'));
+                    $('#mdl_status').text(o.status);
+                    $('#mdl_type').text(o.order_type);
+                    $('#mdl_total').text(Number(o.total_amount).toLocaleString());
+                    $('#mdl_security').text(Number(o.security_amount).toLocaleString());
+                    $('#mdl_placed').text(o.formatted_date);
+                    $('#mdl_rental_period').html(o.rental_period + ' <span class="text-danger fw-bold">(Return Date: ' + o.return_date_formatted + ')</span>');
+                    
+                    $('#mdl_buyer_name').text(o.buyer_name);
+                    $('#mdl_buyer_email').text(o.buyer_email);
+                    $('#mdl_buyer_phone').text(o.buyer_phone);
+                    
+                    let buyerFullAddress = o.delivery_address || 'N/A';
+                    if (o.delivery_city || o.delivery_pincode) {
+                        buyerFullAddress += '<br>' + (o.delivery_city || '') + ' ' + (o.delivery_state || '') + ' ' + (o.delivery_pincode || '');
+                    }
+                    $('#mdl_delivery_address').html(buyerFullAddress);
+                    
+                    let itemsHtml = '';
+                    let sellersHtml = '';
+                    let uniqueSellers = {};
+                    
+                    if (o.items_list && o.items_list.length > 0) {
+                        o.items_list.forEach(item => {
+                            // Collect unique sellers
+                            if (item.seller_email && item.seller_email !== 'N/A' && !uniqueSellers[item.seller_email]) {
+                                uniqueSellers[item.seller_email] = item;
+                                sellersHtml += `
+                                    <div class="mb-3 ${Object.keys(uniqueSellers).length > 1 ? 'border-top pt-3' : ''}">
+                                        <div class="row mb-1"><div class="col-4 text-muted">Name:</div><div class="col-8 fw-semibold">${item.seller_name}</div></div>
+                                        <div class="row mb-1"><div class="col-4 text-muted">Email:</div><div class="col-8">${item.seller_email}</div></div>
+                                        <div class="row mb-1"><div class="col-4 text-muted">Phone:</div><div class="col-8">${item.seller_phone}</div></div>
+                                        <div class="row mb-1"><div class="col-4 text-muted">Address:</div><div class="col-8 small">${item.seller_address}<br>${item.seller_city} ${item.seller_state} ${item.seller_pincode}</div></div>
+                                    </div>
+                                `;
+                            }
+
+                            // Items Table Rows
+                            itemsHtml += `
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <img src="${item.image_url}" style="width:40px; height:40px; object-fit:cover; border-radius:4px;">
+                                            <span class="fw-semibold">${item.title}</span>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge bg-light text-dark border">${item.purchase_type}</span></td>
+                                    <td>₹${Number(item.price).toLocaleString()}</td>
+                                    <td>₹${Number(item.security_deposit).toLocaleString()}</td>
+                                </tr>
+                            `;
+                        });
+                    } else {
+                        itemsHtml = '<tr><td colspan="4" class="text-center text-muted">No items found</td></tr>';
+                    }
+                    $('#mdl_items_body').html(itemsHtml);
+                    
+                    if (!sellersHtml) sellersHtml = '<div class="text-muted small">No seller details found</div>';
+                    $('#mdl_seller_info').html(sellersHtml);
+
+                    let paymentsHtml = '';
+                    if (o.payments_list && o.payments_list.length > 0) {
+                        o.payments_list.forEach(p => {
+                            paymentsHtml += `
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="fw-bold">₹${Number(p.amount).toLocaleString()}</div>
+                                        <small class="text-muted">${p.method} • ${p.date}</small>
+                                    </div>
+                                    <span class="badge ${p.status === 'Paid' ? 'bg-success' : 'bg-secondary'}">${p.status}</span>
+                                </li>
+                            `;
+                        });
+                    } else {
+                        paymentsHtml = '<li class="list-group-item text-center text-muted py-3">No payments recorded</li>';
+                    }
+                    $('#mdl_payments_list').html(paymentsHtml);
+
+                    let shipmentsHtml = '';
+                    if (o.shipments_list && o.shipments_list.length > 0) {
+                        o.shipments_list.forEach(s => {
+                            shipmentsHtml += `
+                                <li class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="fw-bold">${s.type} Shipment</span>
+                                        <span class="badge bg-info text-dark">${s.status}</span>
+                                    </div>
+                                    <div class="small text-muted mb-1">${s.courier_name} • AWB: ${s.waybill_number}</div>
+                                    <div class="small text-muted d-flex justify-content-between">
+                                        <span>${s.date}</span>
+                                        ${s.tracking_url ? `<a href="${s.tracking_url}" target="_blank" class="text-decoration-none">Track</a>` : ''}
+                                    </div>
+                                </li>
+                            `;
+                        });
+                    } else {
+                        shipmentsHtml = '<li class="list-group-item text-center text-muted py-3">No shipments recorded</li>';
+                    }
+                    $('#mdl_shipments_list').html(shipmentsHtml);
+
+                    $('#orderDetailsModal').modal('show');
+                } else {
+                    window.showAlert('Error loading order details', 'danger');
+                }
+            },
+            error: function() {
+                window.showAlert('Error loading order details', 'danger');
+            },
+            complete: function() {
+                $btn.prop('disabled', false).html('<i class="bi bi-info-circle"></i>');
+            }
+        });
     });
 });
 </script>

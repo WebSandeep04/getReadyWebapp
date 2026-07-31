@@ -38,6 +38,84 @@ class OrderController extends Controller
         ]);
     }
 
+    public function showDetails($id)
+    {
+        $order = Order::with(['buyer', 'items.cloth.images', 'items.cloth.user', 'shipments', 'payments', 'invoices'])->findOrFail($id);
+
+        $data = [
+            'id' => $order->id,
+            'status' => $order->status,
+            'total_amount' => $order->total_amount,
+            'security_amount' => $order->security_amount ?? 0,
+            'delivery_address' => $order->delivery_address,
+            'delivery_city' => $order->delivery_city,
+            'delivery_state' => $order->delivery_state,
+            'delivery_pincode' => $order->delivery_pincode,
+            'formatted_date' => $order->created_at->setTimezone('Asia/Kolkata')->format('d M Y, h:i A'),
+            'buyer_name' => $order->buyer ? $order->buyer->name : 'Unknown',
+            'buyer_email' => $order->buyer ? $order->buyer->email : 'N/A',
+            'buyer_phone' => $order->buyer ? $order->buyer->phone : 'N/A',
+        ];
+        
+        if ($order->has_rental_items && $order->rental_from && $order->rental_to) {
+            $data['rental_period'] = \Carbon\Carbon::parse($order->rental_from)->format('d/m/Y') . ' – ' . \Carbon\Carbon::parse($order->rental_to)->format('d/m/Y');
+            $data['return_date_formatted'] = ($order->return_date ? \Carbon\Carbon::parse($order->return_date) : \Carbon\Carbon::parse($order->rental_to)->addDay())->format('d/m/Y');
+        } else {
+            $data['rental_period'] = 'N/A';
+            $data['return_date_formatted'] = 'N/A';
+        }
+
+        $orderType = $order->has_rental_items && $order->has_purchase_items ? 'Mixed' : ($order->has_rental_items ? 'Rental' : 'Purchase');
+        $data['order_type'] = $orderType;
+
+        $itemsList = [];
+        foreach ($order->items as $item) {
+            $imagePath = $item->cloth && $item->cloth->images->isNotEmpty() ? asset('storage/' . $item->cloth->images->first()->image_path) : asset('images/placeholder.jpg');
+            
+            $sellerEmail = $item->cloth && $item->cloth->user ? $item->cloth->user->email : 'N/A';
+
+            $itemsList[] = [
+                'id' => $item->id,
+                'title' => $item->cloth ? $item->cloth->title : 'Item',
+                'purchase_type' => $item->purchase_type,
+                'price' => $item->price,
+                'security_deposit' => $item->cloth->security_deposit ?? 0,
+                'image_url' => $imagePath,
+                'seller_name' => $item->seller_name ?? 'Unknown',
+                'seller_email' => $sellerEmail,
+                'seller_phone' => $item->seller_phone ?? 'N/A',
+                'seller_address' => $item->seller_address ?? 'N/A',
+                'seller_city' => $item->seller_city ?? '',
+                'seller_state' => $item->seller_state ?? '',
+                'seller_pincode' => $item->seller_pincode ?? '',
+            ];
+        }
+        $data['items_list'] = $itemsList;
+
+        $data['shipments_list'] = $order->shipments->map(function($shipment) {
+            return [
+                'type' => ucfirst($shipment->type),
+                'courier_name' => $shipment->courier_name,
+                'waybill_number' => $shipment->waybill_number,
+                'status' => $shipment->status,
+                'tracking_url' => $shipment->tracking_url,
+                'date' => $shipment->created_at->setTimezone('Asia/Kolkata')->format('d/m/Y h:i A')
+            ];
+        });
+
+        $data['payments_list'] = $order->payments->map(function($payment) {
+            return [
+                'id' => $payment->id,
+                'method' => strtoupper($payment->payment_method),
+                'amount' => $payment->amount,
+                'status' => $payment->payment_status,
+                'date' => $payment->created_at->setTimezone('Asia/Kolkata')->format('d/m/Y h:i A')
+            ];
+        });
+
+        return response()->json(['success' => true, 'order' => $data]);
+    }
+
     private function transformOrder($order)
     {
         $data = $order->toArray();

@@ -203,7 +203,43 @@
                     }
                 @endphp
 
-                <div class="sale-card">
+                <div class="sale-card position-relative">
+                    @php
+                        $allInvoices = $order->invoices->where('issued_to_id', auth()->id());
+                        $mainInvoices = $allInvoices->whereNull('order_extension_id');
+                        $extInvoices = $allInvoices->whereNotNull('order_extension_id');
+                        
+                        $showMainInvoices = $mainInvoices->isNotEmpty();
+                        if ($order->status === 'Delivered') {
+                            $showMainInvoices = $showMainInvoices && ($order->delivered_at && $order->delivered_at->addMinutes(2)->isPast());
+                        } elseif (in_array($order->status, ['Pending', 'Confirmed', 'Shipped', 'Order Confirmed & Shipment Created'])) {
+                            $showMainInvoices = false;
+                        }
+                        $visibleInvoices = collect();
+                        if ($showMainInvoices) $visibleInvoices = $visibleInvoices->concat($mainInvoices);
+                        if ($extInvoices->isNotEmpty()) $visibleInvoices = $visibleInvoices->concat($extInvoices);
+                    @endphp
+                    
+                    @if($visibleInvoices->isNotEmpty())
+                        <div class="dropdown position-absolute" style="top: 1.25rem; right: 1.25rem; z-index: 10;">
+                            <button class="btn btn-light btn-sm dropdown-toggle rounded-pill fw-bold" type="button" data-toggle="dropdown" style="font-size: 0.75rem; padding: 0.35rem 0.75rem; background: #f8f9fa; border: 1px solid #e9ecef; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                                <i class="bi bi-file-earmark-pdf text-danger"></i> Invoices
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right shadow border-0 rounded-3 p-2 mt-2" style="min-width: 160px;">
+                                @foreach($visibleInvoices as $inv)
+                                    <a class="dropdown-item rounded-2 py-2 d-flex align-items-center" href="{{ route('invoices.download', $inv->id) }}">
+                                        <i class="bi bi-download me-2 text-primary"></i>
+                                        <span class="small fw-medium">
+                                            @if($inv->type == 'rent_sale') Tax Invoice
+                                            @elseif($inv->type == 'platform_fee_buyer') Service Fee
+                                            @else Invoice #{{ $inv->invoice_number }} @endif
+                                        </span>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
                     <!-- Product Image & Type -->
                     <div class="sale-image-group">
                         @if($firstItem && $firstItem->cloth && $firstItem->cloth->images->count() > 0)
@@ -242,9 +278,11 @@
                             <span class="status-badge {{ strtolower($order->status) == 'delivered' ? 'badge-approved' : (strtolower($order->status) == 'cancelled' ? 'badge-rejected' : 'badge-pending') }}">
                                 {{ $order->status }}
                             </span>
-                            <span class="text-muted extra-small ms-auto">
-                                <i class="bi bi-clock me-1"></i> {{ $order->created_at->format('M d, Y') }}
-                            </span>
+                            <div class="ms-auto d-flex align-items-center gap-3">
+                                <span class="text-muted extra-small">
+                                    <i class="bi bi-clock me-1"></i> {{ $order->created_at->format('M d, Y') }}
+                                </span>
+                            </div>
                         </div>
 
                         <div class="row">
@@ -355,40 +393,6 @@
                                 </div>
 
                                 <div class="sale-actions justify-content-lg-end d-none d-md-flex">
-                                    @php
-                                        $allInvoices = $order->invoices->where('issued_to_id', auth()->id());
-                                        $mainInvoices = $allInvoices->whereNull('order_extension_id');
-                                        $extInvoices = $allInvoices->whereNotNull('order_extension_id');
-                                        
-                                        $showMainInvoices = $mainInvoices->isNotEmpty();
-                                        if ($order->status === 'Delivered') {
-                                            $showMainInvoices = $showMainInvoices && ($order->delivered_at && $order->delivered_at->addMinutes(2)->isPast());
-                                        } elseif (in_array($order->status, ['Pending', 'Confirmed', 'Shipped', 'Order Confirmed & Shipment Created'])) {
-                                            $showMainInvoices = false;
-                                        }
-                                        $visibleInvoices = collect();
-                                        if ($showMainInvoices) $visibleInvoices = $visibleInvoices->concat($mainInvoices);
-                                        if ($extInvoices->isNotEmpty()) $visibleInvoices = $visibleInvoices->concat($extInvoices);
-                                    @endphp
-
-                                    @if($visibleInvoices->isNotEmpty())
-                                        <div class="dropdown">
-                                            <button class="btn btn-light btn-sale-action dropdown-toggle" type="button" data-toggle="dropdown">
-                                                <i class="bi bi-file-earmark-pdf"></i> Invoices
-                                            </button>
-                                            <div class="dropdown-menu shadow-sm border-0 rounded-4 p-2 mt-2">
-                                                @foreach($visibleInvoices as $inv)
-                                                    <a class="dropdown-item rounded-3" href="{{ route('invoices.download', $inv->id) }}">
-                                                        <i class="bi bi-download me-2 text-primary"></i>
-                                                        @if($inv->type == 'rent_sale') Tax Invoice
-                                                        @elseif($inv->type == 'platform_fee_buyer') Service Fee
-                                                        @else Invoice #{{ $inv->invoice_number }} @endif
-                                                    </a>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    @endif
-
                                     @if($order->has_rental_items && $order->status === 'Delivered')
                                          <button type="button" class="btn btn-premium btn-sale-action" data-toggle="modal" data-target="#extensionModal"
                                             data-order-id="{{ $order->id }}" 

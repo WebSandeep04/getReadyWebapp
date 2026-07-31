@@ -74,7 +74,33 @@
                     $firstItem = $order->items->first();
                 @endphp
 
-                <div class="sale-card">
+                <div class="sale-card position-relative">
+                    @php
+                        $sellerInvoices = $order->invoices->filter(function($inv) {
+                            return $inv->issued_by_id == auth()->id() || ($inv->type == 'platform_fee_seller' && $inv->issued_to_id == auth()->id());
+                        });
+                    @endphp
+                    
+                    @if($sellerInvoices->isNotEmpty())
+                        <div class="dropdown position-absolute" style="top: 1.25rem; right: 1.25rem; z-index: 10;">
+                            <button class="btn btn-light btn-sm dropdown-toggle rounded-pill fw-bold" type="button" data-toggle="dropdown" style="font-size: 0.75rem; padding: 0.35rem 0.75rem; background: #f8f9fa; border: 1px solid #e9ecef; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                                <i class="bi bi-file-earmark-pdf text-danger"></i> Invoices
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right shadow border-0 rounded-3 p-2 mt-2" style="min-width: 160px;">
+                                @foreach($sellerInvoices as $inv)
+                                    <a class="dropdown-item rounded-2 py-2 d-flex align-items-center" href="{{ route('invoices.download', $inv->id) }}">
+                                        <i class="bi bi-download me-2 text-primary"></i>
+                                        <span class="small fw-medium">
+                                            @if($inv->type == 'rent_sale') Tax Invoice
+                                            @elseif($inv->type == 'platform_fee_seller') Commission
+                                            @else Invoice #{{ $inv->invoice_number }} @endif
+                                        </span>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
                     <!-- Product Image & Count -->
                     <div class="sale-image-group">
                         @if($firstItem && $firstItem->cloth && $firstItem->cloth->images->count() > 0)
@@ -144,29 +170,6 @@
                             </div>
 
                             <div class="sale-actions">
-                                @php
-                                    $sellerInvoices = $order->invoices->filter(function($inv) {
-                                        return $inv->issued_by_id == auth()->id() || ($inv->type == 'platform_fee_seller' && $inv->issued_to_id == auth()->id());
-                                    });
-                                @endphp
-                                
-                                @if($sellerInvoices->isNotEmpty())
-                                    <div class="dropdown">
-                                        <button class="btn btn-light btn-sale-action dropdown-toggle" type="button" data-toggle="dropdown">
-                                            <i class="bi bi-file-earmark-pdf"></i> Invoices
-                                        </button>
-                                        <div class="dropdown-menu shadow-sm border-0 rounded-4 p-2">
-                                            @foreach($sellerInvoices as $inv)
-                                                <a class="dropdown-item rounded-3" href="{{ route('invoices.download', $inv->id) }}">
-                                                    <i class="bi bi-download me-2"></i>
-                                                    @if($inv->type == 'rent_sale') Tax Invoice
-                                                    @elseif($inv->type == 'platform_fee_seller') Commission
-                                                    @else Invoice #{{ $inv->invoice_number }} @endif
-                                                </a>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                @endif
 
                                 @if($canRate)
                                     @if($hasRated)

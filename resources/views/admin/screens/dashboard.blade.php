@@ -141,7 +141,6 @@
                         <th>Seller See (₹)</th>
                         <th>Security (₹)</th>
                         <th>Status</th>
-                        <th class="text-center">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -225,7 +224,6 @@
                         <th>Items</th>
                         <th>Total (₹)</th>
                         <th>Status</th>
-                        <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -394,7 +392,6 @@
                         <th>Amount (₹)</th>
                         <th>Created At</th>
                         <th>Status</th>
-                        <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -467,7 +464,6 @@
                         <th>Net Amount (₹)</th>
                         <th>Created At</th>
                         <th>Status</th>
-                        <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -670,19 +666,6 @@ $(function() {
                     <td class="fw-bold">${sellerRent}${sellerBuy}</td>
                     <td>₹${cloth.security_deposit}</td>
                     <td>${statusBadge}</td>
-                    <td class="text-center">
-                        <div class="btn-group btn-group-sm" role="group">
-                            <button class="btn btn-outline-success approve-btn" data-id="${cloth.id}" ${approveDisabled ? 'disabled' : ''} title="${approveDisabled ? 'Approved' : 'Approve'}">
-                                <i class="bi bi-check-lg"></i>
-                            </button>
-                            <button class="btn btn-outline-danger reject-btn" data-id="${cloth.id}" ${rejectDisabled ? 'disabled' : ''} title="${rejectDisabled ? 'Rejected' : 'Reject'}">
-                                <i class="bi bi-x-lg"></i>
-                            </button>
-                            <button class="btn btn-outline-secondary view-reason-btn" data-id="${cloth.id}" title="View Reason">
-                                <i class="bi bi-eye"></i>
-                            </button>   
-                        </div>
-                    </td>
                 </tr>`;
             });
             
@@ -841,31 +824,6 @@ $(function() {
                 if (order.shipment_missing) {
                     statusBadge += ' <i class="bi bi-exclamation-triangle-fill text-danger ms-1" title="Shipment missing"></i>';
                 }
-                // Action buttons building (Mirroring components.orders-rows)
-                let actionBtn = `<div class="d-flex gap-1 justify-content-end">`;
-                
-                // 1. Move to Next Status
-                if (order.status === 'Pending') {
-                    actionBtn += `<button class="btn btn-sm btn-outline-success update-status-btn" data-order-id="${order.id}" data-status="Confirmed" title="Confirm Order" style="padding: 0.15rem 0.4rem; font-size: 0.7rem;"><i class="bi bi-check-circle"></i></button>`;
-                }
-
-                // 3. Retry Shipment
-                if (order.shipment_missing) {
-                     actionBtn += `<button class="btn btn-sm btn-outline-warning retry-shipment-btn" data-order-id="${order.id}" title="Retry Shipment" style="padding: 0.15rem 0.4rem; font-size: 0.7rem;"><i class="bi bi-arrow-clockwise"></i></button>`;
-                }
-
-                // 4. Review Return Request
-                if (order.status === 'Return Requested') {
-                    actionBtn += `<button class="btn btn-sm btn-danger review-return-btn" data-order-id="${order.id}" data-reason="${order.return_reason || ''}" data-details="${order.return_details || ''}" data-images='${JSON.stringify(order.return_images || [])}' title="Review Return" style="padding: 0.15rem 0.4rem; font-size: 0.7rem;"><i class="bi bi-eye"></i></button>`;
-                }
-
-                // 5. Process Issue Refund (Full Refund)
-                if (order.status === 'Returned' && order.return_reason && !order.is_security_returned) {
-                    actionBtn += `<button class="btn btn-sm btn-dark process-issue-refund-btn" data-order-id="${order.id}" title="Refund All" style="padding: 0.15rem 0.4rem; font-size: 0.7rem;"><i class="bi bi-wallet2 me-1"></i>Refund All</button>`;
-                }
-
-                actionBtn += `</div>`;
-
                 rows += `<tr>
                     <td>#${order.id}</td>
                     <td>${order.user_name}</td>
@@ -873,7 +831,6 @@ $(function() {
                     <td>${order.items_count} Item(s) ${typeLabel}</td>
                     <td>₹${order.total_amount}</td>
                     <td>${statusBadge}</td>
-                    <td class="text-end">${actionBtn}</td>
                 </tr>`;
             });
             
@@ -931,17 +888,6 @@ $(function() {
                          statusBadge = '<span class="badge bg-warning text-dark">Held</span>';
                     }
 
-                    let actionBtn = '';
-                    if (!item.is_security_returned) {
-                        if (item.status === 'Returned') {
-                            actionBtn = `<button class="btn btn-dark btn-sm btn-action mark-returned-btn" data-id="${item.id}" style="font-size: 0.75rem; padding: 0.2rem 0.5rem;">Mark Returned</button>`;
-                        } else {
-                            actionBtn = `<button class="btn btn-outline-secondary btn-sm btn-action" disabled style="font-size: 0.75rem; padding: 0.2rem 0.5rem;">Wait for Return</button>`;
-                        }
-                    } else {
-                        actionBtn = '<span class="text-success small fw-bold"><i class="bi bi-check-all me-1"></i>Completed</span>';
-                    }
-
                     let row = `
                         <tr>
                             <td><a href="{{ route('admin.orders') }}?search=${item.id}" class="text-decoration-none fw-bold text-dark">#${item.id}</a></td>
@@ -949,7 +895,6 @@ $(function() {
                             <td class="fw-bold">₹${Number(item.amount).toLocaleString()}</td>
                             <td>${item.created_at}</td>
                             <td>${statusBadge}</td>
-                            <td class="text-end">${actionBtn}</td>
                         </tr>
                     `;
                     tbody.append(row);
@@ -1328,20 +1273,13 @@ $(function() {
             
             orders.forEach(function(order) {
                 let statusBadge = '';
-                let actionBtn = '';
                 
                 if (order.is_seller_paid) {
                     statusBadge = '<span class="badge bg-success">Paid to Seller</span>';
-                    actionBtn = `<small class="text-muted">Paid on ${order.seller_paid_at}</small>`;
                 } else if (order.status === 'Returned' || (order.is_purchase && order.status === 'Delivered')) {
                     statusBadge = '<span class="badge bg-warning text-dark">Eligible for Payout</span>';
-                    actionBtn = `
-                        <button class="btn btn-sm btn-dark" onclick="confirmSellerPayout(${order.id}, ${order.amount}, '${order.seller_name}')" style="font-size: 0.7rem; border-radius: 0;">
-                            Mark as Paid
-                        </button>`;
                 } else {
                     statusBadge = `<span class="badge bg-light text-dark border">Order ${order.status}</span>`;
-                    actionBtn = '<small class="text-muted">Awaiting Return</small>';
                 }
 
                 rows += `<tr>
@@ -1350,7 +1288,6 @@ $(function() {
                     <td class="fw-bold">₹${order.amount}</td>
                     <td><small>${order.created_at}</small></td>
                     <td>${statusBadge}</td>
-                    <td class="text-end">${actionBtn}</td>
                 </tr>`;
             });
             

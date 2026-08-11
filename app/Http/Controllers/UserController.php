@@ -145,4 +145,29 @@ class UserController extends Controller
             'user' => $user->fresh()
         ]);
     }
+
+    // Update user address only (AJAX)
+    public function updateAddress(Request $request)
+    {
+        $user = Auth::user();
+        
+        $validator = Validator::make($request->all(), [
+            'address' => 'required|string|max:255',
+            'state' => 'required|string',
+            'city' => 'required|string',
+            'pincode' => 'required|string|max:10',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+        }
+
+        $user->update($request->only(['address', 'state', 'city', 'pincode']));
+
+        return response()->json([
+            'success' => true, 
+            'message' => 'Address updated successfully!',
+            'user' => $user->fresh()
+        ]);
+    }
 }

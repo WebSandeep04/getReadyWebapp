@@ -41,14 +41,6 @@
             <p class="text-muted">Turn your wardrobe into an earning opportunity</p>
           </div>
           
-          @if(Auth::check() && (empty(Auth::user()->address) || empty(Auth::user()->city) || empty(Auth::user()->state) || empty(Auth::user()->pincode)))
-            <div class="text-center mt-4 mb-5 p-4">
-              <i class="bi bi-geo-alt-fill mb-3 d-block" style="font-size: 3rem; color: #f78c1c;"></i>
-              <h4 class="font-weight-bold mb-3" style="color: #e65100;">Address Required</h4>
-              <p class="text-muted mb-4">Please fill out your address details in your profile before you can list an outfit for sale or rent.</p>
-              <a href="{{ route('profile') }}" class="btn btn-sell-premium px-4 py-2 d-inline-block" style="background-color: #f78c1c; color: white; border: none; border-radius: 8px; font-weight: 600; text-decoration: none;">Update Profile Now</a>
-            </div>
-          @else
           <div class="steps-wrapper mb-3">
             <div class="steps-progress">
               <div class="progress-bar-fill" id="progressFill"></div>
@@ -77,6 +69,16 @@
     @csrf
     
     <div class="step-content active">
+      @if ($errors->any())
+        <div class="alert alert-danger mb-4">
+          <ul class="mb-0">
+            @foreach ($errors->all() as $error)
+              <li>{{ $error }}</li>
+            @endforeach
+          </ul>
+        </div>
+      @endif
+
       <div class="form-group mb-2">
         <label class="d-block text-left font-weight-bold mb-1">Title <span class="text-danger">*</span></label>
         <input type="text" name="title" placeholder="Title" value="{{ old('title') }}" required>
@@ -378,7 +380,7 @@
     </div>
     <button type="submit" id="submitBtn" class="submit-btn" style="display: none;">Submit</button>
   </form>
-  @endif
+
         </div> <!-- end sell-card -->
       </div>
     </div>
@@ -679,11 +681,94 @@
   </div>
 </div>
 
+<!-- Address Restriction Modal -->
+<div class="modal fade" id="addressModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content text-center p-4" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+      <div class="modal-body">
+        <div id="addressPrompt">
+          <i class="bi bi-geo-alt-fill mb-3 d-block" style="font-size: 3rem; color: #f78c1c;"></i>
+          <h4 class="font-weight-bold mb-3" style="color: #e65100;">Address Required</h4>
+          <p class="text-muted mb-4">Please fill out your address details before you can list an outfit for sale or rent.</p>
+          <button type="button" class="btn btn-sell-premium px-4 py-2 d-inline-block" style="background-color: #f78c1c; color: white; border: none; border-radius: 8px; font-weight: 600;" onclick="$('#addressPrompt').hide(); $('#addressFormContainer').fadeIn();">Update Address Now</button>
+          <button type="button" class="btn btn-secondary px-4 py-2 mt-3 d-block mx-auto" data-dismiss="modal" style="border-radius: 8px;">Cancel</button>
+        </div>
+        
+        <div id="addressFormContainer" style="display: none; text-align: left;">
+          <h5 class="font-weight-bold mb-3 text-center" style="color: #f78c1c;">Update Address</h5>
+          <form id="ajaxAddressForm">
+            <div class="form-group mb-2">
+              <label class="font-weight-bold small">Address <span class="text-danger">*</span></label>
+              <input type="text" name="address" class="form-control form-control-sm" required>
+            </div>
+            <div class="form-group mb-2">
+              <label class="font-weight-bold small">City <span class="text-danger">*</span></label>
+              <input type="text" name="city" class="form-control form-control-sm" required>
+            </div>
+            <div class="form-group mb-2">
+              <label class="font-weight-bold small">State <span class="text-danger">*</span></label>
+              <input type="text" name="state" class="form-control form-control-sm" required>
+            </div>
+            <div class="form-group mb-3">
+              <label class="font-weight-bold small">Pincode <span class="text-danger">*</span></label>
+              <input type="text" name="pincode" class="form-control form-control-sm" required>
+            </div>
+            <div class="d-flex justify-content-between mt-4">
+              <button type="button" class="btn btn-secondary btn-sm px-3" onclick="$('#addressFormContainer').hide(); $('#addressPrompt').fadeIn();">Back</button>
+              <button type="button" class="btn btn-primary btn-sm px-3" onclick="submitAjaxAddress()" id="btnSubmitAddress" style="background-color: #f78c1c; border-color: #f78c1c;">Save & Continue</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 @endsection
 
 @section('scripts')
+<script>
+    window.hasAddress = {{ (Auth::check() && !empty(Auth::user()->address) && !empty(Auth::user()->city) && !empty(Auth::user()->state) && !empty(Auth::user()->pincode)) ? 'true' : 'false' }};
+</script>
 <script src="{{ asset('js/sell.js') }}"></script>
 <script>
+function submitAjaxAddress() {
+    const form = document.getElementById('ajaxAddressForm');
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    
+    $('#btnSubmitAddress').prop('disabled', true).text('Saving...');
+    
+    $.ajax({
+        url: '{{ route("profile.address.update") }}',
+        method: 'POST',
+        data: {
+            address: form.address.value,
+            city: form.city.value,
+            state: form.state.value,
+            pincode: form.pincode.value,
+            _token: '{{ csrf_token() }}'
+        },
+        success: function(response) {
+            if (response.success) {
+                window.hasAddress = true;
+                $('#addressModal').modal('hide');
+                showSummary();
+            } else {
+                alert('Validation error. Please check fields.');
+            }
+        },
+        error: function(xhr) {
+            alert('Error saving address. ' + (xhr.responseJSON?.message || ''));
+        },
+        complete: function() {
+            $('#btnSubmitAddress').prop('disabled', false).text('Save & Continue');
+        }
+    });
+}
+
 function generateAiDescription() {
     const rawDescription = $('#rawDescription').val();
     if (!rawDescription) {

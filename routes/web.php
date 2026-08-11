@@ -78,6 +78,7 @@ Route::any('/aadhaar/callback', [AadhaarVerificationController::class, 'callback
 Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [UserController::class, 'profile'])->name('profile');
     Route::post('/profile/update', [UserController::class, 'updateProfile'])->name('profile.update');
+    Route::post('/profile/update-address', [UserController::class, 'updateAddress'])->name('profile.address.update');
 });
 
 // Sell (Requires Authentication)

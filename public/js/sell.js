@@ -277,6 +277,8 @@ if (form) {
       if (firstInvalidStep === -1) firstInvalidStep = 3;
     }
 
+
+
     if (!isValid) {
       // Show an alert to the user so they know why it's not submitting
       // alert('Please fill in the following required fields:\n- ' + missingFields.join('\n- '));
@@ -295,8 +297,13 @@ if (form) {
         setTimeout(() => firstInvalid.focus(), 100);
       }
     } else {
-      // Form is valid, show summary modal
-      showSummary();
+      // Form is valid, check if user has address
+      if (typeof window.hasAddress !== 'undefined' && window.hasAddress === false) {
+          $('#addressModal').modal('show');
+      } else {
+          // Form is valid, show summary modal
+          showSummary();
+      }
     }
   });
 }

@@ -292,18 +292,7 @@ class ClothController extends Controller
             ],
             'sku' => 'required|integer|min:1',
             'mrp' => 'nullable|numeric|min:0',
-            'rent_price' => [
-                'required',
-                'numeric',
-                'min:0',
-                function ($attribute, $value, $fail) use ($request) {
-                    $mrp = $request->input('mrp');
-                    if ($mrp && $value > ($mrp * 0.2)) {
-                        $maxRent = $mrp * 0.2;
-                        $fail("Rent price should not exceed 20% of MRP. Maximum allowed rent: ₹" . number_format($maxRent, 2));
-                    }
-                },
-            ],
+            'rent_price' => 'required|numeric|min:0',
             'security_deposit' => 'required|numeric|min:0',
             'measurement_unit' => 'nullable|string|in:inch,cm',
             'images' => 'required|array|min:3|max:4',
@@ -316,6 +305,7 @@ class ClothController extends Controller
         ]);
 
         if ($validator->fails()) {
+            \Log::info('Validation failed', $validator->errors()->toArray());
             return redirect()->back()->withErrors($validator)->withInput();
         }
 

@@ -143,18 +143,7 @@ class ClothController extends Controller
             'condition' => 'required|exists:garment_conditions,id',
             'defects' => 'nullable|string',
             'is_cleaned' => 'boolean',
-            'rent_price' => [
-                'required',
-                'numeric',
-                'min:0',
-                function ($attribute, $value, $fail) use ($request) {
-                    $mrp = $request->input('mrp');
-                    if ($mrp && $value > ($mrp * 0.2)) {
-                        $maxRent = $mrp * 0.2;
-                        $fail("Rent price should not exceed 20% of MRP. Maximum allowed rent: ₹" . number_format($maxRent, 2));
-                    }
-                },
-            ],
+            'rent_price' => 'nullable|numeric|min:0',
             'is_purchased' => 'boolean',
             'selling_price' => [
                 'required_if:is_purchased,1',
@@ -201,9 +190,22 @@ class ClothController extends Controller
         
         $cloth->update($updateData);
 
-        // Handle availability blocks
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Cloth updated successfully',
+                'cloth' => $cloth->fresh()
+            ]);
+        }
+
+        return redirect()->route('listed.clothes')->with('success', 'Cloth updated successfully');
+    }
+
+    public function updateAvailability(Request $request, $id)
+    {
+        $cloth = Cloth::where('user_id', Auth::id())->findOrFail($id);
+        
         if ($request->has('availability_blocks')) {
-            // Validate availability blocks
             $request->validate([
                 'availability_blocks.*.start_date' => 'required|date',
                 'availability_blocks.*.end_date' => 'required|date|after_or_equal:availability_blocks.*.start_date',
@@ -211,10 +213,8 @@ class ClothController extends Controller
                 'availability_blocks.*.reason' => 'nullable|string|max:255',
             ]);
             
-            // Delete existing availability blocks
             $cloth->availabilityBlocks()->delete();
             
-            // Create new availability blocks
             foreach ($request->availability_blocks as $block) {
                 if (!empty($block['start_date']) && !empty($block['end_date'])) {
                     $cloth->availabilityBlocks()->create([
@@ -225,17 +225,19 @@ class ClothController extends Controller
                     ]);
                 }
             }
+        } else {
+            // If no blocks sent, clear all
+            $cloth->availabilityBlocks()->delete();
         }
 
         if ($request->ajax()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Cloth updated successfully',
-                'cloth' => $cloth->fresh()
+                'message' => 'Dates updated successfully!'
             ]);
         }
 
-        return redirect()->route('listed.clothes')->with('success', 'Cloth updated successfully');
+        return redirect()->back()->with('success', 'Dates updated successfully!');
     }
 
     public function destroy($id)
@@ -297,11 +299,7 @@ class ClothController extends Controller
             'measurement_unit' => 'nullable|string|in:inch,cm',
             'images' => 'required|array|min:3|max:4',
             'images.*' => 'image|mimes:jpeg,png,jpg,gif',
-            'availability_blocks' => 'nullable|array',
-            'availability_blocks.*.start_date' => 'required_with:availability_blocks|date',
-            'availability_blocks.*.end_date' => 'required_with:availability_blocks|date|after_or_equal:availability_blocks.*.start_date',
-            'availability_blocks.*.type' => 'required_with:availability_blocks|in:available,blocked',
-            'availability_blocks.*.reason' => 'nullable|string|max:255',
+
         ]);
 
         if ($validator->fails()) {
@@ -309,38 +307,7 @@ class ClothController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        $availableBlocks = [];
-        $blockedBlocks = [];
-        
-        // Handle availability blocks validation
-        if ($request->has('availability_blocks')) {
-            // Separate available and blocked blocks
-            foreach ($request->availability_blocks as $block) {
-                if (!empty($block['start_date']) && !empty($block['end_date'])) {
-                    if (($block['type'] ?? 'blocked') === 'available') {
-                        $availableBlocks[] = $block;
-                    } else {
-                        $blockedBlocks[] = $block;
-                    }
-                }
-            }
-            
-            // Validate available blocks first
-            foreach ($availableBlocks as $block) {
-                $startDate = \Carbon\Carbon::parse($block['start_date']);
-                $endDate = \Carbon\Carbon::parse($block['end_date']);
-                
-                // Validate minimum 4 days rental
-                $daysDiff = $startDate->diffInDays($endDate) + 1;
-                if ($daysDiff < 4) {
-                    return redirect()->back()
-                        ->withErrors(['availability_blocks' => "Minimum 4 days rental required. Selected period: {$daysDiff} day(s)."])
-                        ->withInput();
-                }
-            }
-        }
-
-        return \DB::transaction(function() use ($request, $availableBlocks, $blockedBlocks) {
+        return \DB::transaction(function() use ($request) {
             // Create the cloth record
             $cloth = Cloth::create([
                 'user_id' => Auth::id(),
@@ -370,29 +337,6 @@ class ClothController extends Controller
                 'sleeve_length' => $request->input('sleeve_length'),
                 'measurement_unit' => $request->input('measurement_unit', 'inch'),
             ]);
-
-            // Create available blocks
-            foreach ($availableBlocks as $block) {
-                $cloth->availabilityBlocks()->create([
-                    'start_date' => $block['start_date'],
-                    'end_date' => $block['end_date'],
-                    'type' => 'available',
-                    'reason' => $block['reason'] ?? null,
-                ]);
-            }
-            
-            // Create blocked blocks
-            foreach ($blockedBlocks as $block) {
-                $reason = $block['reason'] ?? '';
-                if (strpos($reason, 'Auto-blocked') === false) {
-                    $cloth->availabilityBlocks()->create([
-                        'start_date' => $block['start_date'],
-                        'end_date' => $block['end_date'],
-                        'type' => 'blocked',
-                        'reason' => $block['reason'] ?? null,
-                    ]);
-                }
-            }
 
             // Handle image uploads
             if ($request->hasFile('images')) {

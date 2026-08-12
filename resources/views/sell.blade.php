@@ -259,40 +259,6 @@
         <input type="hidden" name="sku" value="1">
       </div>
       
-      <!-- Availability Management Section -->
-      <div class="availability-section border-top pt-3">
-        <div class="d-flex align-items-center mb-2">
-          <h5 class="mb-0 font-weight-bold" style="font-size: 1rem;">📆 Availability Management</h5>
-        </div>
-        
-        <div class="row">
-          <div class="col-md-12 mb-3">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="font-weight-bold small text-uppercase" style="color: #2e7d32;">Available for Rent</span>
-              <button type="button" class="btn btn-outline-success btn-xs py-1 px-2" style="font-size: 0.7rem;" onclick="addAvailabilityBlock('available')">
-                <i class="fas fa-plus"></i> Add
-              </button>
-            </div>
-            <div class="alert alert-success py-1 px-2 mb-2" style="font-size: 0.65rem; background-color: #f1f8e9; border: none; color: #2e7d32;">
-              Leave empty if always available. Min 4 days.
-            </div>
-            <div id="available-dates"></div>
-          </div>
-          
-          <div class="col-md-6 d-none">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="font-weight-bold small text-uppercase" style="color: #e65100;">Personal Block Dates</span>
-              <button type="button" class="btn btn-outline-warning btn-xs py-1 px-2" style="font-size: 0.7rem; color: #e65100; border-color: #e65100;" onclick="addAvailabilityBlock('blocked')">
-                <i class="fas fa-plus"></i> Add
-              </button>
-            </div>
-            <div class="alert alert-warning py-1 px-2 mb-2" style="font-size: 0.65rem; background-color: #fff3e0; border: none; color: #e65100;">
-              Block dates to avoid rental conflicts.
-            </div>
-            <div id="blocked-dates"></div>
-          </div>
-        </div>
-      </div>
 
       <div class="row mt-3">
         <div class="col-md-6 mb-3">

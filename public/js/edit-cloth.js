@@ -231,6 +231,41 @@ $(document).ready(function () {
         });
     });
 
+    $('#availabilityForm').submit(function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const submitBtn = $(this).find('button[type="submit"]');
+
+        submitBtn.prop('disabled', true).html('<i class="bi bi-hourglass-split me-2"></i> SAVING...');
+
+        $.ajax({
+            url: window.editClothAvailabilityUrl,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function (response) {
+                if (response.success) {
+                    showAlert('Dates updated successfully!', 'success');
+                }
+            },
+            error: function (xhr, status, error) {
+                let errorMessage = 'Failed to update dates.';
+                if (xhr.responseJSON && xhr.responseJSON.errors) {
+                    errorMessage = Object.values(xhr.responseJSON.errors).flat().join('<br>');
+                }
+                showAlert(errorMessage, 'danger');
+            },
+            complete: function () {
+                submitBtn.prop('disabled', false).html('<i class="bi bi-save me-1"></i> UPDATE DATES');
+            }
+        });
+    });
+
     // Handle image upload
     $('#image-upload').change(function () {
         const files = this.files;

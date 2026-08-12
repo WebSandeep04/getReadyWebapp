@@ -334,6 +334,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/listed-clothes', [ClothController::class, 'index'])->name('listed.clothes');
     Route::get('/listed-clothes/{id}/edit', [ClothController::class, 'edit'])->name('listed.clothes.edit');
     Route::put('/listed-clothes/{id}', [ClothController::class, 'update'])->name('listed.clothes.update');
+    Route::post('/listed-clothes/{id}/availability', [ClothController::class, 'updateAvailability'])->name('listed.clothes.availability.update');
     Route::delete('/listed-clothes/{id}', [ClothController::class, 'destroy'])->name('listed.clothes.destroy');
     Route::delete('/listed-clothes/images/{imageId}', [ClothController::class, 'destroyImage'])->name('listed.clothes.images.destroy');
     

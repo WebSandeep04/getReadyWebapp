@@ -524,8 +524,11 @@
                     </div>
                 </div>
             </div>
+        </form>
 
-            <!-- Availability Management -->
+        <!-- Availability Management -->
+        <form id="availabilityForm">
+            @csrf
             <div class="glass-card mt-4" id="availability-section">
                 <div class="form-section-title">
                     <i class="bi bi-calendar-range"></i> Manage Availability
@@ -533,6 +536,7 @@
                 
                 <div class="row">
                     <!-- Available Dates -->
+                    {{-- 
                     <div class="col-lg-12 mb-4 mb-lg-0">
                         <div class="p-3 rounded-4" style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.1);">
                             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -565,15 +569,21 @@
                             </div>
                         </div>
                     </div>
+                    --}}
 
                     <!-- Blocked Dates -->
-                    <div class="col-lg-6 d-none">
+                    <div class="col-lg-12 mb-4 mb-lg-0">
                         <div class="p-3 rounded-4" style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.1);">
                             <div class="d-flex justify-content-between align-items-center mb-4">
                                 <h6 class="fw-bold text-danger mb-0">BLOCKED DATES</h6>
-                                <button type="button" class="btn btn-premium-danger btn-sm rounded-pill px-3" onclick="addAvailabilityBlock('blocked')">
-                                    <i class="bi bi-plus-lg me-1"></i> ADD
-                                </button>
+                                <div>
+                                    <button type="button" class="btn btn-premium-danger btn-sm rounded-pill px-3" onclick="addAvailabilityBlock('blocked')">
+                                        <i class="bi bi-plus-lg me-1"></i> ADD
+                                    </button>
+                                    <button type="submit" class="btn btn-primary btn-sm rounded-pill px-3 ms-2">
+                                        <i class="bi bi-save me-1"></i> UPDATE DATES
+                                    </button>
+                                </div>
                             </div>
                             <div id="blocked-dates">
                                 @php $blockedCounter = 100; @endphp
@@ -639,6 +649,7 @@
 @section('scripts')
 <script>
     window.editClothUpdateUrl = '{{ route("listed.clothes.update", $cloth->id) }}';
+    window.editClothAvailabilityUrl = '{{ route("listed.clothes.availability.update", $cloth->id) }}';
     window.listedClothesUrl = '{{ route("listed.clothes") }}';
     window.availableCounter = {{ $availableCounter ?? 0 }};
     window.blockedCounter = {{ $blockedCounter ?? 100 }};

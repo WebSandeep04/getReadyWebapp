@@ -677,7 +677,7 @@
             </div>
             <div class="form-group mb-3">
               <label class="font-weight-bold small">Pincode <span class="text-danger">*</span></label>
-              <input type="text" name="pincode" class="form-control form-control-sm" required>
+              <input type="text" name="pincode" class="form-control form-control-sm" required maxlength="6" pattern="^40(0|1)\d{3}$" title="Only Mumbai/MMR pincodes (starting with 400 or 401) are allowed">
             </div>
             <div class="d-flex justify-content-between mt-4">
               <button type="button" class="btn btn-secondary btn-sm px-3" onclick="$('#addressFormContainer').hide(); $('#addressPrompt').fadeIn();">Back</button>

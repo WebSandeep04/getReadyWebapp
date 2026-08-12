@@ -285,7 +285,7 @@
                     </div>
                     <div class="col-md-4 col-4">
                         <label class="form-label small fw-bold text-muted">Pincode</label>
-                        <input type="text" id="modalPincodeInput" class="form-control rounded-3 border-light-subtle bg-light" placeholder="Pincode" maxlength="6">
+                        <input type="text" id="modalPincodeInput" class="form-control rounded-3 border-light-subtle bg-light" placeholder="Pincode" maxlength="6" pattern="^40(0|1)\d{3}$" title="Only Mumbai/MMR pincodes (starting with 400 or 401) are allowed">
                     </div>
                 </div>
             </div>

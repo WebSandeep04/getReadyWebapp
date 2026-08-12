@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Models\State;
 use App\Models\City;
+use App\Rules\ValidMumbaiPincode;
 
 class UserController extends Controller
 {
@@ -38,7 +39,7 @@ class UserController extends Controller
             'phone' => 'required|string|max:20|unique:users,phone,' . $id,
             'address' => 'nullable|string|max:255',
             'city' => 'nullable|string|max:100',
-            'pincode' => 'nullable|string|max:10',
+            'pincode' => ['nullable', 'string', 'max:10', new ValidMumbaiPincode()],
             'age' => 'nullable|integer|min:1|max:120',
             'is_gst' => 'required|boolean',
             'gstin' => 'nullable|string|max:15',
@@ -83,7 +84,7 @@ class UserController extends Controller
             'address' => 'nullable|string|max:255',
             'state' => 'nullable|string',
             'city' => 'nullable|string',
-            'pincode' => 'nullable|string|max:10',
+            'pincode' => ['nullable', 'string', 'max:10', new ValidMumbaiPincode()],
             'is_gst' => 'required|boolean',
             'gstin' => 'required_if:is_gst,1|nullable|string|max:15|regex:/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/',
             'gender' => 'required|in:Boy,Girl,Men,Women',
@@ -155,7 +156,7 @@ class UserController extends Controller
             'address' => 'required|string|max:255',
             'state' => 'required|string',
             'city' => 'required|string',
-            'pincode' => 'required|string|max:10',
+            'pincode' => ['required', 'string', 'max:10', new ValidMumbaiPincode()],
         ]);
 
         if ($validator->fails()) {

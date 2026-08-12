@@ -12,10 +12,12 @@ use App\Services\PriceCalculatorService;
 use App\Services\AvailabilityService;
 use App\Services\InvoiceService;
 use App\Services\XpressbeesService;
+use App\Rules\ValidMumbaiPincode;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
 class CheckoutController extends Controller
@@ -38,6 +40,17 @@ class CheckoutController extends Controller
         $deliveryAddress = $request->input('delivery_address');
         if (empty($deliveryAddress)) {
              return response()->json(['success' => false, 'message' => 'Delivery address is required.'], 422);
+        }
+
+        // Validate Pincode
+        if ($request->has('delivery_pincode')) {
+            $validator = Validator::make($request->all(), [
+                'delivery_pincode' => ['required', 'string', 'max:10', new ValidMumbaiPincode()],
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['success' => false, 'message' => $validator->errors()->first('delivery_pincode')], 422);
+            }
         }
 
         // Update User Profile with new delivery address if provided

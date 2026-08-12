@@ -135,4 +135,27 @@ class XpressbeesService
         Log::error('Xpressbees Cancel Shipment Failed: ' . $response->body());
         return false;
     }
+    public function checkServiceability($origin, $destination, $paymentType = 'prepaid', $orderAmount = 0)
+    {
+        $token = $this->login();
+        if (!$token) return false;
+
+        try {
+            $response = Http::withToken($token)->post($this->baseUrl . '/courier/serviceability', [
+                'Origin' => $origin,
+                'Destination' => $destination,
+                'Cod' => $paymentType,
+                'Order amount' => $orderAmount
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                return isset($data['status']) && $data['status'] === true;
+            }
+            return false;
+        } catch (\Exception $e) {
+            Log::error('Xpressbees Serviceability Check Error: ' . $e->getMessage());
+            return false;
+        }
+    }
 }

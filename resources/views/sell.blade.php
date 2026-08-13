@@ -608,8 +608,13 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <div class="modal-body" id="summaryContent">
-        <!-- Summary will be injected here via JavaScript -->
+      <div class="modal-body">
+        <div id="summaryContent">
+            <!-- Summary will be injected here via JavaScript -->
+        </div>
+        <div class="alert alert-info mt-3 mb-0" role="alert">
+            <i class="fas fa-info-circle mr-1"></i> <strong>Note:</strong> Rental period will be 4 days except pickup and delivery date.
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Edit Details</button>

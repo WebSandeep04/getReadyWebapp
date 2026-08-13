@@ -281,6 +281,16 @@
           </div>
         </div>
       </div>
+
+      <!-- Return & Refund Policy -->
+      <div class="card shadow-sm mt-4 p-4">
+        <h5 class="fw-bold mb-3">Return & Refund Policy</h5>
+        <ul class="list-unstyled mb-0 text-muted" style="font-size: 0.95rem; line-height: 1.6;">
+          <li class="mb-2"><i class="bi bi-clock-history text-danger me-2"></i> <strong>Returnable upto 4 hrs only.</strong></li>
+          <li class="mb-2"><i class="bi bi-cash-stack text-warning me-2"></i> <strong>Return handling charges:</strong> Rs. 50/-</li>
+          <li><i class="bi bi-shield-check text-success me-2"></i> Security deposit will be refunded after 4-5 business days from the date of return of shipment after deducting applicable charges if any.</li>
+        </ul>
+      </div>
     </div>
 
     <div class="col-lg-5">

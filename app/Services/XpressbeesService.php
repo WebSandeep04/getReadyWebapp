@@ -142,10 +142,11 @@ class XpressbeesService
 
         try {
             $response = Http::withToken($token)->post($this->baseUrl . '/courier/serviceability', [
-                'Origin' => $origin,
-                'Destination' => $destination,
-                'Cod' => $paymentType,
-                'Order amount' => $orderAmount
+                'origin' => $origin,
+                'destination' => $destination,
+                'payment_type' => 'prepaid',
+                'order_amount' => '100',
+                'weight' => 500
             ]);
 
             if ($response->successful()) {

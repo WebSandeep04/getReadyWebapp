@@ -7,13 +7,13 @@ use App\Services\XpressbeesService;
 
 class ValidMumbaiPincode implements Rule
 {
-    protected $message = 'This pincode is not serviceable in Mumbai.';
+    protected $message = 'This pincode is not serviceable in our operational areas (Mumbai/Kanpur).';
 
     public function passes($attribute, $value)
     {
-        // Must be 6 digits and start with 400 or 401 (basic MMR check)
-        if (!preg_match('/^40(0|1)\d{3}$/', $value)) {
-            $this->message = 'Only Mumbai/MMR pincodes (starting with 400 or 401) are allowed.';
+        // Must be 6 digits and start with 400 or 401 (Mumbai) or 208 or 209 (Kanpur)
+        if (!preg_match('/^(40[01]\d{3}|20[89]\d{3})$/', $value)) {
+            $this->message = 'Only Mumbai (400/401...) and Kanpur (208/209...) pincodes are allowed.';
             return false;
         }
 

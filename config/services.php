@@ -44,8 +44,8 @@ return [
     ],
 
     'razorpay' => [
-        'key_id' => env('RAZORPAY_KEY_ID', 'rzp_test_1DP5mmOlF5G5ag'),
-        'key_secret' => env('RAZORPAY_KEY_SECRET', 'rzorpay_secret'),
+        'key_id' => env('RAZORPAY_KEY_ID'),
+        'key_secret' => env('RAZORPAY_KEY_SECRET'),
     ],
 
     'xpressbees' => [

@@ -157,6 +157,8 @@ class OrderApiController extends Controller
             'delivery_state' => $request->delivery_state,
             'delivery_pincode' => $request->delivery_pincode,
             'total_amount' => $grandTotal,
+            'has_rental_items' => $rentalSubtotal > 0,
+            'has_purchase_items' => $buySubtotal > 0,
             'security_amount' => $securityDeposit,
             'rental_from' => $request->rental_from, 
             'rental_to' => $rentalTo,
@@ -533,4 +535,28 @@ class OrderApiController extends Controller
             ]
         ]);
     }
+    public function sales()
+    {
+        $userId = Auth::id();
+
+        $orders = Order::whereHas('items.cloth', function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            })
+            ->where('status', '!=', 'Pending')
+            ->with(['items' => function ($query) use ($userId) {
+                $query->whereHas('cloth', function ($q) use ($userId) {
+                    $q->where('user_id', $userId);
+                })->with(['cloth' => function($q) {
+                    $q->with(['category', 'brand', 'size', 'color', 'fabric', 'condition', 'fitType', 'bottomType', 'images']);
+                }]);
+            }, 'buyer', 'payments', 'invoices'])
+            ->latest()
+            ->paginate(10);
+
+        return response()->json([
+            'success' => true,
+            'orders' => $orders
+        ]);
+    }
 }
+

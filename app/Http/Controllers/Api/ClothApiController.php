@@ -100,8 +100,8 @@ class ClothApiController extends Controller
             // 1. Start the base query
             // We eager-load 'category', 'brand', and 'images' to prevent N+1 query issues.
             $query = Cloth::with(['category', 'brand', 'images'])
-                ->where('is_available', true);
-                // ->where('is_approved', true); // Uncomment this when you start approving clothes
+                ->where('is_available', true)
+                ->where('is_approved', 1); // Uncomment this when you start approving clothes
 
             // 2. Apply Filters from Request
 

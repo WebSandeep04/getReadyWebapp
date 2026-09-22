@@ -14,6 +14,8 @@ use App\Http\Controllers\Api\LoginApiController;
 use App\Http\Controllers\Api\UserApiController;
 use App\Http\Controllers\Api\CartApiController;
 use App\Http\Controllers\Api\OrderApiController;
+use App\Http\Controllers\Api\NotificationApiController;
+use App\Http\Controllers\Api\RejectionApiController;
 
 
 Route::get('/user', function (Request $request) {
@@ -86,4 +88,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/orders/{id}/convert-to-purchase', [OrderApiController::class, 'convertToPurchase']);
     Route::get('/orders/{id}/extension-quote', [OrderApiController::class, 'extensionQuote']);
     Route::post('/orders/{id}/extend', [OrderApiController::class, 'extend']);
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/notifications', [NotificationApiController::class, 'index']);
+    Route::post('/notifications/read', [NotificationApiController::class, 'markAsRead']);
+    Route::post('/notifications/read-all', [NotificationApiController::class, 'markAllAsRead']);
+    Route::get('/notifications/unread-count', [NotificationApiController::class, 'getUnreadCount']);
+
+    // Rejection Endpoints
+    Route::get('/rejections', [RejectionApiController::class, 'index']);
+    Route::get('/rejections/form-data', [RejectionApiController::class, 'getFormData']);
+    Route::get('/rejections/{id}', [RejectionApiController::class, 'show']);
+    Route::post('/rejections/{id}', [RejectionApiController::class, 'update']);
 });

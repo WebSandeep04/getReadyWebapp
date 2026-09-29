@@ -28,7 +28,7 @@ class ClothApiController extends Controller
             $cloth = Cloth::create([
                 // For API testing without auth, you can hardcode a user_id like 1. 
                 // Once you add mobile login, change this to Auth::id() or get from Sanctum token.
-                'user_id' => Auth::id() ?? 1, 
+                'user_id' => Auth::id(), 
                 
                 'title' => $request->title,
                 'description' => $request->description,

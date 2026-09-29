@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\CartApiController;
 use App\Http\Controllers\Api\OrderApiController;
 use App\Http\Controllers\Api\NotificationApiController;
 use App\Http\Controllers\Api\RejectionApiController;
+use App\Http\Controllers\Api\InvoiceApiController;
 
 
 Route::get('/user', function (Request $request) {
@@ -32,7 +33,6 @@ Route::get('/colors', [ColorController::class, 'index']);
 Route::get('/sizes', [SizeController::class, 'index']);
 Route::get('/body-fits', [BodyFitController::class, 'index']);
 Route::get('/garment-conditions', [GarmentConditionController::class, 'index']);
-Route::post('/outfits', [ClothApiController::class, 'store']);
 Route::get('/home-feed', [ClothApiController::class, 'getHomeFeed']);
 Route::get('/clothes/{id}', [ClothApiController::class, 'apiShow']);
 Route::post('/clothes/{id}/update', [ClothApiController::class, 'update']);
@@ -54,6 +54,7 @@ Route::prefix('auth')->group(function () {
 
 // Make sure this is inside your authenticated route group
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/outfits', [ClothApiController::class, 'store']);
     
     // Fetch logged-in user details
     Route::get('/profile', [UserApiController::class, 'getProfile']);
@@ -84,8 +85,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/orders/{id}/rate', [OrderApiController::class, 'rate']);
 
     // Checkout / Purchase Endpoints
-    Route::get('/orders/{id}/purchase-eligibility', [OrderApiController::class, 'purchaseEligibility']);
-    Route::post('/orders/{id}/convert-to-purchase', [OrderApiController::class, 'convertToPurchase']);
+    Route::get('/orders/{id}/purchase-eligibility', [\App\Http\Controllers\OrderConversionController::class, 'eligibility']);
+    Route::post('/orders/{id}/convert-to-purchase', [\App\Http\Controllers\OrderConversionController::class, 'convertToPurchase']);
+    Route::post('/orders/conversion/verify', [\App\Http\Controllers\OrderConversionController::class, 'verifyConversion']);
     Route::get('/orders/{id}/extension-quote', [OrderApiController::class, 'extensionQuote']);
     Route::post('/orders/{id}/extend', [OrderApiController::class, 'extend']);
 });
@@ -102,3 +104,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/rejections/{id}', [RejectionApiController::class, 'show']);
     Route::post('/rejections/{id}', [RejectionApiController::class, 'update']);
 });
+
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/invoices', [InvoiceApiController::class, 'index']);
+    Route::get('/invoices/{id}', [InvoiceApiController::class, 'show']);
+});
+Route::get('/invoices/{id}/download', [InvoiceApiController::class, 'download']);

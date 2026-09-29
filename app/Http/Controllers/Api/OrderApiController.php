@@ -472,11 +472,34 @@ class OrderApiController extends Controller
     {
         $request->validate([
             'rating' => 'required|integer|min:1|max:5',
-            'review' => 'required|string'
+            'review' => 'nullable|string'
         ]);
         
-        // TODO: Implement review saving logic
-        return response()->json(['success' => true, 'message' => 'Review saved']);
+        $order = \App\Models\Order::with('items')->findOrFail($id);
+        
+        if ($order->buyer_id !== \Illuminate\Support\Facades\Auth::id()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $sellerId = $order->items->first()->seller_id ?? null;
+
+        if (!$sellerId) {
+            return response()->json(['success' => false, 'message' => 'Seller not found for this order'], 400);
+        }
+
+        \App\Models\Rating::updateOrCreate(
+            [
+                'order_id' => $order->id,
+                'rater_id' => \Illuminate\Support\Facades\Auth::id(),
+            ],
+            [
+                'rated_user_id' => $sellerId,
+                'rating' => $request->rating,
+                'review' => $request->review,
+            ]
+        );
+
+        return response()->json(['success' => true, 'message' => 'Review saved successfully']);
     }
 
     public function purchaseEligibility(Request $request, $id)

@@ -755,7 +755,7 @@ if (checkoutBtn) {
 function launchRazorpayCheckout(data, verifyUrl, csrfToken) {
     const options = {
         key: data.razorpay.key,
-        amount: data.order.amount_paise,
+        amount: Math.round(data.order.amount_paise / 100) * 100,
         currency: data.order.currency,
         name: 'Get Ready',
         description: `Order #${data.order.id}`,

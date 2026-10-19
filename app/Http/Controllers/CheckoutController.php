@@ -101,7 +101,7 @@ class CheckoutController extends Controller
             }
         }
 
-        $grandTotal = $rentalSubtotal + $buySubtotal + $securityDeposit;
+        $grandTotal = round($rentalSubtotal + $buySubtotal + $securityDeposit);
 
         if ($grandTotal <= 0) {
             return response()->json(['success' => false, 'message' => 'Unable to calculate order total'], 422);
@@ -225,8 +225,8 @@ class CheckoutController extends Controller
             'success' => true,
             'order' => [
                 'id' => $order->id,
-                'amount' => round($grandTotal, 2),
-                'amount_paise' => (int) round($grandTotal * 100),
+                'amount' => (float) round($grandTotal),
+                'amount_paise' => (int) (round($grandTotal) * 100),
                 'currency' => 'INR',
                 'receipt' => 'GR-' . Str::upper(Str::random(6)),
             ],

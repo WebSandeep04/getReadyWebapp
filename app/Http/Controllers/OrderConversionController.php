@@ -85,7 +85,7 @@ class OrderConversionController extends Controller
         }
 
         $conversionData = $this->priceService->calculateRentalConversion($orderItem);
-        $amountDue = $conversionData['amount_due'];
+        $amountDue = round($conversionData['amount_due']);
 
         // If the item amount due is 0 (or somehow covered), verify immediately without gateway.
         if ($amountDue <= 0) {
@@ -104,7 +104,7 @@ class OrderConversionController extends Controller
             'order_item_id' => $orderItem->id,
             'conversion_data' => $conversionData,
             'razorpay_order' => [
-                'amount' => (int) round($amountDue * 100),
+                'amount' => (int) (round($amountDue) * 100),
                 'currency' => 'INR',
                 'receipt' => 'CONV-' . $orderItem->id . '-' . Str::random(4),
             ],

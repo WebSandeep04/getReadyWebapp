@@ -23,6 +23,15 @@ class InvoiceController extends Controller
         $invoice = Invoice::findOrFail($id);
         
         $isAuthorized = false;
+        
+        // Authenticate via mobile app token passed in query string
+        if (request()->has("token")) {
+            $token = \Laravel\Sanctum\PersonalAccessToken::findToken(request("token"));
+            if ($token && $token->tokenable) {
+                Auth::login($token->tokenable);
+            }
+        }
+
 
         // Check if Admin
         if (\Illuminate\Support\Facades\Session::has('admin_logged_in')) {
@@ -49,3 +58,4 @@ class InvoiceController extends Controller
         abort(404, 'Invoice file not found.');
     }
 }
+

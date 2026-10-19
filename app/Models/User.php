@@ -53,6 +53,7 @@ class User extends Authenticatable
         'aadhaar_pdf_link',
         'aadhaar_image_base64',
         'aadhaar_details',
+        'fcm_token', 
     ];
 
 

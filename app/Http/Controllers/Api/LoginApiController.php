@@ -158,6 +158,9 @@ class LoginApiController extends Controller
 
         // Update last login timestamp
         $user->last_login_at = now();
+        if ($request->has('fcm_token') && !empty($request->fcm_token)) {
+            $user->fcm_token = $request->fcm_token;
+        }
         $user->save();
 
         // Generate API Token (Sanctum)
@@ -232,6 +235,7 @@ class LoginApiController extends Controller
             'gstin' => $request->is_gst == 1 ? $request->gstin : null,
             'gst_number' => $request->is_gst == 1 ? $request->gstin : null,
             'password' => Hash::make(Str::random(16)),
+            'fcm_token' => $request->has('fcm_token') && !empty($request->fcm_token) ? $request->fcm_token : null,
         ];
 
         // Fetch GST Details if GST is enabled
@@ -307,8 +311,12 @@ class LoginApiController extends Controller
      */
     public function logout(Request $request)
     {
-        // Revoke the current token
-        $request->user()->currentAccessToken()->delete();
+        $user = $request->user();
+        if ($user) {
+            $user->fcm_token = null;
+            $user->save();
+            $user->currentAccessToken()->delete();
+        }
 
         return response()->json([
             'success' => true,

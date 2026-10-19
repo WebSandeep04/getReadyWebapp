@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\OrderApiController;
 use App\Http\Controllers\Api\NotificationApiController;
 use App\Http\Controllers\Api\RejectionApiController;
 use App\Http\Controllers\Api\InvoiceApiController;
+use App\Http\Controllers\Api\TransactionApiController;
 
 
 Route::get('/user', function (Request $request) {
@@ -62,6 +63,7 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Update profile (your existing method)
     Route::post('/profile/update', [UserApiController::class, 'updateProfile']);
+    Route::post('/profile/update-fcm', [UserApiController::class, 'updateFcm']);
     
     
 });
@@ -111,3 +113,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/invoices/{id}', [InvoiceApiController::class, 'show']);
 });
 Route::get('/invoices/{id}/download', [InvoiceApiController::class, 'download']);
+
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/transactions', [TransactionApiController::class, 'index']);
+});

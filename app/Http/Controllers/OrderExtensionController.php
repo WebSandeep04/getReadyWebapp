@@ -73,7 +73,7 @@ class OrderExtensionController extends Controller
         }
 
         $costBreakdown = $this->extensionService->calculateExtensionCost($order, $extraDays);
-        $totalAmount = $costBreakdown['total_additional_amount'];
+        $totalAmount = round($costBreakdown['total_additional_amount']);
 
         $newRentalTo = \Carbon\Carbon::parse($order->rental_to)->addDays($extraDays);
 
@@ -99,7 +99,7 @@ class OrderExtensionController extends Controller
             'success' => true,
             'extension_id' => $extension->id,
             'razorpay_order' => [
-                'amount' => (int) round($totalAmount * 100),
+                'amount' => (int) (round($totalAmount) * 100),
                 'currency' => 'INR',
                 'receipt' => 'EXT-' . $extension->id . '-' . Str::random(4),
             ],

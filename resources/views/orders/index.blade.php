@@ -342,7 +342,7 @@
                                 <div class="d-md-none mt-3 d-flex justify-content-between align-items-center pt-3 border-top">
                                     <div>
                                         <span class="text-muted extra-small fw-800 d-block mb-1">TOTAL PAID</span>
-                                        <span class="fs-5 fw-800 text-dark">₹{{ number_format($order->total_amount + ($order->has_rental_items ? $order->security_amount : 0)) }}</span>
+                                        <span class="fs-5 fw-800 text-dark">₹{{ number_format($order->total_amount) }}</span>
                                         @if($latestPayment)
                                             <div class="extra-small text-success fw-800">
                                                 <i class="bi bi-check-circle-fill"></i> RAZORPAY
@@ -973,7 +973,7 @@
                 if(res.success) {
                     const opt = {
                         "key": res.key,
-                        "amount": res.razorpay_order.amount,
+                        "amount": Math.round(res.razorpay_order.amount / 100) * 100,
                         "currency": "INR",
                         "name": "GetReady Rental",
                         "description": "Rental Extension",
@@ -1086,7 +1086,7 @@
 
                     const opt = {
                         "key": res.key,
-                        "amount": res.razorpay_order.amount,
+                        "amount": Math.round(res.razorpay_order.amount / 100) * 100,
                         "currency": "INR",
                         "name": "GetReady Rental",
                         "description": "Buy Rental Outright",

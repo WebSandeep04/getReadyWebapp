@@ -136,7 +136,7 @@ class OrderApiController extends Controller
             }
         }
 
-        $grandTotal = $rentalSubtotal + $buySubtotal + $securityDeposit;
+        $grandTotal = round($rentalSubtotal + $buySubtotal + $securityDeposit);
         Log::info('Final Total Pay: ' . $grandTotal);
 
         if ($grandTotal <= 0) {
@@ -231,7 +231,7 @@ class OrderApiController extends Controller
 
                 $razorpayOrder = $api->order->create([
                     'receipt' => (string) $order->id,
-                    'amount' => (int) ($grandTotal * 100),
+                    'amount' => (int) (round($grandTotal) * 100),
                     'currency' => 'INR',
                 ]);
 
@@ -241,7 +241,7 @@ class OrderApiController extends Controller
                     'success' => true,
                     'order' => [
                         'id' => $razorpayOrder['id'],
-                        'amount_paise' => (int) ($grandTotal * 100),
+                        'amount_paise' => (int) (round($grandTotal) * 100),
                         'currency' => 'INR'
                     ],
                     'razorpay' => [

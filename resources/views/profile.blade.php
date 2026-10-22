@@ -129,7 +129,7 @@
                         </div>
                         <div class="col-md-4 col-4">
                             <label for="pincode" class="form-label">Pincode</label>
-                            <input type="text" class="form-control" id="pincode" name="pincode" placeholder="Pincode" value="{{ $user->pincode }}" maxlength="6" pattern="^40(0|1)\d{3}$" title="Only Mumbai/MMR pincodes (starting with 400 or 401) are allowed">
+                            <input type="text" class="form-control" id="pincode" name="pincode" placeholder="Pincode" value="{{ $user->pincode }}" maxlength="6" pattern="^(40[01]\d{3}|20[89]\d{3})$" title="Only Mumbai (400/401...) and Kanpur (208/209...) pincodes are allowed">
                             <div class="invalid-feedback" id="pincode-error"></div>
                         </div>
                     </div>
